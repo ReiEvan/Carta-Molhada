@@ -1,0 +1,13 @@
+para criar variaveis globais usamos: _G.blabla
+
+para criar variaveis locais usamos: local "nome da variavel" ou só o nome da variavel com o valor dela
+
+comandos love.graphics (comandos usados para "desenhar" algo na tela)
+
+love.graphics.setColor(R,G,B) (setar a cor do que vem a seguir com as configurações RGB respectivamente)
+
+love.graphics.Circle("fill",x,y,raio) (cria um desenho de um circulo com as respectivas proporções apresentadas)
+
+love.graphics.Rectangle("fill",x,y,altura?,largura?) (cria um desenho de um retangulo com as informações apresentadas)
+
+love.graphics.print("",X,Y) (Desenha um texto)
