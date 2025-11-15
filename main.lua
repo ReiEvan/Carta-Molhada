@@ -1,50 +1,39 @@
---[[circuloTamanho = 50
-quadradoTamanho = 50
-textoDoMouse = 0
+local love = require("love")
 
+local game = {
+    state = {
+        menu = true,
+        paused = false,
+        running = false,
+        ended = false,
+        
+    }
+}
 
-
-function love.draw()
-    --Circulo vermelho
-    love.graphics.setColor(1,0,0)
-    love.graphics.circle("fill",200,200,circuloTamanho)
-
-    --Circulo verde
-    love.graphics.setColor(0,1,0)
-    love.graphics.circle("fill",600,200,circuloTamanho)
-
-    --cursor do mouse
-    love.graphics.setColor(0,0,1)
-    love.graphics.print(
-
---[[function love.draw(jogador)
-    --Quadrado branco
-    love.graphics.setColor(144,144,144)
-    love.graphics.rectangle("fill", 500,200,quadradoTamanho,quadradoTamanho)
-
-
-    --Cursor do mouse
-   -- love.graphics.print('Eixo X do mouse:' ,love.mouse.getX() ,"Eixo Y do mouse:",love.mouse.getY(), " !")
-   end
+local player ={
+    radius = 20,
+    x = 30,
+    y = 30
+}
 
 function love.load()
-    cursor = love.mouse.getSystemCursor("hand")
-end
-
-function love.mousepressed(x, y, button)
-    if button == 1 then
-        love.mouse.setCursor(cursor)
-    
-    end
-end
-
-function love.mousereleased(x, y, button)
-        if button == 1 then
-            love.mouse.setCursor()
-    end
+    love.window.setTitle("Carta Molhada")
+    love.mouse.setVisible(false)
 end
 
 function love.update(dt)
+    player.x, player.y = love.mouse.getPosition()
+end
 
+function love.draw()
+    love.graphics.printf("FPS: " .. love.timer.getFPS(), love.graphics.newFont(16), 10, love.graphics.getHeight() - 30, love.graphics.getWidth())
 
-end]]
+        if game.state["running"] then
+        love.graphics.circle("fill", player.x, player.y, player.radius)
+    end
+
+        if not game.state["running"] then
+        love.graphics.circle("fill", player.x, player.y, player.radius / 2)
+    end
+end
+

@@ -1,7 +1,8 @@
-largura = love.graphics.getWidth()
+--[[largura = love.graphics.getWidth()
 altura = love.graphics.getHeight()
-mouseX = love.mouse.getX()
-mouseY = love.mouse.getY()
+posMouseX = love.mouse.getX()
+posMouseY = love.mouse.getY()
+
 
 
 function love.update(dt)
@@ -12,5 +13,5 @@ end
 
 function love.draw()
     love.graphics.setColor(0,0,1)
-    love.graphics.print("Esse é o ponto X: "mouseX" e esse é o ponto Y: "mouseY, mouseX, mouseY)
-end
+    love.graphics.print("Esse é o ponto X: "posMouseX" e esse é o ponto Y: "posMouseY, 100, 100)
+end]]
