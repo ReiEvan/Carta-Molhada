@@ -26,6 +26,20 @@ function love.load()
     love.window.setTitle("Carta Molhada")
 
     buttons.menu_state.play_game = button("Iniciar", nil, nil, 40, 30)
+    buttons.menu_state.settings = button("Configurações", nil, nil, 40, 30)
+    buttons.menu_state.exit_game = button("Sair", love.event.quit, nil, 40, 30)
+end
+
+function love.mousepressed(x, y, button, istouch, presses)
+    if not game.state['running'] then
+        if button == 1 then
+            if game.state["menu"] then
+                for index in pairs(buttons.menu_state) do
+                    buttons.menu_state[index]:checkPressed(x, y, player.radius)
+                end
+            end
+        end
+    end   
 end
 
 function love.update(dt)
@@ -39,6 +53,8 @@ function love.draw()
         love.graphics.circle("fill", player.x, player.y, player.radius)
     elseif game.state["menu"] then
         buttons.menu_state.play_game:draw(10, 20, 10, 20)
+        buttons.menu_state.settings:draw(10, 70, 10, 20)
+        buttons.menu_state.exit_game:draw(10, 120, 10, 20)
     end
 
         if not game.state["running"] then
