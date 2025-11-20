@@ -8,11 +8,8 @@ local game = {
         running = false,
         ended = false,
         
-    }
-}
-
-local buttons = {
-    menu_state = {}
+    },
+    points = 0,
 }
 
 local player ={
@@ -21,13 +18,16 @@ local player ={
     y = 30
 }
 
-function love.load()
-    love.mouse.setVisible(false)
-    love.window.setTitle("Carta Molhada")
+local buttons = {
+    menu_state = {}
+}
 
-    buttons.menu_state.play_game = button("Iniciar", nil, nil, 80, 30)
-    buttons.menu_state.settings = button("Configurações", nil, nil, 120, 30)
-    buttons.menu_state.exit_game = button("Sair", love.event.quit, nil, 80, 30)
+local function startNewGame()
+    game.state["menu"] = false
+    game.state["running"] = true
+
+
+    
 end
 
 function love.mousepressed(x, y, button, istouch, presses)
@@ -42,8 +42,22 @@ function love.mousepressed(x, y, button, istouch, presses)
     end   
 end
 
+
+function love.load()
+    love.mouse.setVisible(false)
+    love.window.setTitle("Carta Molhada")
+
+    buttons.menu_state.play_game = button("Iniciar", startNewGame, nil, 80, 30)
+    buttons.menu_state.settings = button("Configurações", nil, nil, 120, 30)
+    buttons.menu_state.exit_game = button("Sair", love.event.quit, nil, 80, 30)
+end
+
 function love.update(dt)
     player.x, player.y = love.mouse.getPosition()
+
+    if game.state["running"] then
+        
+    end
 end
 
 function love.draw()
