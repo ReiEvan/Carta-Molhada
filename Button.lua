@@ -1,6 +1,6 @@
 local love = require "love"
 
-function Button(text, func_param, width, height)
+function Button(text, func, func_param, width, height)
     return{
         width = width or 100,
         height = height or 100,

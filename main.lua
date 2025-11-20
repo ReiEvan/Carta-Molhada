@@ -25,17 +25,17 @@ function love.load()
     love.mouse.setVisible(false)
     love.window.setTitle("Carta Molhada")
 
-    buttons.menu_state.play_game = button("Iniciar", nil, nil, 40, 30)
-    buttons.menu_state.settings = button("Configurações", nil, nil, 40, 30)
-    buttons.menu_state.exit_game = button("Sair", love.event.quit, nil, 40, 30)
+    buttons.menu_state.play_game = button("Iniciar", nil, nil, 80, 30)
+    buttons.menu_state.settings = button("Configurações", nil, nil, 120, 30)
+    buttons.menu_state.exit_game = button("Sair", love.event.quit, nil, 80, 30)
 end
 
 function love.mousepressed(x, y, button, istouch, presses)
-    if not game.state['running'] then
+    if not game.state["running"] then
         if button == 1 then
             if game.state["menu"] then
                 for index in pairs(buttons.menu_state) do
-                    buttons.menu_state[index]:checkPressed(x, y, player.radius)
+                    buttons.menu_state[index] : checkPressed(x, y, player.radius)
                 end
             end
         end
@@ -52,9 +52,9 @@ function love.draw()
     if game.state["running"] then
         love.graphics.circle("fill", player.x, player.y, player.radius)
     elseif game.state["menu"] then
-        buttons.menu_state.play_game:draw(10, 20, 10, 20)
-        buttons.menu_state.settings:draw(10, 70, 10, 20)
-        buttons.menu_state.exit_game:draw(10, 120, 10, 20)
+        buttons.menu_state.play_game:draw(10, 20, 10, 10)
+        buttons.menu_state.settings:draw(10, 70, 10, 10)
+        buttons.menu_state.exit_game:draw(10, 120, 10, 10)
     end
 
         if not game.state["running"] then
