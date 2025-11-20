@@ -8,11 +8,8 @@ local game = {
         running = true,
         ended = false,
         
-    }
-}
-
-local buttons = {
-    menu_state = {}
+    },
+    points = 0,
 }
 
 local player ={
@@ -21,29 +18,46 @@ local player ={
     y = 30
 }
 
-function love.load()
-    love.mouse.setVisible(false)
-    love.window.setTitle("Carta Molhada")
+local buttons = {
+    menu_state = {}
+}
 
-    buttons.menu_state.play_game = button("Iniciar", nil, nil, 40, 30)
-    buttons.menu_state.settings = button("Configurações", nil, nil, 40, 30)
-    buttons.menu_state.exit_game = button("Sair", love.event.quit, nil, 40, 30)
+local function startNewGame()
+    game.state["menu"] = false
+    game.state["running"] = true
+
+
+    
 end
 
 function love.mousepressed(x, y, button, istouch, presses)
-    if not game.state['running'] then
+    if not game.state["running"] then
         if button == 1 then
             if game.state["menu"] then
                 for index in pairs(buttons.menu_state) do
-                    buttons.menu_state[index]:checkPressed(x, y, player.radius)
+                    buttons.menu_state[index] : checkPressed(x, y, player.radius)
                 end
             end
         end
     end   
 end
 
+
+function love.load()
+    love.mouse.setVisible(false)
+    love.window.setTitle("Carta Molhada")
+
+    buttons.menu_state.play_game = button("Iniciar", startNewGame, nil, 80, 30)
+    buttons.menu_state.settings = button("Configurações", nil, nil, 120, 30)
+    buttons.menu_state.exit_game = button("Sair", love.event.quit, nil, 80, 30)
+end
+
 function love.update(dt)
     player.x, player.y = love.mouse.getPosition()
+
+    if game.state["running"] then
+        
+    end
 end
 -- Carregamento do mapa
 local mapa = love.graphics.newImage("sprites/mapagradeado.png")
@@ -57,9 +71,9 @@ function love.draw()
         love.graphics.draw(mapa, 0, 0, 0, .35, .35)
         love.graphics.circle("fill", player.x, player.y, player.radius)
     elseif game.state["menu"] then
-        buttons.menu_state.play_game:draw(10, 20, 10, 20)
-        buttons.menu_state.settings:draw(10, 70, 10, 20)
-        buttons.menu_state.exit_game:draw(10, 120, 10, 20)
+        buttons.menu_state.play_game:draw(10, 20, 10, 10)
+        buttons.menu_state.settings:draw(10, 70, 10, 10)
+        buttons.menu_state.exit_game:draw(10, 120, 10, 10)
     end
 
         if not game.state["running"] then
