@@ -1,3 +1,3 @@
 function love.conf(t)
-    t.window.display = 2
+    t.window.fullscreen = false
 end
