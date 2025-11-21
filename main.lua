@@ -58,7 +58,7 @@ function love.update(dt)
     if game.state["running"] then
         
     end
-end
+end 
 -- Carregamento do mapa
 local mapa = love.graphics.newImage("sprites/mapagradeado.png")
 
@@ -66,6 +66,8 @@ function love.draw()
     love.graphics.printf("FPS: " .. love.timer.getFPS(), love.graphics.newFont(16), 10, love.graphics.getHeight() - 30, love.graphics.getWidth())
 
     if game.state["running"] then
+        --love.graphics.clear(.937,.946,.96,1) para fazer o dundo do jogo
+        --love.graphics.draw(fundo, 100, 100)
         love.graphics.circle("fill", player.x, player.y, player.radius)
         -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo
         love.graphics.draw(mapa, 0, 0, 0, .35, .35)
