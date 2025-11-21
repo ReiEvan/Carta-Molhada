@@ -1,11 +1,15 @@
 local love = require "love"
 local button = require "Button"
 
+
+local agua = 5
+local rodada = 1
+
 local game = {
     state = {
-        menu = false,
+        menu = true,
         paused = false,
-        running = true,
+        running = false,
         ended = false,
         
     },
@@ -30,6 +34,7 @@ local function startNewGame()
     
 end
 
+--função para o mouse no menu
 function love.mousepressed(x, y, button, istouch, presses)
     if not game.state["running"] then
         if button == 1 then
@@ -45,8 +50,8 @@ end
 
 function love.load()
     love.mouse.setVisible(false)
-    love.window.setTitle("Carta Molhada")
-
+    love.window.setTitle("Última Gota")
+--Butões da tela do menu
     buttons.menu_state.play_game = button("Iniciar", startNewGame, nil, 80, 30)
     buttons.menu_state.settings = button("Configurações", nil, nil, 120, 30)
     buttons.menu_state.exit_game = button("Sair", love.event.quit, nil, 80, 30)
