@@ -3,29 +3,26 @@ local love = require "love"
 local CARD_WIDTH = 126
 local CARD_HEIGHT = 176
 local OFFSET_BETWEEN_CARDS = 3  
-local CARDS_IN_BARALHO = 10     
+local CARDS_IN_BARALHO = 10  
 
 -- armazenar todas as cartas
 local cards = {}
 
 -- Estrutura p/ uma carta
-local function createCard(x, y)
+local function criarFundo(x, y)
     return {
         transform = {
             x = x,
             y = y,
             width = CARD_WIDTH,
-            height = CARD_HEIGHT
-        },
-        dragging = false
+            height = CARD_HEIGHT,
+            sprite = love.graphics.newImage("Carta-Molhada/sprites/fundo carta azul-pitico.png")
+        }
     }
 end
 
-function love.load()
-    -- Carregar o sprite único
-    cardSprite = love.graphics.newImage("fundo carta azul-pitico.png")
+local function baralhoAzul()
 
-    
     --posição inicial 
     local screenWidth = love.graphics.getWidth()
     local screenHeight = love.graphics.getHeight()
@@ -38,23 +35,20 @@ function love.load()
         local offsetY = i * OFFSET_BETWEEN_CARDS
         
         -- Adiciona nova carta ao armazem de cartas
-        table.insert(cards, createCard(startY - offsetY, startX))
+        table.insert(cards, criarFundo(startY - offsetY, startX))
     end
 end
 
-function love.draw()
-    -- Limpa a tela com a cor de fundo
-    love.graphics.clear(0.937, 0.945, 0.96, 1)
-    
+local function fundoCarta()
     -- Desenha cada carta usando o mesmo sprite
     -- Ordem invertida para manter a aparência correta do baralho
     for i = #cards, 1, -1 do
         local card = cards[i]
-        love.graphics.draw(cardSprite, card.transform.x, card.transform.y)
+        love.graphics.draw(card.transform.sprite, card.transform.x, card.transform.y)
     end
 end
 
-function love.update(dt)
+local function posicaoBaralho(dt)
     -- Atualiza a posição do baralho caso a janela seja redimensionada
     if love.window.hasFocus() then
         local screenWidth = love.graphics.getWidth()
@@ -68,3 +62,9 @@ function love.update(dt)
         end
     end
 end
+return {
+    criarFundo = criarFundo,
+    fundoCarta = fundoCarta,
+    posicaoBaralho=posicaoBaralho,
+    baralhoAzul=baralhoAzul
+}
