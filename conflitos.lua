@@ -13,9 +13,9 @@ local conflito = {
     }
 
 local function fundoConflito()
-    love.graphics.draw(conflito.sprite, conflito.transform.x, conflito.transform.y)
+    love.graphics.draw(conflito.transform.sprite, conflito.transform.x, conflito.transform.y)
 end
-return fundoConflito
+return {fundoConflito = fundoConflito}
 -- Efeito das cartas de conflito
 
 -- local lista_conflitos{}
