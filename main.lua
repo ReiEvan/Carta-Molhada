@@ -4,6 +4,9 @@ local Cartas = require "Cartas"
 
 local agua = 5
 local rodada = 1
+local card_back_image
+
+local deck = {}
 
 local game = {
     state = {
@@ -16,6 +19,18 @@ local game = {
     points = 0,
 }
 
+local player ={
+    radius = 15,
+    x = 30,
+    y = 30
+}
+
+local buttons = {
+    menu_state = {},
+    running_state = {}
+    
+}
+
 local function proxRodada()
     if rodada == rodada then
         rodada = rodada + 1
@@ -23,25 +38,12 @@ local function proxRodada()
 
 end
 
-local player ={
-    radius = 15,
-    x = 30,
-    y = 30
-}
-
-
-local buttons = {
-    menu_state = {},
-    running_state = {}
- 
-}
-
 local function startNewGame()
     game.state["menu"] = false
     game.state["running"] = true 
 end
 
---função para o mouse no menu
+--função para o mouse no menu e in game
 function love.mousepressed(x, y, button, isTouch, presses)
     if not game.state["paused"] then
         if button == 1 then
@@ -82,6 +84,7 @@ end
 local mapa = love.graphics.newImage("sprites/mapagradeado.png")
 -- Sprite do guardinha
 local guardinha = love.graphics.newImage("sprites/Guarda Provisorio.png")
+--cartas do jogo
 
 function love.draw()
     love.graphics.printf("FPS: " .. love.timer.getFPS(), love.graphics.newFont(16), 10, love.graphics.getHeight() - 30, love.graphics.getWidth())
@@ -93,7 +96,9 @@ function love.draw()
         --love.graphics.draw(fundo, 100, 100)
         -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo
         love.graphics.draw(mapa, 0, 0, 0, .35, .35)
+
         Cartas.fundoCarta()
+
         love.graphics.circle("fill", player.x, player.y, player.radius)
         --love.graphics.draw(cardSprite,0,100)
         -- Guardinha florestal
