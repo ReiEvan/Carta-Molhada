@@ -1,11 +1,7 @@
 local love = require "love"
 local button = require "Button"
-<<<<<<< HEAD
 local cards = require "cartas"
 
-=======
-local cartas = require "Cartas"
->>>>>>> 8417837a621593165b72109b8adae57f4781c2fb
 
 local agua = 5
 local rodada = 1
