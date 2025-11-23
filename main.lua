@@ -87,7 +87,7 @@ local guardinha = love.graphics.newImage("sprites/Guarda Provisorio.png")
 function love.draw()
     love.graphics.printf("FPS: " .. love.timer.getFPS(), love.graphics.newFont(16), 10, love.graphics.getHeight() - 30, love.graphics.getWidth())
     --cardSprite = love.graphics.newImage("sprites/fundo carta azul-pitico.png")
-    if game.state["running"] then
+     if game.state["running"] then
         --Numeração da rodada atual
         love.graphics.print("Rodada " .. rodada, 10, 10, 0)
         --love.graphics.clear(.937,.946,.96,1) para fazer o dundo do jogo
