@@ -1,6 +1,7 @@
 local love = require "love"
 local button = require "Button"
-local Cartas = require "Cartas"
+local cards = require "cartas"
+
 
 local agua = 5
 local rodada = 1
@@ -64,8 +65,6 @@ end
 function love.load()
     love.mouse.setVisible(false)
     love.window.setTitle("Última Gota")
---cartas azuis
-    Cartas.baralhoAzul()
 --Botões da tela do menu
     buttons.menu_state.play_game = button("Iniciar", startNewGame, nil, 80, 30)
     buttons.menu_state.settings = button("Configurações", nil, nil, 120, 30)
@@ -77,7 +76,6 @@ end
 
 function love.update(dt)
     player.x, player.y = love.mouse.getPosition()
-    Cartas.posicaoBaralho(dt)
 end 
 
 -- Carregamento do mapa
@@ -96,16 +94,13 @@ function love.draw()
         --love.graphics.draw(fundo, 100, 100)
         -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo
         love.graphics.draw(mapa, 0, 0, 0, .35, .35)
-
-        Cartas.fundoCarta()
-
-        love.graphics.circle("fill", player.x, player.y, player.radius)
-        --love.graphics.draw(cardSprite,0,100)
         -- Guardinha florestal
         love.graphics.draw(guardinha, 400, 250, 0, 0.20, 0.20)
         --Desenhar os botões enquato o jogo ta rodando
         buttons.running_state.pass_rodada:draw(500, 20, 10, 10)
         buttons.running_state.exit_in_game:draw(700, 10, 10, 10)
+        --Desenhar a hitbox enquanto o jogo ta rodando
+        
         
         
     elseif game.state["menu"] then
