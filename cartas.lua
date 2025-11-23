@@ -63,9 +63,36 @@ local function posicaoBaralho(dt)
         end
     end
 end
+-- cartas e seus efeitos
+local cartasAliadas = {
+    love.graphics.newImage("sprites/carta nascente.png"),
+    love.graphics.newImage("sprites/carta 8 (clarividência).png")
+}
+
+local function cartaAliada()
+    local screenWidth = love.graphics.getWidth()
+    local screenHeight = love.graphics.getHeight()
+
+    -- posição horizontal: centralizar as duas cartas
+    local totalWidth = (CARD_WIDTH * 2) + 30  -- 30px entre elas
+    local startX = (screenWidth - totalWidth) / 2
+
+    -- posição vertical: centro pra baixo (70% da tela)
+    local posY = screenHeight * 0.70
+
+    -- desenhar as duas cartas
+    for i = 1, 2 do
+        local x = startX + (i - 1) * (CARD_WIDTH + 30)
+        local card = cartasAliadas[i]
+        love.graphics.draw(card, x, posY)
+    end
+end
+
 return {
     criarFundo = criarFundo,
     fundoCarta = fundoCarta,
     posicaoBaralho = posicaoBaralho,
-    baralhoAzul = baralhoAzul
+    baralhoAzul = baralhoAzul,
+    cartaAliada = cartaAliada
 }
+

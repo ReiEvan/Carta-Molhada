@@ -100,6 +100,8 @@ function love.draw()
         conflitos.fundoConflito()
         --love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
         love.graphics.draw(mapa, love.graphics.getWidth()/4 - 200, love.graphics.getHeight()/2 - 370, 0, .35, .35)
+        -- cartas de mão
+        Cartas.cartaAliada()
         -- Guardinha florestal
         love.graphics.draw(guardinha, 395, 220, 0, 0.20, 0.20)
         --Desenhar os botões enquato o jogo ta rodando
