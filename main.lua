@@ -1,6 +1,6 @@
 local love = require "love"
 local button = require "Button"
-local cards = require "cartas"
+local Cartas = require "Cartas"
 
 
 local agua = 5
@@ -65,6 +65,8 @@ end
 function love.load()
     love.mouse.setVisible(false)
     love.window.setTitle("Última Gota")
+--baralho azul
+    Cartas.baralhoAzul()
 --Botões da tela do menu
     buttons.menu_state.play_game = button("Iniciar", startNewGame, nil, 80, 30)
     buttons.menu_state.settings = button("Configurações", nil, nil, 120, 30)
@@ -76,6 +78,7 @@ end
 
 function love.update(dt)
     player.x, player.y = love.mouse.getPosition()
+    Cartas.posicaoBaralho(dt)
 end 
 
 -- Carregamento do mapa
@@ -93,6 +96,7 @@ function love.draw()
         --love.graphics.clear(.937,.946,.96,1) para fazer o dundo do jogo
         --love.graphics.draw(fundo, 100, 100)
         -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo
+        Cartas.fundoCarta()
         love.graphics.draw(mapa, 0, 0, 0, .35, .35)
         -- Guardinha florestal
         love.graphics.draw(guardinha, 400, 250, 0, 0.20, 0.20)

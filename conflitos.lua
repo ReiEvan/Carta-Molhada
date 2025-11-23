@@ -1,26 +1,21 @@
 local love = require "love"
 local CARD_WIDTH = 134
 local CARD_HEIGHT = 176       
-local cardSprite
 -- Fundo das cartas de conflito
-local card = {
+local conflito = {
         transform = {
             x = 0,
             y = 0,
             width = CARD_WIDTH,
-            height = CARD_HEIGHT
+            height = CARD_HEIGHT,
+            sprite= love.graphics.newImage("sprites/FUNDO CARTA VERMELHA.png")
         }
     }
 
-function love.load()
-    -- Carregar o sprite único
-    cardSprite = love.graphics.newImage("Carta-Molhada/sprites/FUNDO CARTA VERMELHA.png")
-
-function love.draw()
-    
-    love.graphics.draw(cardSprite, card.transform.x, card.transform.y)
-    end
+local function fundoConflito()
+    love.graphics.draw(conflito.sprite, conflito.transform.x, conflito.transform.y)
 end
+return fundoConflito
 -- Efeito das cartas de conflito
 
 -- local lista_conflitos{}
