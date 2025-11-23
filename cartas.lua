@@ -7,6 +7,7 @@ local CARDS_IN_BARALHO = 10
 
 -- armazenar todas as cartas
 local cards = {}
+cards._index = cards
 
 -- Estrutura p/ uma carta
 local function createCard(x, y)
