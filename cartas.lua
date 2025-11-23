@@ -17,7 +17,7 @@ local function criarFundo(x, y)
             y = y,
             width = CARD_WIDTH,
             height = CARD_HEIGHT,
-            sprite = love.graphics.newImage("Carta-Molhada/sprites/fundo carta azul-pitico.png")
+            sprite = love.graphics.newImage("sprites/fundo carta azul-pitico.png")
         }
     }
 end
