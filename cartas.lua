@@ -66,7 +66,7 @@ end
 -- cartas e seus efeitos
 local cartasAliadas = {
     love.graphics.newImage("sprites/carta nascente.png"),
-    love.graphics.newImage("sprites/carta 8 (clarividência).png")
+    love.graphics.newImage("sprites/carta 8 clarividencia.png")
 }
 
 local function cartaAliada()
