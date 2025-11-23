@@ -1,7 +1,11 @@
 local love = require "love"
 local button = require "Button"
+<<<<<<< HEAD
 local cards = require "cartas"
 
+=======
+local cartas = require "Cartas"
+>>>>>>> 8417837a621593165b72109b8adae57f4781c2fb
 
 local agua = 5
 local rodada = 1
@@ -41,10 +45,7 @@ end
 
 local function startNewGame()
     game.state["menu"] = false
-    game.state["running"] = true
-
-
-    
+    game.state["running"] = true 
 end
 
 --função para o mouse no menu e in game
@@ -79,7 +80,6 @@ end
 
 function love.update(dt)
     player.x, player.y = love.mouse.getPosition()
-
 end 
 
 -- Carregamento do mapa
@@ -90,7 +90,7 @@ local guardinha = love.graphics.newImage("sprites/Guarda Provisorio.png")
 
 function love.draw()
     love.graphics.printf("FPS: " .. love.timer.getFPS(), love.graphics.newFont(16), 10, love.graphics.getHeight() - 30, love.graphics.getWidth())
-
+    --cardSprite = love.graphics.newImage("sprites/fundo carta azul-pitico.png")
     if game.state["running"] then
         --Numeração da rodada atual
         love.graphics.print("Rodada " .. rodada, 10, 10, 0)
@@ -98,15 +98,19 @@ function love.draw()
         --love.graphics.draw(fundo, 100, 100)
         -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo
         love.graphics.draw(mapa, 0, 0, 0, .35, .35)
+<<<<<<< HEAD
 
+=======
+        love.graphics.circle("fill", player.x, player.y, player.radius)
+        --love.graphics.draw(cardSprite,0,100)
+>>>>>>> 8417837a621593165b72109b8adae57f4781c2fb
         -- Guardinha florestal
-        love.graphics.draw(guardinha, 400, 250, 0, 0.35, 0.35)
-        
+        love.graphics.draw(guardinha, 400, 250, 0, 0.20, 0.20)
         --Desenhar os botões enquato o jogo ta rodando
         buttons.running_state.pass_rodada:draw(500, 20, 10, 10)
         buttons.running_state.exit_in_game:draw(700, 10, 10, 10)
         
-        love.graphics.circle("fill", player.x, player.y, player.radius)
+        
     elseif game.state["menu"] then
         buttons.menu_state.play_game:draw(10, 20, 10, 10)
         buttons.menu_state.settings:draw(10, 70, 10, 10)
