@@ -1,6 +1,7 @@
 local love = require "love"
 local button = require "Button"
 local Cartas = require "Cartas"
+local hitbox = require "Hitbox"
 
 
 local agua = 5
@@ -31,6 +32,7 @@ local buttons = {
     running_state = {}
     
 }
+
 
 local function proxRodada()
     if rodada == rodada then
@@ -99,12 +101,13 @@ function love.draw()
         Cartas.fundoCarta()
         --love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
         love.graphics.draw(mapa, love.graphics.getWidth()/4 - 200, love.graphics.getHeight()/2 - 350, 0, .35, .35)
+        --Desenhar a hitbox enquanto o jogo ta rodando
+        hitbox.desenhar(love.graphics.getWidth()/2 + 10, love.graphics.getHeight()/2 - 235, 35)
         -- Guardinha florestal
         love.graphics.draw(guardinha, 400, 250, 0, 0.20, 0.20)
         --Desenhar os botões enquato o jogo ta rodando
         buttons.running_state.pass_rodada:draw(675, 350, 10, 10)
         buttons.running_state.exit_in_game:draw(700, 10, 10, 10)
-        --Desenhar a hitbox enquanto o jogo ta rodando
         
         love.graphics.circle("fill", player.x, player.y, player.radius)
         
