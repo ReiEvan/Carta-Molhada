@@ -1,7 +1,7 @@
 local love = require "love"
 local button = require "Button"
 local Cartas = require "Cartas"
-
+local conflitos = require "conflitos"
 
 local agua = 5
 local rodada = 1
@@ -97,10 +97,11 @@ function love.draw()
         --love.graphics.draw(fundo, 100, 100)
         -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo
         Cartas.fundoCarta()
+        conflitos.fundoConflito()
         --love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
-        love.graphics.draw(mapa, love.graphics.getWidth()/4 - 200, love.graphics.getHeight()/2 - 350, 0, .35, .35)
+        love.graphics.draw(mapa, love.graphics.getWidth()/4 - 200, love.graphics.getHeight()/2 - 370, 0, .35, .35)
         -- Guardinha florestal
-        love.graphics.draw(guardinha, 400, 250, 0, 0.20, 0.20)
+        love.graphics.draw(guardinha, 395, 220, 0, 0.20, 0.20)
         --Desenhar os botões enquato o jogo ta rodando
         buttons.running_state.pass_rodada:draw(675, 350, 10, 10)
         buttons.running_state.exit_in_game:draw(700, 10, 10, 10)
