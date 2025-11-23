@@ -66,6 +66,6 @@ end
 return {
     criarFundo = criarFundo,
     fundoCarta = fundoCarta,
-    posicaoBaralho=posicaoBaralho,
-    baralhoAzul=baralhoAzul
+    posicaoBaralho = posicaoBaralho,
+    baralhoAzul = baralhoAzul
 }
