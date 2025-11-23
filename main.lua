@@ -11,9 +11,9 @@ local deck = {}
 
 local game = {
     state = {
-        menu = true,
+        menu = false,
         paused = false,
-        running = false,
+        running = true,
         ended = false,
         
     },
@@ -92,20 +92,21 @@ function love.draw()
     --cardSprite = love.graphics.newImage("sprites/fundo carta azul-pitico.png")
      if game.state["running"] then
         --Numeração da rodada atual
-        love.graphics.print("Rodada " .. rodada, 10, 10, 0)
+        love.graphics.print("Rodada " .. rodada, 10, 550, 0)
         --love.graphics.clear(.937,.946,.96,1) para fazer o dundo do jogo
         --love.graphics.draw(fundo, 100, 100)
         -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo
         Cartas.fundoCarta()
-        love.graphics.draw(mapa, 0, 0, 0, .35, .35)
+        --love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
+        love.graphics.draw(mapa, love.graphics.getWidth()/4 - 200, love.graphics.getHeight()/2 - 350, 0, .35, .35)
         -- Guardinha florestal
         love.graphics.draw(guardinha, 400, 250, 0, 0.20, 0.20)
         --Desenhar os botões enquato o jogo ta rodando
-        buttons.running_state.pass_rodada:draw(500, 20, 10, 10)
+        buttons.running_state.pass_rodada:draw(675, 350, 10, 10)
         buttons.running_state.exit_in_game:draw(700, 10, 10, 10)
         --Desenhar a hitbox enquanto o jogo ta rodando
         
-        
+        love.graphics.circle("fill", player.x, player.y, player.radius)
         
     elseif game.state["menu"] then
         buttons.menu_state.play_game:draw(10, 20, 10, 10)
