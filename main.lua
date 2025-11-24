@@ -7,8 +7,11 @@ local ost = require "OST"
 
 
 local agua = 5
+local imagemAgua
+local escala = 0.4
 local rodada = 1
 local card_back_image
+
 
 local deck = {}
 --lista de pontos de movimentação
@@ -92,21 +95,6 @@ local button_states = {
     running = buttons.running_state
 }
 
---[[function carregarAnimacao()
-    local larguraQuadro = movGuarda.imagem:getWidth()/4
-    local alturaQuadro = movGuarda.imagem:getHeight()
-
-    for i = 1, 4 do
-        table.insert(movGuarda.quadros, love.graphics.newQuad(
-            (i-1) * larguraQuadro, 0,
-            larguraQuadro, alturaQuadro,
-            movGuarda.imagem:getDimensions()
-        ))
-        
-    end
-    
-end]]
-
 function handle_button_click(x, y, radius)
     if game.state.paused then return end
 
@@ -144,6 +132,8 @@ function love.load()
     love.window.setTitle("Última Gota")
     ost.somteste()
    
+--Imagem da agua
+    imagemAgua = love.graphics.newImage("sprites/Gota-provisoria.jpeg")
 --baralho azul
     Cartas.baralhoAzul()
 -- carregar cartas aleatórias
@@ -160,7 +150,7 @@ function love.load()
 --Guarda florestal
     movGuarda.imagem = love.graphics.newImage("sprites/Guarda Provisorio.png")
 
-    local larguraQuadro = movGuarda.imagem:getWidth()/4
+    local larguraQuadro = movGuarda.imagem:getWidth()
     local alturaQuadro = movGuarda.imagem:getHeight()
 
     movGuarda.quadros = {}
@@ -202,6 +192,13 @@ function love.draw()
     love.graphics.printf("FPS: " .. love.timer.getFPS(), love.graphics.newFont(16), 10, love.graphics.getHeight() - 30, love.graphics.getWidth())
     --cardSprite = love.graphics.newImage("sprites/fundo carta azul-pitico.png")
      if game.state["running"] then
+        --Feddback visual da quantidade de agua
+        for i = 1, agua do
+            local x = (i - 1) * (imagemAgua:getWidth() * escala + 10)
+
+            love.graphics.draw(imagemAgua, x + 135, 10, 0, escala, escala)
+            
+        end
         --Numeração da rodada atual
         love.graphics.print("Rodada " .. rodada, 10, 550, 0)
         --love.graphics.clear(.937,.946,.96,1) para fazer o dundo do jogo
@@ -238,7 +235,7 @@ function love.draw()
         Cartas.cartaAliada()
         -- Guardinha florestal
         if  movGuarda.quadros[movGuarda.frameAtual] then
-        love.graphics.draw(movGuarda.imagem, movGuarda.quadros[movGuarda.frameAtual], movGuarda.x-20, movGuarda.y-20)
+        love.graphics.draw(movGuarda.imagem, movGuarda.quadros[movGuarda.frameAtual], movGuarda.x-20, movGuarda.y-20, 0, 0.2, 0.2)
         else
             love.graphics.draw(movGuarda.imagem, movGuarda.x-20, movGuarda.y-20)
         end
