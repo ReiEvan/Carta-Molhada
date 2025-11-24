@@ -165,22 +165,24 @@ function love.load()
 end
 
 function love.update(dt)
-    player.x, player.y = love.mouse.getPosition()
-    Cartas.posicaoBaralho(dt)
-    if movGuarda.destino then
-        local dx = movGuarda.destino.x - movGuarda.x
-        local dy = movGuarda.destino.y - movGuarda.y
-        local distancia = math.sqrt(dx*dx + dy*dy)
-
-        if distancia > movGuarda.velocidade * dt then
-            local direcao = {dx = dx/distancia, dy = dy/distancia}
-            movGuarda.x = movGuarda.x + direcao.dx * movGuarda.velocidade * dt
-            movGuarda.y = movGuarda.y + direcao.dy * movGuarda.velocidade * dt
-        else
-            movGuarda.x = movGuarda.destino.x
-            movGuarda.y = movGuarda.destino.y
-            movGuarda.destino = nil
-            
+    if not game.state["paused"] then
+        player.x, player.y = love.mouse.getPosition()
+        Cartas.posicaoBaralho(dt)
+        if movGuarda.destino then
+            local dx = movGuarda.destino.x - movGuarda.x
+            local dy = movGuarda.destino.y - movGuarda.y
+            local distancia = math.sqrt(dx*dx + dy*dy)
+    
+            if distancia > movGuarda.velocidade * dt then
+                local direcao = {dx = dx/distancia, dy = dy/distancia}
+                movGuarda.x = movGuarda.x + direcao.dx * movGuarda.velocidade * dt
+                movGuarda.y = movGuarda.y + direcao.dy * movGuarda.velocidade * dt
+            else
+                movGuarda.x = movGuarda.destino.x
+                movGuarda.y = movGuarda.destino.y
+                movGuarda.destino = nil
+                
+            end
         end
     end
 end 
@@ -208,7 +210,6 @@ function love.draw()
         -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo
         Cartas.fundoCarta()
         conflitos.fundoConflito()
-        --love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
         love.graphics.draw(mapa, love.graphics.getWidth()/4 - 200, love.graphics.getHeight()/2 - 370, 0, .35, .35)
         --Desenhar a hitbox enquanto o jogo ta rodando
         hitbox.desenhar(love.graphics.getWidth()/2 + 15, love.graphics.getHeight()/2 - 245, 45)
@@ -253,10 +254,20 @@ function love.draw()
         love.graphics.circle("fill", player.x, player.y, player.radius)
     end
 
+    if game.state["paused"] then
+        love.graphics.setColor(0,0,0.1)
+        love.graphics.rectangle("fill",0 ,0, love.graphics.getWidth(), love.graphics.getHeight())
+        love.graphics.setColor(0,1,1)
+        love.graphics.print("Pausado\nPressione ESC para continuar!", love.graphics.getWidth()/2 - 100, love.graphics.getHeight()/2)
+    end
+
 end
 function love.keypressed(key)
     if key == "space" then
         Cartas.escolherCartasAleatorias()
+    end
+    if key == "escape" then
+        game.state["paused"] = not game.state["paused"]
     end
 end
 
