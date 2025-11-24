@@ -10,6 +10,45 @@ local rodada = 1
 local card_back_image
 
 local deck = {}
+--lista de pontos de movimentação
+local pontosMovimentação = {
+
+    {x = love.graphics.getWidth()/2 + 15, y = love.graphics.getHeight()/2 - 245, raio = 45},
+    {x = love.graphics.getWidth()/2 + 15, y = love.graphics.getHeight()/2 - 145, raio = 45},
+    {x = love.graphics.getWidth()/2 + 15, y = love.graphics.getHeight()/2 - 45, raio = 45},
+    {x = love.graphics.getWidth()/2 + 15, y = love.graphics.getHeight()/2 + 55, raio = 45},
+    {x = love.graphics.getWidth()/2 + 15, y = love.graphics.getHeight()/2 + 155, raio = 45},
+    {x = love.graphics.getWidth()/2 + 190, y = love.graphics.getHeight()/2 - 145, raio = 45},
+    {x = love.graphics.getWidth()/2 + 190, y = love.graphics.getHeight()/2 - 45, raio = 45},
+    {x = love.graphics.getWidth()/2 + 190, y = love.graphics.getHeight()/2 + 55, raio = 45},
+    {x = love.graphics.getWidth()/2 - 160, y = love.graphics.getHeight()/2 - 145, raio = 45},
+    {x = love.graphics.getWidth()/2 - 160, y = love.graphics.getHeight()/2 - 45, raio = 45},
+    {x = love.graphics.getWidth()/2 - 160, y = love.graphics.getHeight()/2 + 55, raio = 45},
+    {x = love.graphics.getWidth()/2 + 100, y = love.graphics.getHeight()/2 - 195, raio = 45},
+    {x = love.graphics.getWidth()/2 + 100, y = love.graphics.getHeight()/2 - 95, raio = 45},
+    {x = love.graphics.getWidth()/2 + 100, y = love.graphics.getHeight()/2 + 5, raio = 45},
+    {x = love.graphics.getWidth()/2 + 100, y = love.graphics.getHeight()/2 + 105, raio = 45},
+    {x = love.graphics.getWidth()/2 + 100, y = love.graphics.getHeight()/2 + 205, raio = 45},
+    {x = love.graphics.getWidth()/2 - 75, y = love.graphics.getHeight()/2 - 195, raio = 45},
+    {x = love.graphics.getWidth()/2 - 75, y = love.graphics.getHeight()/2 - 95, raio = 45},
+    {x = love.graphics.getWidth()/2 - 75, y = love.graphics.getHeight()/2 + 5, raio = 45},
+    {x = love.graphics.getWidth()/2 - 75, y = love.graphics.getHeight()/2 + 105, raio = 45}
+
+}
+
+--Estado do guarda (onde ele está)
+local movGuarda = {
+    x = pontosMovimentação[3].x,
+    y = pontosMovimentação[3].y,
+    imagem = love.graphics.newImage("sprites/Guarda Provisorio.png"),
+    destino = nil,
+    velocidade = 200,
+    raioColisão = 30,
+    interagindo = false,
+    direcao = "direita",
+    frameAtual = 1,
+    quadros = {}
+}
 
 local game = {
     state = {
@@ -47,21 +86,55 @@ local function startNewGame()
     game.state["running"] = true 
 end
 
+local button_states = {
+    menu = buttons.menu_state,
+    running = buttons.running_state
+}
+
+--[[function carregarAnimacao()
+    local larguraQuadro = movGuarda.imagem:getWidth()/4
+    local alturaQuadro = movGuarda.imagem:getHeight()
+
+    for i = 1, 4 do
+        table.insert(movGuarda.quadros, love.graphics.newQuad(
+            (i-1) * larguraQuadro, 0,
+            larguraQuadro, alturaQuadro,
+            movGuarda.imagem:getDimensions()
+        ))
+        
+    end
+    
+end]]
+
+function handle_button_click(x, y, radius)
+    if game.state.paused then return end
+
+    local current_state = game.state.menu and "menu" or game.state.running and "running"
+
+    if current_state and button_states[current_state] then
+        for _, button in pairs(button_states[current_state]) do
+            button:checkPressed(x, y, radius)
+            
+        end
+    end
+    
+end
+
 --função para o mouse no menu e in game
 function love.mousepressed(x, y, button, isTouch, presses)
-    if not game.state["paused"] then
-        if button == 1 then
-            if game.state["menu"] then
-                for index in pairs(buttons.menu_state) do
-                    buttons.menu_state[index] : checkPressed(x, y, player.radius)
-                end
-            elseif game.state["running"] then
-                    for index in pairs(buttons.running_state) do
-                        buttons.running_state[index] : checkPressed(x, y, player.radius)
-                end
-            end
+    if button == 1 then
+        --verfica colisão com cada ponto de movimentação
+        for _, ponto in ipairs(pontosMovimentação) do
+        local distancia = math.sqrt((ponto.x - x)^2 + (ponto.y - y)^2)
+            if distancia <= ponto.raio then
+            movGuarda.destino = {x = ponto.x, y = ponto.y}
+            return
         end
-    end   
+    end
+
+    handle_button_click(x, y, player.radius)
+    end
+
 end
 
 
@@ -77,18 +150,47 @@ function love.load()
 --Botões no jogo rodando
     buttons.running_state.pass_rodada = button("Passar Rodada", proxRodada, nil, 120, 30)
     buttons.running_state.exit_in_game = button("Sair", love.event.quit, nil, 80, 30)
+
+--Guarda florestal
+    movGuarda.imagem = love.graphics.newImage("sprites/Guarda Provisorio.png")
+
+    local larguraQuadro = movGuarda.imagem:getWidth()/4
+    local alturaQuadro = movGuarda.imagem:getHeight()
+
+    movGuarda.quadros = {}
+    for i = 1, 4 do
+        table.insert(movGuarda.quadros, love.graphics.newQuad(
+            (i-1) * larguraQuadro, 0,
+            larguraQuadro, alturaQuadro,
+            movGuarda.imagem:getDimensions()
+        ))
+        
+    end
 end
 
 function love.update(dt)
     player.x, player.y = love.mouse.getPosition()
     Cartas.posicaoBaralho(dt)
+    if movGuarda.destino then
+        local dx = movGuarda.destino.x - movGuarda.x
+        local dy = movGuarda.destino.y - movGuarda.y
+        local distancia = math.sqrt(dx*dx + dy*dy)
+
+        if distancia > movGuarda.velocidade * dt then
+            local direcao = {dx = dx/distancia, dy = dy/distancia}
+            movGuarda.x = movGuarda.x + direcao.dx * movGuarda.velocidade * dt
+            movGuarda.y = movGuarda.y + direcao.dy * movGuarda.velocidade * dt
+        else
+            movGuarda.x = movGuarda.destino.x
+            movGuarda.y = movGuarda.destino.y
+            movGuarda.destino = nil
+            
+        end
+    end
 end 
 
 -- Carregamento do mapa
 local mapa = love.graphics.newImage("sprites/mapagradeado.png")
--- Sprite do guardinha
-local guardinha = love.graphics.newImage("sprites/Guarda Provisorio.png")
---cartas do jogo
 
 function love.draw()
     love.graphics.printf("FPS: " .. love.timer.getFPS(), love.graphics.newFont(16), 10, love.graphics.getHeight() - 30, love.graphics.getWidth())
@@ -97,6 +199,8 @@ function love.draw()
         --Numeração da rodada atual
         love.graphics.print("Rodada " .. rodada, 10, 550, 0)
         --love.graphics.clear(.937,.946,.96,1) para fazer o dundo do jogo
+        --Saber a posição do mouse
+        love.graphics.print("Mouse x: " .. love.mouse.getX() .. " y: " .. love.mouse.getY(), 500, 10, 0)
         --love.graphics.draw(fundo, 100, 100)
         -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo
         Cartas.fundoCarta()
@@ -127,7 +231,11 @@ function love.draw()
         -- cartas de mão
         Cartas.cartaAliada()
         -- Guardinha florestal
-        love.graphics.draw(guardinha, 395, 220, 0, 0.20, 0.20)
+        if  movGuarda.quadros[movGuarda.frameAtual] then
+        love.graphics.draw(movGuarda.imagem, movGuarda.quadros[movGuarda.frameAtual], movGuarda.x-20, movGuarda.y-20)
+        else
+            love.graphics.draw(movGuarda.imagem, movGuarda.x-20, movGuarda.y-20)
+        end
         --Desenhar os botões enquato o jogo ta rodando
         buttons.running_state.pass_rodada:draw(675, 350, 10, 10)
         buttons.running_state.exit_in_game:draw(700, 10, 10, 10)
