@@ -257,4 +257,9 @@ function love.draw()
     end
 
 end
+function love.keypressed(key)
+    if key == "space" then
+        Cartas.escolherCartasAleatorias()
+    end
+end
 

@@ -67,8 +67,8 @@ end
 local todasAliadas = {
      love.graphics.newImage("sprites/carta nascente.png"),
      love.graphics.newImage("sprites/carta 8 clarividencia.png"),
-     love.graphics.newImage("sprite/carta mov livre.png"),
-     love.graphics.newImage("sprite/carta dourada.png")
+     love.graphics.newImage("sprites/carta mov livre.png"),
+     love.graphics.newImage("sprites/carta dourada.png")
      
 }
 local cartaRodada = {}
