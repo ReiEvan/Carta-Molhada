@@ -3,6 +3,7 @@ local button = require "Button"
 local Cartas = require "Cartas"
 local conflitos = require "conflitos"
 local hitbox = require "Hitbox"
+local ost = require "OST"
 
 
 local agua = 5
@@ -52,9 +53,9 @@ local movGuarda = {
 
 local game = {
     state = {
-        menu = false,
+        menu = true,
         paused = false,
-        running = true,
+        running =false,
         ended = false,
         
     },
@@ -141,6 +142,8 @@ end
 function love.load()
     love.mouse.setVisible(false)
     love.window.setTitle("Última Gota")
+    ost.somteste()
+   
 --baralho azul
     Cartas.baralhoAzul()
 --Botões da tela do menu
