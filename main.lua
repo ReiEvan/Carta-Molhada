@@ -146,6 +146,9 @@ function love.load()
    
 --baralho azul
     Cartas.baralhoAzul()
+-- carregar cartas aleatórias
+    love.math.setRandomSeed(os.time())
+    Cartas.escolherCartasAleatorias()
 --Botões da tela do menu
     buttons.menu_state.play_game = button("Iniciar", startNewGame, nil, 80, 30)
     buttons.menu_state.settings = button("Configurações", nil, nil, 120, 30)

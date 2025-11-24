@@ -64,10 +64,37 @@ local function posicaoBaralho(dt)
     end
 end
 -- cartas e seus efeitos
-local cartasAliadas = {
-    love.graphics.newImage("sprites/carta nascente.png"),
-    love.graphics.newImage("sprites/carta 8 clarividencia.png")
+local todasAliadas = {
+     love.graphics.newImage("sprites/carta nascente.png"),
+     love.graphics.newImage("sprites/carta 8 clarividencia.png"),
+     love.graphics.newImage("sprite/carta mov livre.png"),
+     love.graphics.newImage("sprite/carta dourada.png")
+     
 }
+local cartaRodada = {}
+
+
+local function escolherCartasAleatorias()
+    cartaRodada = {}--limpa a lista antes
+
+    --cópia da lista original
+    local copia = {}
+    for i = 1, #todasAliadas do
+        copia[i] = todasAliadas[i]
+    end
+
+    --embaralhar a cópia 
+    for i = #copia, 2, -1 do
+        local j = love.math.random(1, i)
+        copia[i], copia[j] = copia[j], copia[i]
+    end
+
+    --pega as cartas, garantindo que são diferentes
+    cartaRodada[1] = copia[1]
+    cartaRodada[2] = copia[2]
+end
+
+
 
 local function cartaAliada()
     local screenWidth = love.graphics.getWidth()
@@ -83,7 +110,7 @@ local function cartaAliada()
     -- desenhar as duas cartas
     for i = 1, 2 do
         local x = startX + (i - 1) * (CARD_WIDTH + 30)
-        local card = cartasAliadas[i]
+        local card = cartaRodada[i]
         love.graphics.draw(card, x, posY)
     end
 end
@@ -93,6 +120,7 @@ return {
     fundoCarta = fundoCarta,
     posicaoBaralho = posicaoBaralho,
     baralhoAzul = baralhoAzul,
-    cartaAliada = cartaAliada
+    cartaAliada = cartaAliada,
+    escolherCartasAleatorias = escolherCartasAleatorias
 }
 
