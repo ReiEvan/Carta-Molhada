@@ -164,7 +164,6 @@ function love.load()
 end
 
 function love.update(dt)
-<<<<<<< HEAD
     player.x, player.y = love.mouse.getPosition()
     cartas.reposicionarBaralho()
     cartas.atualizarInteracaoCartas(dt)
@@ -182,26 +181,6 @@ function love.update(dt)
             movGuarda.y = movGuarda.destino.y
             movGuarda.destino = nil
             
-=======
-    if not game.state["paused"] then
-        player.x, player.y = love.mouse.getPosition()
-        Cartas.posicaoBaralho(dt)
-        if movGuarda.destino then
-            local dx = movGuarda.destino.x - movGuarda.x
-            local dy = movGuarda.destino.y - movGuarda.y
-            local distancia = math.sqrt(dx*dx + dy*dy)
-    
-            if distancia > movGuarda.velocidade * dt then
-                local direcao = {dx = dx/distancia, dy = dy/distancia}
-                movGuarda.x = movGuarda.x + direcao.dx * movGuarda.velocidade * dt
-                movGuarda.y = movGuarda.y + direcao.dy * movGuarda.velocidade * dt
-            else
-                movGuarda.x = movGuarda.destino.x
-                movGuarda.y = movGuarda.destino.y
-                movGuarda.destino = nil
-                
-            end
->>>>>>> 1ccea91f6a604a0ddce501c5773e624e97867fb5
         end
     end
 end 
@@ -283,7 +262,7 @@ function love.draw()
 end
 function love.keypressed(key)
     if key == "space" then
-        Cartas.escolherCartasAleatorias()
+        cartas.escolherCartasAleatorias()
     end
     if key == "escape" then
         game.state["paused"] = not game.state["paused"]
