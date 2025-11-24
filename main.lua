@@ -1,6 +1,6 @@
 local love = require "love"
 local button = require "Button"
-local Cartas = require "Cartas"
+local cartas = require "cartas"
 local conflitos = require "conflitos"
 local hitbox = require "Hitbox"
 local ost = require "OST"
@@ -145,10 +145,9 @@ function love.load()
     ost.somteste()
    
 --baralho azul
-    Cartas.baralhoAzul()
--- carregar cartas aleatórias
-    love.math.setRandomSeed(os.time())
-    Cartas.escolherCartasAleatorias()
+     cartas.construirBaralho()
+-- carregar cartas aleatórias     
+    cartas.selecionarCartasRodada()
 --Botões da tela do menu
     buttons.menu_state.play_game = button("Iniciar", startNewGame, nil, 80, 30)
     buttons.menu_state.settings = button("Configurações", nil, nil, 120, 30)
@@ -176,7 +175,8 @@ end
 
 function love.update(dt)
     player.x, player.y = love.mouse.getPosition()
-    Cartas.posicaoBaralho(dt)
+    cartas.reposicionarBaralho()
+    cartas.atualizarInteracaoCartas(dt)
     if movGuarda.destino then
         local dx = movGuarda.destino.x - movGuarda.x
         local dy = movGuarda.destino.y - movGuarda.y
@@ -209,7 +209,8 @@ function love.draw()
         love.graphics.print("Mouse x: " .. love.mouse.getX() .. " y: " .. love.mouse.getY(), 500, 10, 0)
         --love.graphics.draw(fundo, 100, 100)
         -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo
-        Cartas.fundoCarta()
+        cartas.desenharBaralho()
+        
         conflitos.fundoConflito()
         --love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
         love.graphics.draw(mapa, love.graphics.getWidth()/4 - 200, love.graphics.getHeight()/2 - 370, 0, .35, .35)
@@ -234,8 +235,7 @@ function love.draw()
         hitbox.desenhar(love.graphics.getWidth()/2 - 75, love.graphics.getHeight()/2 - 95, 45)
         hitbox.desenhar(love.graphics.getWidth()/2 - 75, love.graphics.getHeight()/2 + 5, 45)
         hitbox.desenhar(love.graphics.getWidth()/2 - 75, love.graphics.getHeight()/2 + 105, 45)
-        -- cartas de mão
-        Cartas.cartaAliada()
+        cartas.desenharCartasRodada()
         -- Guardinha florestal
         if  movGuarda.quadros[movGuarda.frameAtual] then
         love.graphics.draw(movGuarda.imagem, movGuarda.quadros[movGuarda.frameAtual], movGuarda.x-20, movGuarda.y-20)
