@@ -5,14 +5,19 @@ local conflitos = require "conflitos"
 local hitbox = require "Hitbox"
 local ost = require "OST"
 
-
-local agua = 5
-local imagemAgua
-local escala = 0.4
+local movimento={
+        mx=10,
+        my=200
+}
+local agua = 3
+local imagemAgua={
+        ficha=love.graphics.newImage("sprites/ficha gota.png"),
+        fx=movimento.mx+10, fy=movimento.my+20     
+}
+local escala = 0.5
 local rodada = 1
 local card_back_image
-
-
+local fonte= {}
 local hexAtivos = {}
 local hexVermelho = love.graphics.newImage("sprites/HEXÁGONO-Vermelho.png")
 local hexMarrom = love.graphics.newImage("sprites/HEXÁGONO-Marrom.png")
@@ -66,9 +71,9 @@ local movGuarda = {
 
 local game = {
     state = {
-        menu = true,
+        menu = false,
         paused = false,
-        running =false,
+        running =true,
         ended = false,
         
     },
@@ -171,6 +176,9 @@ end
 function love.load()
     love.mouse.setVisible(false)
     love.window.setTitle("Última Gota")
+    fonte.grande=love.graphics.newFont(40)
+    fonte.normal = love.graphics.newFont(13)
+    love.graphics.setFont(fonte.normal)
     ost.somteste()
     --Botões da tela do menu
         buttons.menu_state.play_game = button("Iniciar", startNewGame, nil, 80, 30)
@@ -179,8 +187,7 @@ function love.load()
     --Botões no jogo rodando
         buttons.running_state.pass_rodada = button("Passar Rodada", proxRodada, nil, 120, 30)
         buttons.running_state.exit_in_game = button("Sair", love.event.quit, nil, 80, 30)
---Imagem da agua
-    imagemAgua = love.graphics.newImage("sprites/Gota-provisoria.jpeg")
+
     --Iniciar o jogo com os Hex vermelhos
         for i = 1, #pontosMovimentação do
             if i ~= 3 then
@@ -242,17 +249,16 @@ function love.draw()
     --Contagem do FPS
     love.graphics.printf("FPS: " .. love.timer.getFPS(), love.graphics.newFont(16),
     10, love.graphics.getHeight() - 30, love.graphics.getWidth())
-    --cardSprite = love.graphics.newImage("sprites/fundo carta azul-pitico.png")
      if game.state["running"] then
         --Movimentos Restantes
-        love.graphics.print("Movimentos: " .. movimentosRestantes, 10, 200, 0)
+        love.graphics.print("Movimentos: " .. movimentosRestantes, movimento.mx, movimento.my, 0)
         --Feddback visual da quantidade de agua
-        for i = 1, agua do
-            local x = (i - 1) * (imagemAgua:getWidth() * escala + 10)
-
-            love.graphics.draw(imagemAgua, x + 135, 10, 0, escala, escala)
-            
-        end
+        love.graphics.draw(imagemAgua.ficha, imagemAgua.fx, imagemAgua.fy, 0, escala, escala)
+        love.graphics.setColor(255, 255, 255)
+        love.graphics.setFont(fonte.grande)  
+        love.graphics.print(tostring(agua), imagemAgua.fx+40, imagemAgua.fy+8)
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.setFont(fonte.normal)  
         --Numeração da rodada atual
         love.graphics.print("Rodada " .. rodada, 10, 550, 0)
         --love.graphics.clear(.937,.946,.96,1) para fazer o dundo do jogo
@@ -281,6 +287,7 @@ function love.draw()
                 end
                 
             end
+        
         cartas.desenharBaralho()
         conflitos.fundoConflito()
         --Desenhar a hitbox enquanto o jogo ta rodando
