@@ -71,24 +71,32 @@ local todasAliadas = {
 
     {
         img = love.graphics.newImage("sprites/carta 8 clarividencia.png"),
-        descricao = "Clarividência\nDescubra qual será o conflito do próximo turno."
+        descricao = 
+        "Clarividência\nDescubra qual será o\n".. 
+        "conflito do próximo turno."
     },
 
     {
         img = love.graphics.newImage("sprites/carta mov livre.png"),
         descricao =
             "Movimento Livre\n" ..
-            "Use esta carta para se mover para qualquer espaço sem gastar uma ação\n" ..
-            "(mantendo a regra de não passar para uma área vermelha sem passar por uma verde antes)."
+            "Use esta carta para se \n".. 
+            "mover para qualquer espaço\n".. 
+            "sem gastar uma ação\n" ..
+            "(mantendo a regra de \n".. 
+            "movimento padrão"
     },
 
     {
         img = love.graphics.newImage("sprites/carta dourada.png"),
         descricao =
             "Carta Dourada\n" ..
-            "Escolha uma área verde (exceto o ponto de origem).\n" ..
-            "Ela não pode ser perdida por cartas de conflito,\n" ..
-            "exceto se restar apenas ela e o ponto de origem."
+            "Escolha uma área verde\n".. 
+            "(exceto o ponto de origem).\n" ..
+            "Ela não pode ser perdida \n".. 
+            "por cartas de conflito,\n" ..
+            "exceto se restar apenas ela\n".. 
+            "e o ponto de origem."
     }
 }
 
@@ -141,7 +149,7 @@ local function atualizarInteracaoCartas(dt)
 end
 
 -----------------------------------------------------
--- DESENHAR AS CARTAS DA RODADA
+-- DESENHAR AS CARTAS DA RODADA (COM DESCRIÇÃO À ESQ/DIR E TÍTULO COLORIDO)
 -----------------------------------------------------
 local function desenharCartasRodada()
     local screenWidth = love.graphics.getWidth()
@@ -159,15 +167,46 @@ local function desenharCartasRodada()
 
         local offset = (hoverIndex == i) and -HOVER_OFFSET or 0
 
+        -- desenhar carta
         love.graphics.draw(card.img, x, y + offset)
 
+        -- descrição somente da carta com hover
         if hoverIndex == i then
+            local texto = card.descricao
+
+            local textoX
+            if i == 1 then
+                textoX = x - 220
+            else
+                textoX = x + CARD_WIDTH + 20
+            end
+
+            --------------------------------------------------------
+            -- 🔵 Separar título (1ª linha) e corpo do texto
+            --------------------------------------------------------
+            local titulo, corpo = texto:match("([^\n]+)\n?(.*)")
+
+            -- 🎨 desenhar o título colorido
+            love.graphics.setColor(0.2, 0.4, 1, 1)
             love.graphics.printf(
-                card.descricao,
-                x + CARD_WIDTH + 20,
+                titulo,
+                textoX,
                 y + offset + 20,
                 300
             )
+
+            -- reset da cor
+            love.graphics.setColor(1, 1, 1, 1)
+
+            -- desenhar corpo abaixo
+            if corpo ~= nil and corpo ~= "" then
+                love.graphics.printf(
+                    corpo,
+                    textoX,
+                    y + offset + 40,
+                    300
+                )
+            end
         end
     end
 end

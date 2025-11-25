@@ -131,7 +131,6 @@ function love.load()
     love.mouse.setVisible(false)
     love.window.setTitle("Última Gota")
     ost.somteste()
-   
 --Imagem da agua
     imagemAgua = love.graphics.newImage("sprites/Gota-provisoria.jpeg")
 --baralho azul
@@ -262,7 +261,7 @@ function love.draw()
 end
 function love.keypressed(key)
     if key == "space" then
-        cartas.escolherCartasAleatorias()
+        cartas.selecionarCartasRodada()
     end
     if key == "escape" then
         game.state["paused"] = not game.state["paused"]
