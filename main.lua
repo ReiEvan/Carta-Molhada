@@ -10,6 +10,8 @@ local agua = 5
 local imagemAgua
 local escala = 0.4
 local rodada = 1
+
+
 local card_back_image
 
 
@@ -23,6 +25,7 @@ local pontosBloqueados = {}
 
 
 local movimentosRestantes = 2
+local acoesRestantes = 4
 
 local deck = {}
 --lista de pontos de movimentação
@@ -32,14 +35,14 @@ local pontosMovimentação = {
     {x = love.graphics.getWidth()/2 + 15, y = love.graphics.getHeight()/2 - 145, raio = 45},
     {x = love.graphics.getWidth()/2 + 15, y = love.graphics.getHeight()/2 - 45, raio = 45},
     {x = love.graphics.getWidth()/2 + 15, y = love.graphics.getHeight()/2 + 55, raio = 45},
-    {x = love.graphics.getWidth()/2 + 15, y = love.graphics.getHeight()/2 + 155, raio = 45},
+    {x = love.graphics.getWidth()/2 + 15, y = love.graphics.getHeight()/2 + 155, raio = 45},--5
     {x = love.graphics.getWidth()/2 + 190, y = love.graphics.getHeight()/2 - 145, raio = 45},
-    {x = love.graphics.getWidth()/2 + 190, y = love.graphics.getHeight()/2 - 45, raio = 45},
+    {x = love.graphics.getWidth()/2 + 190, y = love.graphics.getHeight()/2 - 45, raio = 45},--7
     {x = love.graphics.getWidth()/2 + 190, y = love.graphics.getHeight()/2 + 55, raio = 45},
     {x = love.graphics.getWidth()/2 - 160, y = love.graphics.getHeight()/2 - 145, raio = 45},
-    {x = love.graphics.getWidth()/2 - 160, y = love.graphics.getHeight()/2 - 45, raio = 45},
+    {x = love.graphics.getWidth()/2 - 160, y = love.graphics.getHeight()/2 - 45, raio = 45},--10
     {x = love.graphics.getWidth()/2 - 160, y = love.graphics.getHeight()/2 + 55, raio = 45},
-    {x = love.graphics.getWidth()/2 + 100, y = love.graphics.getHeight()/2 - 195, raio = 45},
+    {x = love.graphics.getWidth()/2 + 100, y = love.graphics.getHeight()/2 - 195, raio = 45},--12
     {x = love.graphics.getWidth()/2 + 100, y = love.graphics.getHeight()/2 - 95, raio = 45},
     {x = love.graphics.getWidth()/2 + 100, y = love.graphics.getHeight()/2 + 5, raio = 45},
     {x = love.graphics.getWidth()/2 + 100, y = love.graphics.getHeight()/2 + 105, raio = 45},
@@ -50,10 +53,34 @@ local pontosMovimentação = {
 
 }
 
+--Pontos adjascentes dos Hex
+local pontosAdjascentes = {
+    [1] = {2,12,16},
+    [2] = {1,3,12,13,16,17},
+    [3] = {2,4,13,14,17,18},
+    [4] = {3,5,14,15,18,19},
+    [5] = {4,15,19},
+    [6] = {7,12,13},
+    [7] = {6,8,13,14},
+    [8] = {7,14,15},
+    [9] = {10,16,17},
+    [10] = {9,11,17,18},
+    [11] = {10,18,19},
+    [12] = {1,2,6,13},
+    [13] = {2,3,6,7,12,14},
+    [14] = {3,4,7,8,13,15},
+    [15] = {4,5,8,14},
+    [16] = {1,2,9,17},
+    [17] = {2,3,9,10,16,18},
+    [18] = {3,4,10,11,17,19},
+    [19] = {4,5,11,18}
+}
+
 --Estado do guarda (onde ele está)
 local movGuarda = {
     x = pontosMovimentação[3].x,
     y = pontosMovimentação[3].y,
+    indiceAtual = 3,
     imagem = love.graphics.newImage("sprites/Guarda Provisorio.png"),
     destino = nil,
     velocidade = 200,
@@ -63,6 +90,55 @@ local movGuarda = {
     frameAtual = 1,
     quadros = {}
 }
+
+-- Funcao auxiliar para encontrar um valor em uma lista (substitui table.find)
+local function findInTable(t, value)
+    for i, v in ipairs(t) do
+        if v == value then
+            return i
+        end
+    end
+    return nil
+end
+
+local function ehAdjascente(origem, destino)
+    return pontosAdjascentes[origem] and findInTable(pontosAdjascentes[origem], destino) ~= nil 
+end
+
+local function movimentoPermitido(origem, destino)
+    if not ehAdjascente(origem, destino) then
+        return false
+    end
+--Estado atual e do destino
+    local estadoAtual = hexAtivos[origem]
+    local estadoDestino = hexAtivos[destino]
+--Se está em uma zona nil, pode se mover para o vermelho
+    if estadoAtual == nil then
+        return estadoDestino == 1
+    end
+--Se está em uma zona vermelha ou marrom, não pode mover para o vermelho
+    if estadoDestino == 1 then
+        return false
+    end
+--Se chegou aqui pode mover para vazio ou marrom
+    return true
+end
+--Estados possiveis do hexagono
+--nil: vazio (permitido)
+--1: vermelho (permitido)
+--2: marrom (não permitido)
+local function atualizarEstadosHexagonos(indice)
+    if hexAtivos[indice] == 1 then
+        --hexagono vermelho
+        return true
+    elseif hexAtivos[indice] == 2 then
+        --hexagono marrom
+        return false
+    else
+        return true
+    end  
+end
+
 
 local game = {
     state = {
@@ -138,23 +214,31 @@ end
 --função para o mouse no menu e in game
 function love.mousepressed(x, y, button, isTouch, presses)
     if button == 1 and not game.state["paused"] then
+
+        --Garante que o guarda não está em movimento
+        if movGuarda.destino ~= nil then
+            return
+        end
+
+        local origem = movGuarda.indiceAtual
         --verfica colisão com cada ponto de movimentação
         for i, ponto in ipairs(pontosMovimentação) do
         local distancia = math.sqrt((ponto.x - x)^2 + (ponto.y - y)^2)
             if distancia <= ponto.raio then
-                if movimentosRestantes > 0 then
+                local indiceDestino = i
+                if movimentosRestantes > 0 and movimentoPermitido(origem, indiceDestino) then
             movGuarda.destino = {x = ponto.x, y = ponto.y}
             movimentosRestantes = movimentosRestantes - 1
             --Atualiza o estado da imagem num ponto
-            if not pontosBloqueados[i] then
-            if not hexAtivos[i] then
-                hexAtivos[i] = 1
-                estadoTransformacao[i] = false
-                rodadasPorPonto[i] = 0 
-            elseif hexAtivos[i] == 1 then
-                hexAtivos[i] = 2
-                estadoTransformacao[i] = true
-                rodadasPorPonto[i] = 0
+            if not pontosBloqueados[indiceDestino] then
+            if not hexAtivos[indiceDestino] then
+                hexAtivos[indiceDestino] = 1
+                estadoTransformacao[indiceDestino] = false
+                rodadasPorPonto[indiceDestino] = 0 
+            elseif hexAtivos[indiceDestino] == 1 then
+                hexAtivos[indiceDestino] = 2
+                estadoTransformacao[indiceDestino] = true
+                rodadasPorPonto[indiceDestino] = 0
             end
         end
         end
@@ -199,6 +283,10 @@ function love.load()
 --Guarda florestal
     movGuarda.imagem = love.graphics.newImage("sprites/Guarda Provisorio.png")
 
+        --Configura a posição inicial do guarda
+    movGuarda.x = pontosMovimentação[movGuarda.indiceAtual].x
+    movGuarda.y = pontosMovimentação[movGuarda.indiceAtual].y
+
     local larguraQuadro = movGuarda.imagem:getWidth()
     local alturaQuadro = movGuarda.imagem:getHeight()
 
@@ -229,6 +317,17 @@ function love.update(dt)
         else
             movGuarda.x = movGuarda.destino.x
             movGuarda.y = movGuarda.destino.y
+            
+            for i, ponto in ipairs(pontosMovimentação) do
+                if math.abs(ponto.x - movGuarda.x) < 5 and
+                    math.abs(ponto.y - movGuarda.y) < 5 then
+                        movGuarda.indiceAtual = i
+                    break
+                end
+                
+            end
+            
+            
             movGuarda.destino = nil
             
         end
@@ -246,6 +345,8 @@ function love.draw()
      if game.state["running"] then
         --Movimentos Restantes
         love.graphics.print("Movimentos: " .. movimentosRestantes, 10, 200, 0)
+        --Ações Restantes
+        love.graphics.print("Ações: " .. acoesRestantes, 10, 220,0)
         --Feddback visual da quantidade de agua
         for i = 1, agua do
             local x = (i - 1) * (imagemAgua:getWidth() * escala + 10)
