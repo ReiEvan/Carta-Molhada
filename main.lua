@@ -11,6 +11,8 @@ local imagemAgua
 local escala = 0.4
 local rodada = 1
 local card_back_image
+local hexVermelho = {}
+local escalaHex = 0.1111
 
 
 local deck = {}
@@ -32,7 +34,6 @@ local pontosMovimentação = {
     {x = love.graphics.getWidth()/2 + 100, y = love.graphics.getHeight()/2 - 95, raio = 45},
     {x = love.graphics.getWidth()/2 + 100, y = love.graphics.getHeight()/2 + 5, raio = 45},
     {x = love.graphics.getWidth()/2 + 100, y = love.graphics.getHeight()/2 + 105, raio = 45},
-    {x = love.graphics.getWidth()/2 + 100, y = love.graphics.getHeight()/2 + 205, raio = 45},
     {x = love.graphics.getWidth()/2 - 75, y = love.graphics.getHeight()/2 - 195, raio = 45},
     {x = love.graphics.getWidth()/2 - 75, y = love.graphics.getHeight()/2 - 95, raio = 45},
     {x = love.graphics.getWidth()/2 - 75, y = love.graphics.getHeight()/2 + 5, raio = 45},
@@ -160,6 +161,8 @@ function love.load()
         ))
         
     end
+    --Filtro dos Hex Vermelhos
+    hexVermelho = love.graphics.newImage("sprites/HEXÁGONO-Vermelho.png")
 end
 
 function love.update(dt)
@@ -224,7 +227,6 @@ function love.draw()
         hitbox.desenhar(love.graphics.getWidth()/2 + 100, love.graphics.getHeight()/2 - 195, 45)
         hitbox.desenhar(love.graphics.getWidth()/2 + 100, love.graphics.getHeight()/2 - 95, 45)
         hitbox.desenhar(love.graphics.getWidth()/2 + 100, love.graphics.getHeight()/2 + 105, 45)
-        hitbox.desenhar(love.graphics.getWidth()/2 + 100, love.graphics.getHeight()/2 + 205, 45)
         hitbox.desenhar(love.graphics.getWidth()/2 + 100, love.graphics.getHeight()/2 + 5, 45)
         hitbox.desenhar(love.graphics.getWidth()/2 - 75, love.graphics.getHeight()/2 - 195, 45)
         hitbox.desenhar(love.graphics.getWidth()/2 - 75, love.graphics.getHeight()/2 - 95, 45)
@@ -243,6 +245,13 @@ function love.draw()
         
         love.graphics.circle("fill", player.x, player.y, player.radius)
         
+                --Desenhar os filtros vermelhos
+        for i, ponto in ipairs(pontosMovimentação) do
+            if i ~= 3 then
+                love.graphics.draw(hexVermelho, ponto.x - hexVermelho:getWidth() * escalaHex / 2, ponto.y - hexVermelho:getHeight() * escalaHex / 2, 0, escalaHex, escalaHex)
+            end
+            
+        end
     elseif game.state["menu"] then
         buttons.menu_state.play_game:draw(10, 20, 10, 10)
         buttons.menu_state.settings:draw(10, 70, 10, 10)
