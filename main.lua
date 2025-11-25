@@ -11,8 +11,14 @@ local imagemAgua
 local escala = 0.4
 local rodada = 1
 local card_back_image
-local hexVermelho = {}
+
+
+local hexAtivos = {}
+local hexVermelho = love.graphics.newImage("sprites/HEXÁGONO-Vermelho.png")
+local hexMarrom = love.graphics.newImage("sprites/HEXÁGONO-Marrom.png")
 local escalaHex = 0.1111
+local rodadasPorPonto = {}
+local estadoTransformacao = {}
 
 
 local deck = {}
@@ -80,9 +86,23 @@ local buttons = {
 
 
 local function proxRodada()
-    if rodada == rodada then
         rodada = rodada + 1
+
+--verifica e remove as imagens q foram transformadas depois de duas rodadas
+    for i = 1, #pontosMovimentação do
+        if rodadasPorPonto[i] then
+            rodadasPorPonto[i] = rodadasPorPonto[i] + 1
+
+            --só remove se a imagem foi transformada e completou duas rodadas
+            if estadoTransformacao[i] and rodadasPorPonto[i] >= 2 then
+                hexAtivos[i] = nil
+                estadoTransformacao[i] = nil
+                rodadasPorPonto[i] = nil
+            end
+        end
+        
     end
+
 
 end
 
@@ -112,12 +132,27 @@ end
 
 --função para o mouse no menu e in game
 function love.mousepressed(x, y, button, isTouch, presses)
-    if button == 1 then
+    if button == 1 and not game.state["paused"] then
         --verfica colisão com cada ponto de movimentação
-        for _, ponto in ipairs(pontosMovimentação) do
+        for i, ponto in ipairs(pontosMovimentação) do
         local distancia = math.sqrt((ponto.x - x)^2 + (ponto.y - y)^2)
             if distancia <= ponto.raio then
             movGuarda.destino = {x = ponto.x, y = ponto.y}
+            --Atualiza o estado da imagem num ponto
+            if not hexAtivos[i] then
+                hexAtivos[i] = 1
+                estadoTransformacao[i] = false
+                rodadasPorPonto[i] = 0 
+            elseif hexAtivos[i] == 1 then
+                hexAtivos[i] = 2
+                estadoTransformacao[i] = true
+                rodadasPorPonto[i] = 0
+            else
+                hexAtivos[i] = nil
+                estadoTransformacao[i] = nil
+                rodadasPorPonto[i] = nil
+            end
+            
             return
         end
     end
@@ -161,8 +196,16 @@ function love.load()
         ))
         
     end
-    --Filtro dos Hex Vermelhos
-    hexVermelho = love.graphics.newImage("sprites/HEXÁGONO-Vermelho.png")
+--Iniciar o jogo com os Hex vermelhos
+    for i = 1, #pontosMovimentação do
+        if i ~= 3 then
+            hexAtivos[i] = 1
+            estadoTransformacao[i] = false
+            rodadasPorPonto[i] = 0
+            
+        end
+        
+    end
 end
 
 function love.update(dt)
@@ -245,10 +288,22 @@ function love.draw()
         
         love.graphics.circle("fill", player.x, player.y, player.radius)
         
-                --Desenhar os filtros vermelhos
+        --Desenhar os filtros vermelhos e marrons
         for i, ponto in ipairs(pontosMovimentação) do
             if i ~= 3 then
-                love.graphics.draw(hexVermelho, ponto.x - hexVermelho:getWidth() * escalaHex / 2, ponto.y - hexVermelho:getHeight() * escalaHex / 2, 0, escalaHex, escalaHex)
+                if hexAtivos[i] == 1 then
+                    love.graphics.draw(hexVermelho, 
+                        ponto.x - hexVermelho:getWidth() * escalaHex / 2,
+                        ponto.y - hexVermelho:getHeight() * escalaHex / 2,
+                        0, escalaHex, escalaHex)
+                elseif hexAtivos[i] == 2 then
+                    love.graphics.draw(hexMarrom, 
+                        ponto.x - hexMarrom:getWidth() * escalaHex / 2,
+                        ponto.y - hexMarrom:getHeight() * escalaHex / 2,
+                        0, escalaHex, escalaHex)
+                    
+                end
+                
             end
             
         end
