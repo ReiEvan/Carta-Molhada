@@ -19,7 +19,10 @@ local hexMarrom = love.graphics.newImage("sprites/HEXÁGONO-Marrom.png")
 local escalaHex = 0.1111
 local rodadasPorPonto = {}
 local estadoTransformacao = {}
+local pontosBloqueados = {}
 
+
+local movimentosRestantes = 2
 
 local deck = {}
 --lista de pontos de movimentação
@@ -87,6 +90,7 @@ local buttons = {
 
 local function proxRodada()
         rodada = rodada + 1
+        movimentosRestantes = 2
 
 --verifica e remove as imagens q foram transformadas depois de duas rodadas
     for i = 1, #pontosMovimentação do
@@ -98,6 +102,7 @@ local function proxRodada()
                 hexAtivos[i] = nil
                 estadoTransformacao[i] = nil
                 rodadasPorPonto[i] = nil
+                pontosBloqueados[i] = true
             end
         end
         
@@ -137,8 +142,11 @@ function love.mousepressed(x, y, button, isTouch, presses)
         for i, ponto in ipairs(pontosMovimentação) do
         local distancia = math.sqrt((ponto.x - x)^2 + (ponto.y - y)^2)
             if distancia <= ponto.raio then
+                if movimentosRestantes > 0 then
             movGuarda.destino = {x = ponto.x, y = ponto.y}
+            movimentosRestantes = movimentosRestantes - 1
             --Atualiza o estado da imagem num ponto
+            if not pontosBloqueados[i] then
             if not hexAtivos[i] then
                 hexAtivos[i] = 1
                 estadoTransformacao[i] = false
@@ -147,15 +155,12 @@ function love.mousepressed(x, y, button, isTouch, presses)
                 hexAtivos[i] = 2
                 estadoTransformacao[i] = true
                 rodadasPorPonto[i] = 0
-            else
-                hexAtivos[i] = nil
-                estadoTransformacao[i] = nil
-                rodadasPorPonto[i] = nil
             end
-            
-            return
         end
+        end
+    return
     end
+end
 
     handle_button_click(x, y, player.radius)
     end
@@ -167,19 +172,29 @@ function love.load()
     love.mouse.setVisible(false)
     love.window.setTitle("Última Gota")
     ost.somteste()
+    --Botões da tela do menu
+        buttons.menu_state.play_game = button("Iniciar", startNewGame, nil, 80, 30)
+        buttons.menu_state.settings = button("Configurações", nil, nil, 120, 30)
+        buttons.menu_state.exit_game = button("Sair", love.event.quit, nil, 80, 30)
+    --Botões no jogo rodando
+        buttons.running_state.pass_rodada = button("Passar Rodada", proxRodada, nil, 120, 30)
+        buttons.running_state.exit_in_game = button("Sair", love.event.quit, nil, 80, 30)
 --Imagem da agua
     imagemAgua = love.graphics.newImage("sprites/Gota-provisoria.jpeg")
+    --Iniciar o jogo com os Hex vermelhos
+        for i = 1, #pontosMovimentação do
+            if i ~= 3 then
+                hexAtivos[i] = 1
+                estadoTransformacao[i] = false
+                rodadasPorPonto[i] = 0
+                
+            end
+            
+        end
 --baralho azul
      cartas.construirBaralho()
 -- carregar cartas aleatórias     
     cartas.selecionarCartasRodada()
---Botões da tela do menu
-    buttons.menu_state.play_game = button("Iniciar", startNewGame, nil, 80, 30)
-    buttons.menu_state.settings = button("Configurações", nil, nil, 120, 30)
-    buttons.menu_state.exit_game = button("Sair", love.event.quit, nil, 80, 30)
---Botões no jogo rodando
-    buttons.running_state.pass_rodada = button("Passar Rodada", proxRodada, nil, 120, 30)
-    buttons.running_state.exit_in_game = button("Sair", love.event.quit, nil, 80, 30)
 
 --Guarda florestal
     movGuarda.imagem = love.graphics.newImage("sprites/Guarda Provisorio.png")
@@ -194,16 +209,6 @@ function love.load()
             larguraQuadro, alturaQuadro,
             movGuarda.imagem:getDimensions()
         ))
-        
-    end
---Iniciar o jogo com os Hex vermelhos
-    for i = 1, #pontosMovimentação do
-        if i ~= 3 then
-            hexAtivos[i] = 1
-            estadoTransformacao[i] = false
-            rodadasPorPonto[i] = 0
-            
-        end
         
     end
 end
@@ -234,9 +239,13 @@ end
 local mapa = love.graphics.newImage("sprites/mapagradeado.png")
 
 function love.draw()
-    love.graphics.printf("FPS: " .. love.timer.getFPS(), love.graphics.newFont(16), 10, love.graphics.getHeight() - 30, love.graphics.getWidth())
+    --Contagem do FPS
+    love.graphics.printf("FPS: " .. love.timer.getFPS(), love.graphics.newFont(16),
+    10, love.graphics.getHeight() - 30, love.graphics.getWidth())
     --cardSprite = love.graphics.newImage("sprites/fundo carta azul-pitico.png")
      if game.state["running"] then
+        --Movimentos Restantes
+        love.graphics.print("Movimentos: " .. movimentosRestantes, 10, 200, 0)
         --Feddback visual da quantidade de agua
         for i = 1, agua do
             local x = (i - 1) * (imagemAgua:getWidth() * escala + 10)
@@ -251,10 +260,29 @@ function love.draw()
         love.graphics.print("Mouse x: " .. love.mouse.getX() .. " y: " .. love.mouse.getY(), 500, 10, 0)
         --love.graphics.draw(fundo, 100, 100)
         -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo
-        cartas.desenharBaralho()
-        
-        conflitos.fundoConflito()
+        --desenhar o mapa
         love.graphics.draw(mapa, love.graphics.getWidth()/4 - 200, love.graphics.getHeight()/2 - 370, 0, .35, .35)
+        --Desenhar os filtros vermelhos e marrons
+        for i, ponto in ipairs(pontosMovimentação) do
+            if i ~= 3 then
+                if hexAtivos[i] == 1 then
+                    love.graphics.draw(hexVermelho, 
+                    ponto.x - hexVermelho:getWidth() * escalaHex / 2,
+                        ponto.y - hexVermelho:getHeight() * escalaHex / 2,
+                        0, escalaHex, escalaHex)
+                    elseif hexAtivos[i] == 2 then
+                        love.graphics.draw(hexMarrom, 
+                        ponto.x - hexMarrom:getWidth() * escalaHex / 2,
+                        ponto.y - hexMarrom:getHeight() * escalaHex / 2,
+                        0, escalaHex, escalaHex)
+                        
+                    end
+                    
+                end
+                
+            end
+        cartas.desenharBaralho()
+        conflitos.fundoConflito()
         --Desenhar a hitbox enquanto o jogo ta rodando
         hitbox.desenhar(love.graphics.getWidth()/2 + 15, love.graphics.getHeight()/2 - 245, 45)
         hitbox.desenhar(love.graphics.getWidth()/2 + 15, love.graphics.getHeight()/2 - 145, 45)
@@ -288,25 +316,6 @@ function love.draw()
         
         love.graphics.circle("fill", player.x, player.y, player.radius)
         
-        --Desenhar os filtros vermelhos e marrons
-        for i, ponto in ipairs(pontosMovimentação) do
-            if i ~= 3 then
-                if hexAtivos[i] == 1 then
-                    love.graphics.draw(hexVermelho, 
-                        ponto.x - hexVermelho:getWidth() * escalaHex / 2,
-                        ponto.y - hexVermelho:getHeight() * escalaHex / 2,
-                        0, escalaHex, escalaHex)
-                elseif hexAtivos[i] == 2 then
-                    love.graphics.draw(hexMarrom, 
-                        ponto.x - hexMarrom:getWidth() * escalaHex / 2,
-                        ponto.y - hexMarrom:getHeight() * escalaHex / 2,
-                        0, escalaHex, escalaHex)
-                    
-                end
-                
-            end
-            
-        end
     elseif game.state["menu"] then
         buttons.menu_state.play_game:draw(10, 20, 10, 10)
         buttons.menu_state.settings:draw(10, 70, 10, 10)
