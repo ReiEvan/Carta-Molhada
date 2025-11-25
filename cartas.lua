@@ -9,7 +9,7 @@ local CARD_HEIGHT = 176
 local OFFSET_BETWEEN_CARDS = 3  
 local CARDS_IN_BARALHO = 10  
 
-local HOVER_OFFSET = 12   -- quanto a carta sobe no hover
+local HOVER_OFFSET = 120   -- quanto a carta sobe no hover
 
 -----------------------------------------------------
 -- BARALHO AZUL (NÃO INTERFERE COM AS CARTAS DA RODADA)
@@ -135,7 +135,7 @@ local function atualizarInteracaoCartas(dt)
 
     local totalWidth = (CARD_WIDTH * 2) + 30
     local startX = (screenWidth - totalWidth) / 2
-    local posY = screenHeight * 0.70
+    local posY = screenHeight * 0.90
 
     for i = 1, 2 do
         local x = startX + (i - 1) * (CARD_WIDTH + 30)
@@ -157,7 +157,7 @@ local function desenharCartasRodada()
 
     local totalWidth = (CARD_WIDTH * 2) + 30
     local startX = (screenWidth - totalWidth) / 2
-    local posY = screenHeight * 0.70
+    local posY = screenHeight * 0.90
 
     for i = 1, 2 do
         local card = cartasRodada[i]
@@ -176,7 +176,7 @@ local function desenharCartasRodada()
 
             local textoX
             if i == 1 then
-                textoX = x - 220
+                textoX = x - 180
             else
                 textoX = x + CARD_WIDTH + 20
             end
