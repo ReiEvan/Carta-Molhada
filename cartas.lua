@@ -97,6 +97,31 @@ local todasAliadas = {
             "por cartas de conflito,\n" ..
             "exceto se restar apenas ela\n".. 
             "e o ponto de origem."
+    },
+    {
+        img = love.graphics.newImage("sprites/carta Dissolvendo problemas.png"),
+        descricao=
+            'Dissolvendo problemas\n'..
+            'Gaste 2 águas e anule\n'..
+            'o conflitos da rodada\n'..
+            'ou guarde essa carta\n'..
+            'e no próximo turno\n'..
+            'gaste 3 águas'
+    },
+    {
+        img = love.graphics.newImage('sprites/carta Esforco recompensado.png'),
+        descricao=
+            'Esforço recompensado\n'..
+            'Se tiver 3 áreas verdes\n'..
+            'ganhe 3 fichas de água.'
+    },
+    {
+        img = love.graphics.newImage('sprites/carta Procurando agua.png'),
+        descricao = 
+            'Procurando água\n'..
+            'Troque 1 ação por\n'..
+            '1 ficha de água\n'..
+            '(até o limite de 3)'
     }
 }
 
@@ -126,7 +151,7 @@ end
 -----------------------------------------------------
 -- DETECTAR HOVER
 -----------------------------------------------------
-local function atualizarInteracaoCartas(dt)
+local function atualizarInteracaoCartas()
     hoverIndex = nil
 
     local mx, my = love.mouse.getPosition()
