@@ -9,7 +9,7 @@ local movimento={
         mx=10,
         my=220
 }
-local agua = 3
+local agua = 5
 local imagemAgua={
         ficha=love.graphics.newImage("sprites/ficha gota.png"),
         fx=movimento.mx-5, fy=movimento.my+25     
@@ -172,6 +172,7 @@ local buttons = {
 local function proxRodada()
         rodada = rodada + 1
         movimentosRestantes = 2
+        cartas.selecionarCartasRodada()
 
 --verifica e remove as imagens q foram transformadas depois de duas rodadas
     for i = 1, #pontosMovimentação do
@@ -259,7 +260,7 @@ end
 
 function love.load()
     love.mouse.setVisible(false)
-    love.window.setTitle("Última Gota")
+    love.window.setTitle("Última Gota") --isso tá funcionando?
     fonte.grande=love.graphics.newFont(40)
     fonte.normal = love.graphics.newFont(13)
     love.graphics.setFont(fonte.normal)
@@ -442,9 +443,6 @@ function love.draw()
 
 end
 function love.keypressed(key)
-    if key == "space" then
-        cartas.selecionarCartasRodada()
-    end
     if key == "escape" then
         game.state["paused"] = not game.state["paused"]
     end
