@@ -28,7 +28,6 @@ local imagemAgua={
 }
 local escala = 0.5
 local rodada = 1
-
 local card_back_image
 local fonte= {}
 local hexAtivos = {}
@@ -38,6 +37,48 @@ local escalaHex = 0.1111
 local rodadasPorPonto = {}
 local estadoTransformacao = {}
 local pontosBloqueados = {}
+local movimentosRestantes = 2
+local acoesRestantes = 4
+--Variaveis de Vitória/Derrota
+local imgBandeira = love.graphics.newImage("sprites/bandeira vermelha.png")
+local objetivosExternos =  {}
+local numGuardas = 1
+--Textos de fim de jogo
+local fimDeJogo = {
+    ativo = false,
+    mensagem = "",
+    cor = {1, 1, 1}
+}
+-- vincula a função de água aos módulos
+cartas.setAdicionarAgua(adicionarAgua)
+conflitos.setAdicionarAgua(adicionarAgua)
+
+local movimento={
+    mx=10,
+    my=220
+}
+
+local imagemAgua={
+        ficha=love.graphics.newImage("sprites/ficha gota.png"),
+        fx=movimento.mx-5, fy=movimento.my+25     
+    }
+    local function addAgua(v)
+        agua = math.max(0, math.min(agua + v, aguaMax))
+    end
+    
+    local function addAcoes(v)
+        acoesRestantes = math.max(0, acoesRestantes + v)
+    end
+    
+    function adicionarAgua(qtd)
+        agua = agua + qtd
+    end
+    local function adicionarAgua(valor)
+        agua = agua + valor
+        if agua < 0 then agua = 0 end
+    end
+    --conflitos.setCallbacks(addAgua, addAcoes)
+
 local confirmacao = {
     ativa = false,
     indiceDestino = nil,
@@ -66,6 +107,7 @@ end
 
 -- vincula aos módulos
 cartas.setAdicionarAgua(adicionarAgua)
+conflitos.setAdicionarAgua(adicionarAgua)
 local deck = {}
 --lista de pontos de movimentação
 local pontosMovimentação = {
@@ -199,7 +241,37 @@ local function atualizarEstadosHexagonos(indice)
     end  
 end
 
+local function definirObjetivos()
+    objetivosExternos = {}
+    local possiveis = {}
+    --Lista todos os pontos que não são a base (3) nem adjascentes a ela
+    local vizinhosBase = pontosAdjascentes[3]
 
+    for i = 1, #pontosMovimentação do
+        local ehVizinho = false
+        for _, v in ipairs(vizinhosBase) do
+            if i == v then ehVizinho = true break end
+        end
+
+        if i ~= 3 and not ehVizinho then
+            table.insert(possiveis, i)
+        end
+    end
+
+    --Sorteia 3 dessa lista
+    for k = 1, 3 do
+        if #possiveis > 0 then
+            local randIndex = love.math.random(1, #possiveis)
+            table.insert(objetivosExternos, possiveis[randIndex])
+            table.remove(possiveis, randIndex)
+        end
+    end
+end
+
+local menuAgua = {
+    ativa = false,
+    botoes = {}
+}
 
 local game = {
     state = {
@@ -255,6 +327,13 @@ end
 local function startNewGame()
     game.state["menu"] = false
     game.state["running"] = true 
+    definirObjetivos()
+
+    --Resetar variaveis de jogo se necessário
+    rodada = 1
+    agua = 5
+    numGuardas = 1
+    fimDeJogo.ativo = false
 end
 
 local button_states = {
@@ -274,6 +353,63 @@ function handle_button_click(x, y, radius)
         end
     end
     
+end
+
+local function verificarEstadoJogo()
+    if fimDeJogo.ativo then return end
+-----------------------Condições de Derrota: -----------------------
+--Passar da rodada 15
+    if rodada > 15 then
+        fimDeJogo.ativo = true
+        fimDeJogo.mensagem = "DERROTA\nO tempo acabou!"
+        fimDeJogo.cor = {1, 0, 0}
+        return
+    end
+--Ficar sem areas verdes
+    local temVerde = false
+    for i = 1, #pontosMovimentação do
+        if hexAtivos[i] == nil and not pontosBloqueados[i] then
+            temVerde = true
+            break
+        end
+    end
+    if not temVerde then
+        fimDeJogo.ativo = true
+        fimDeJogo.mensagem = "DERROTA\nEstá tudo contaminado!"
+        fimDeJogo.cor = {57, 255, 20}
+        return
+    end
+--Ficar sem guardas
+    if numGuardas <= 0 then
+        fimDeJogo.ativo = true
+        fimDeJogo.mensagem = "DERROTA\nSem guardas!"
+        fimDeJogo.cor = {0.5, 0, 0}
+        return
+    end
+
+----------------------- Condições de Vitória (Triunfo) ----------------
+    local vizinhosSeguros = 0
+    local vizinhosBase = pontosAdjascentes[3]
+    if vizinhosBase then
+        for _, vizinhoIndex in ipairs(vizinhosBase) do
+            if hexAtivos[vizinhoIndex] == nil and not pontosBloqueados[vizinhoIndex] then
+                vizinhosSeguros = vizinhosSeguros + 1
+            end
+        end
+    end
+
+    local objetivosConquistados = 0
+    for _, objIndex in ipairs(objetivosExternos) do
+        if hexAtivos[objIndex] == nil and not pontosBloqueados[objIndex] then
+            objetivosConquistados = objetivosConquistados + 1
+        end
+    end
+--Checa se cumpriu os dois requisitos (3 na base + 3 fora)
+    if vizinhosSeguros >= 3 and objetivosConquistados >= 3 then
+        fimDeJogo.ativo = true
+        fimDeJogo.mensagem = "TRIUNFO!\nA ilha foi salva."
+        fimDeJogo.cor = {46, 111, 64}
+    end
 end
 
 --função para o mouse no menu e in game
@@ -410,6 +546,10 @@ function love.update(dt)
             
         end
     end
+
+    if game.state["running"] then
+        verificarEstadoJogo()
+    end
 end 
 
 -- Carregamento do mapa
@@ -461,6 +601,14 @@ function love.draw()
                 end
                 
             end
+        --Desenhar Bandeira nos Objetivos Externos
+        love.graphics.setColor(1, 1, 1)
+        for _, indice in ipairs(objetivosExternos) do
+            local p = pontosMovimentação[indice]
+            --Desenha a bandeira um pouco acima do centro do hex
+            --Ajuste o offset (x, y) e a escala (0.5) conforme o tamanho da imagem
+            love.graphics.draw(imgBandeira, p.x - 15, p.y - 30, 0, 0.5, 0.5)
+        end
         
         cartas.desenharBaralho()
         cartas.desenharCartasRodada()
@@ -468,7 +616,7 @@ function love.draw()
         cartas.desenharResultadoEscolha()
 
        
-        
+
         --Desenhar a hitbox enquanto o jogo ta rodando
         hitbox.desenhar(love.graphics.getWidth()/2 + 15, love.graphics.getHeight()/2 - 245, 45)
         hitbox.desenhar(love.graphics.getWidth()/2 + 15, love.graphics.getHeight()/2 - 145, 45)
@@ -512,6 +660,16 @@ function love.draw()
             love.graphics.print("Mover?", confirmacao.posicaoX - 25, confirmacao.posicaoY - 45)
         end
         
+        if fimDeJogo.ativo then
+            --Fundo preto transparente
+            love.graphics.setColor(0, 0, 0, 0.9)
+            love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
+            --Texto
+            love.graphics.setFont(fonte.grande)
+            love.graphics.setColor(unpack(fimDeJogo.cor))
+            love.graphics.printf(fimDeJogo.mensagem, 0, love.graphics.getHeight()/2 - 50, love.graphics.getWidth(), "center")
+        end
+
         love.graphics.circle("fill", player.x, player.y, player.radius)
         
     elseif game.state["menu"] then
