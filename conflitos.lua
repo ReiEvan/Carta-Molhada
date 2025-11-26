@@ -16,6 +16,7 @@ cartas.setAdicionarAgua(adicionarAgua)
 ----------------------------------
 local CARD_WIDTH = 134
 local CARD_HEIGHT = 176
+local OFFSET_BETWEEN_CARDS = 3
 
 ----------------------------------
 -- FUNDO DA CARTA DE CONFLITO
@@ -62,8 +63,10 @@ local todosConflitos = {
 }
 
 ----------------------------------
--- VARIÁVEL DO CONFLITO ATUAL
+-- VARIÁVEIS DO BARALHO
 ----------------------------------
+local baralho = {}
+local descarte = {}
 local conflitoAtual = nil
 
 ----------------------------------
@@ -77,18 +80,51 @@ local function embaralhar(t)
 end
 
 ----------------------------------
--- SELECIONAR CONFLITO
+-- CONSTRUIR BARALHO
 ----------------------------------
-local function selecionarConflito()
-    embaralhar(todosConflitos)
-    conflitoAtual = todosConflitos[1]
-
-    -- aplica efeito se existir
-    if conflitoAtual and conflitoAtual.efeito then
-        conflitoAtual.efeito()
+local function construirBaralho()
+    baralho = {}
+    for i = 1, #todosConflitos do
+        table.insert(baralho, todosConflitos[i])
     end
+    embaralhar(baralho)
 end
 
+----------------------------------
+-- SELECIONAR CONFLITO (apenas escolhe a carta)
+----------------------------------
+local function selecionarConflito()
+    if #baralho == 0 then
+        -- recicla do descarte
+        for i = 1, #descarte do
+            table.insert(baralho, descarte[i])
+        end
+        descarte = {}
+        embaralhar(baralho)
+    end
+
+    conflitoAtual = baralho[1]  -- pega a primeira carta do baralho
+end
+
+----------------------------------
+-- APLICAR EFEITO DO CONFLITO (após a carta de aliados ser usada)
+local conflitoAplicado = false
+
+local function aplicarConflito()
+    if not conflitoAtual or conflitoAplicado then return end
+
+    -- aplica efeito
+    if conflitoAtual.efeito then
+        conflitoAtual.efeito()
+    end
+
+    -- move para o descarte
+    table.insert(descarte, conflitoAtual)
+    table.remove(baralho, 1)
+
+    -- marca como aplicado para não sumir antes do draw
+    conflitoAplicado = true
+end
 ----------------------------------
 -- DESENHAR DESCRIÇÃO
 ----------------------------------
@@ -101,7 +137,7 @@ local function desenharDescricao(c, x, y)
     love.graphics.setColor(1, 0, 0)
     love.graphics.print(c.id, x + 10, y + 10)
 
-    -- descrição branca
+    -- corpo da descrição em branco
     love.graphics.setColor(1, 1, 1)
     love.graphics.print(c.descricao, x + 10, y + 34)
 end
@@ -129,7 +165,9 @@ end
 -- RETORNO DO MÓDULO
 ----------------------------------
 return {
+    construirBaralho = construirBaralho,
     selecionar = selecionarConflito,
+    aplicarConflito = aplicarConflito,
     draw = draw,
     setAdicionarAgua = setAdicionarAgua
 }
