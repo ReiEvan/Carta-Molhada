@@ -159,14 +159,14 @@ local function selecionarCartaPorTecla(key)
     if key == "1" and cartasRodada[1] then
         cartaSelecionada = cartasRodada[1]
         aplicarEfeito(cartaSelecionada)
-        efeitoDaCarta = "Você escolheu a carta da ESQUERDA!"
+        --efeitoDaCarta = "Você escolheu a carta da ESQUERDA!"
         escolhaBloqueada = true  -- agora trava corretamente
         print("Carta da esquerda ativada: " .. cartaSelecionada.descricao)
 
     elseif key == "2" and cartasRodada[2] then
         cartaSelecionada = cartasRodada[2]
         aplicarEfeito(cartaSelecionada)
-        efeitoDaCarta = "Você escolheu a carta da DIREITA!"
+        --efeitoDaCarta = "Você escolheu a carta da DIREITA!"
         escolhaBloqueada = true
         print("Carta da direita ativada: " .. cartaSelecionada.descricao)
     end

@@ -59,7 +59,9 @@ local acoesRestantes = 4
 local agua = 5
 local function adicionarAgua(valor)
     agua = agua + valor
-    if agua < 0 then agua = 0 end
+    if agua < 0 then 
+    agua = 0 
+    end
 end
 
 -- vincula aos módulos
@@ -227,7 +229,9 @@ local function proxRodada()
         movimentosRestantes = 2
         cartas.selecionarCartasRodada()
         agua = agua-1
-        
+        if agua < 0 then
+        agua = 0
+    end
 
 --verifica e remove as imagens q foram transformadas depois de duas rodadas
     for i = 1, #pontosMovimentação do
