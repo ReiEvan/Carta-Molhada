@@ -51,7 +51,6 @@ local fimDeJogo = {
 }
 -- vincula a função de água aos módulos
 cartas.setAdicionarAgua(adicionarAgua)
-conflitos.setAdicionarAgua(adicionarAgua)
 
 local movimento={
     mx=10,
@@ -107,7 +106,6 @@ end
 
 -- vincula aos módulos
 cartas.setAdicionarAgua(adicionarAgua)
-conflitos.setAdicionarAgua(adicionarAgua)
 local deck = {}
 --lista de pontos de movimentação
 local pontosMovimentação = {
