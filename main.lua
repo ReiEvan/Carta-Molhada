@@ -363,7 +363,7 @@ function love.draw()
         love.graphics.setColor(1, 1, 1)
         love.graphics.setFont(fonte.normal)  
         --Numeração da rodada atual
-        love.graphics.print("Rodada " .. rodada, 10, 550, 0)
+        love.graphics.print("Rodada " .. rodada, 300, 550, 0)
         --love.graphics.clear(.937,.946,.96,1) para fazer o dundo do jogo
         --Saber a posição do mouse
         love.graphics.print("Mouse x: " .. love.mouse.getX() .. " y: " .. love.mouse.getY(), 500, 10, 0)

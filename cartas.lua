@@ -10,8 +10,8 @@ local todasAliadas = {
     {
         img = love.graphics.newImage("sprites/carta 8 clarividencia.png"),
         descricao = 
-        "Clarividência\nDescubra qual será o\n".. 
-        "conflito do próximo turno."
+        "Clarividência\nDescubra qual\n"..
+        "será o conflito do próximo turno."
     },
 
     {
@@ -22,7 +22,7 @@ local todasAliadas = {
             "mover para qualquer espaço\n".. 
             "sem gastar uma ação\n" ..
             "(mantendo a regra de \n".. 
-            "movimento padrão"
+            "movimento padrão)"
     },
 
     {
@@ -32,19 +32,14 @@ local todasAliadas = {
             "Escolha uma área verde\n".. 
             "(exceto o ponto de origem).\n" ..
             "Ela não pode ser perdida \n".. 
-            "por cartas de conflito,\n" ..
-            "exceto se restar apenas ela\n".. 
-            "e o ponto de origem."
+            "por cartas de conflito"
     },
     {
         img = love.graphics.newImage("sprites/carta Dissolvendo problemas.png"),
         descricao=
             'Dissolvendo problemas\n'..
             'Gaste 2 águas e anule\n'..
-            'o conflitos da rodada\n'..
-            'ou guarde essa carta\n'..
-            'e no próximo turno\n'..
-            'gaste 3 águas'
+            'o conflitos da rodada'
     },
     {
         img = love.graphics.newImage('sprites/carta Esforco recompensado.png'),
@@ -129,15 +124,10 @@ local function reposicionarBaralho()
     end
 end
 
------------------------------------------------------
--- INTERAÇÃO DE CARTAS
------------------------------------------------------
 local cartasRodada = {}
 local hoverIndex = nil
 
------------------------------------------------------
--- AUXILIAR: garantir 2 cartas SEMPRE
------------------------------------------------------
+
 local function puxarCartaGarantido()
     -- caso o baralho tenha 0 cartas, recarrega
     if #todasAliadas == 0 then
@@ -177,9 +167,7 @@ local function puxarCartaGarantido()
     return carta
 end
 
------------------------------------------------------
 -- SORTEIO DE 2 CARTAS
------------------------------------------------------
 local function selecionarCartasRodada()
     cartasRodada = {}
 
@@ -190,9 +178,8 @@ local function selecionarCartasRodada()
     cartasRodada[2] = puxarCartaGarantido()
 end
 
------------------------------------------------------
+
 -- HOVER
------------------------------------------------------
 local function atualizarInteracaoCartas()
     hoverIndex = nil
 
@@ -215,9 +202,7 @@ local function atualizarInteracaoCartas()
     end
 end
 
------------------------------------------------------
--- DESENHAR CARTAS RODADA
------------------------------------------------------
+
 local function desenharCartasRodada()
     local screenWidth = love.graphics.getWidth()
     local screenHeight = love.graphics.getHeight()
@@ -237,24 +222,63 @@ local function desenharCartasRodada()
         love.graphics.draw(card.img, x, y + offset)
 
         if hoverIndex == i then
-            local textoX = (i == 1) and (x - 180) or (x + CARD_WIDTH + 20)
+    local texto = card.descricao
 
-            local titulo, corpo = card.descricao:match("([^\n]+)\n?(.*)")
+    local textoX
+    if i == 1 then
+        textoX = x - 220
+    else
+        textoX = x + CARD_WIDTH + 20
+    end
 
-            love.graphics.setColor(0.2, 0.4, 1)
-            love.graphics.printf(titulo, textoX, y + offset + 20, 300)
+    --------------------------------------------------------
+    -- SEPARAR TÍTULO (1ª linha) E CORPO DO TEXTO
+    --------------------------------------------------------
+    local titulo, corpo = texto:match("([^\n]+)\n?(.*)")
+    corpo = corpo or ""
 
-            love.graphics.setColor(1,1,1)
-            love.graphics.printf(corpo, textoX, y + offset + 40, 300)
-        end
+    --------------------------------------------------------
+    -- DESENHAR O QUADRADO CINZA
+    --------------------------------------------------------
+    local larguraCaixa = 200
+    local alturaCaixa = 150
+
+    love.graphics.setColor(0.2, 0.2, 0.2, 0.75) -- cinza com transparência
+    love.graphics.rectangle(
+        "fill",
+        textoX - 10,
+        y + offset + 10,
+        larguraCaixa + 20,
+        alturaCaixa
+    )
+
+    --------------------------------------------------------
+    -- DESENHAR O TÍTULO COLORIDO
+    --------------------------------------------------------
+    love.graphics.setColor(0.2, 0.4, 1, 1)
+    love.graphics.printf(
+        titulo,
+        textoX,
+        y + offset + 20,
+        larguraCaixa
+    )
+
+    --------------------------------------------------------
+    -- DESENHAR O CORPO DO TEXTO
+    --------------------------------------------------------
+    love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.printf(
+        corpo,
+        textoX,
+        y + offset + 45,
+        larguraCaixa
+    )
+end
 
         ::continue::
     end
 end
 
------------------------------------------------------
--- RETORNO
------------------------------------------------------
 return {
     construirBaralho = construirBaralho,
     desenharBaralho = desenharBaralho,
