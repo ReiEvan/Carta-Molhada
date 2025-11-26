@@ -4,22 +4,32 @@ local conflitos = require "conflitos"
 local hitbox = require "Hitbox"
 local ost = require "OST"
 local cartas = require "cartas"
+-- função que gerencia a quantidade de água
+local agua = 5
+local aguaMax = 10
+function adicionarAgua(qtd)
+    agua = agua + qtd
+end
+local function adicionarAgua(valor)
+    agua = agua + valor
+    if agua < 0 then agua = 0 end
+end
+
+-- vincula a função de água aos módulos
 cartas.setAdicionarAgua(adicionarAgua)
+conflitos.setAdicionarAgua(adicionarAgua)
+
 local movimento={
         mx=10,
         my=220
 }
-local agua = 5
-function adicionarAgua(qtd)
-    agua = agua + qtd
-end
+
 local imagemAgua={
         ficha=love.graphics.newImage("sprites/ficha gota.png"),
         fx=movimento.mx-5, fy=movimento.my+25     
 }
 local escala = 0.5
 local rodada = 1
-
 
 local card_back_image
 local fonte= {}
@@ -34,6 +44,15 @@ local pontosBloqueados = {}
 
 local movimentosRestantes = 2
 local acoesRestantes = 4
+local function addAgua(v)
+    agua = math.max(0, math.min(agua + v, aguaMax))
+end
+
+local function addAcoes(v)
+    acoesRestantes = math.max(0, acoesRestantes + v)
+end
+
+conflitos.setCallbacks(addAgua, addAcoes)
 
 local deck = {}
 --lista de pontos de movimentação
@@ -292,7 +311,8 @@ function love.load()
      cartas.construirBaralho()
 -- carregar cartas aleatórias     
     cartas.selecionarCartasRodada()
-
+--carregar conflito
+        conflitos.selecionar()
 --Guarda florestal
     movGuarda.imagem = love.graphics.newImage("sprites/Guarda Provisorio.png")
 
@@ -366,9 +386,10 @@ function love.draw()
         love.graphics.setFont(fonte.grande)  
         love.graphics.print(tostring(agua), imagemAgua.fx+40, imagemAgua.fy+8)
         love.graphics.setColor(1, 1, 1)
-        love.graphics.setFont(fonte.normal)  
+        love.graphics.setFont(fonte.normal)
         --Numeração da rodada atual
-        love.graphics.print("Rodada " .. rodada, 300, 550, 0)
+        love.graphics.print("Rodada " .. rodada, 710, 55, 0)
+         
         --love.graphics.clear(.937,.946,.96,1) para fazer o dundo do jogo
         --Saber a posição do mouse
         love.graphics.print("Mouse x: " .. love.mouse.getX() .. " y: " .. love.mouse.getY(), 500, 10, 0)
@@ -397,7 +418,8 @@ function love.draw()
             end
         
         cartas.desenharBaralho()
-        conflitos.fundoConflito()
+        --conflitos.fundoConflito()
+        conflitos.draw()
         cartas.desenharResultadoEscolha()
         --Desenhar a hitbox enquanto o jogo ta rodando
         hitbox.desenhar(love.graphics.getWidth()/2 + 15, love.graphics.getHeight()/2 - 245, 45)
