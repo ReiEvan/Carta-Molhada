@@ -52,7 +52,7 @@ local function addAcoes(v)
     acoesRestantes = math.max(0, acoesRestantes + v)
 end
 
-conflitos.setCallbacks(addAgua, addAcoes)
+--conflitos.setCallbacks(addAgua, addAcoes)
 
 local deck = {}
 --lista de pontos de movimentação
@@ -211,6 +211,10 @@ local function atualizarEstadosHexagonos(indice)
     end  
 end
 
+local menuAgua = {
+    ativa = false,
+    botoes = {}
+}
 
 local game = {
     state = {
@@ -234,7 +238,19 @@ local buttons = {
     running_state = {}
     
 }
-
+--Função que executa a troca (pelos botões)
+local function realizarTrocaAgua(qtd)
+    if acoesRestantes >= qtd then
+        acoesRestantes = acoesRestantes - qtd
+        adicionarAgua(qtd)
+        menuAgua.ativa = false --fecha o menu
+        print("Trocou " .. qtd .. " ações por água.")
+    end
+end
+--Função para cancelar (usada pelo botão Cancelar)
+local function cancelarTroca()
+    menuAgua.ativa = false
+end
 
 local function proxRodada()
         rodada = rodada + 1
@@ -289,6 +305,19 @@ end
 --função para o mouse no menu e in game
 function love.mousepressed(x, y, button, isTouch, presses)
     if button == 1 and not game.state["paused"] then
+        
+        if menuAgua.ativa then
+            menuAgua.botoes.um:checkPressed(x, y, player.radius)
+            menuAgua.botoes.cancelar:checkPressed(x, y, player.radius)
+        
+            if acoesRestantes >= 2 then
+                menuAgua.botoes.dois:checkPressed(x, y, player.radius)
+            end
+            if acoesRestantes >= 3 then
+                menuAgua.botoes.tres:checkPressed(x, y, player.radius)
+            end
+            return
+        end
 
         if confirmacao.ativa then
             confirmacao.botoes.sim:checkPressed(x, y, player.radius)
@@ -331,20 +360,48 @@ end
 
 function love.load()
     love.mouse.setVisible(false)
-    love.window.setTitle("Última Gota") --isso tá funcionando?
-    fonte.grande=love.graphics.newFont(40)
+    love.window.setTitle("Última Gota") --isso tá funcionando? // É o titulo que aparece na Janela do game
+    fonte.grande = love.graphics.newFont(40)
     fonte.normal = love.graphics.newFont(13)
     love.graphics.setFont(fonte.normal)
     ost.somteste()
     --Botões da tela do menu
-        buttons.menu_state.play_game = button("Iniciar", startNewGame, nil, 80, 30)
-        buttons.menu_state.settings = button("Configurações", nil, nil, 120, 30)
-        buttons.menu_state.exit_game = button("Sair", love.event.quit, nil, 80, 30)
+    buttons.menu_state.play_game = button("Iniciar", startNewGame, nil, 80, 30)
+    buttons.menu_state.settings = button("Configurações", nil, nil, 120, 30)
+    buttons.menu_state.exit_game = button("Sair", love.event.quit, nil, 80, 30)
     --Botões no jogo rodando
-        buttons.running_state.pass_rodada = button("Passar Rodada", proxRodada, nil, 120, 30)
-        buttons.running_state.exit_in_game = button("Sair", love.event.quit, nil, 80, 30)
-        confirmacao.botoes.sim = button("Sim", confirmarMovimento, nil, 50, 25)
-        confirmacao.botoes.nao = button("Não", cancelarMovimento, nil, 50, 25)
+    buttons.running_state.pass_rodada = button("Passar Rodada", proxRodada, nil, 120, 30)
+    buttons.running_state.exit_in_game = button("Sair", love.event.quit, nil, 80, 30)
+    --Botões de confirmação de movimento
+    confirmacao.botoes.sim = button("Sim", confirmarMovimento, nil, 50, 25)
+    confirmacao.botoes.nao = button("Não", cancelarMovimento, nil, 50, 25)
+    --Botões do Menu de Água (Carta)
+    local cx, cy = love.graphics.getWidth()/2 - 70, love.graphics.getHeight()/2 - 50
+
+    menuAgua.botoes.um = button("+1 Água -1 Ação", function () realizarTrocaAgua(1) end, nil, 140, 30)
+    menuAgua.botoes.um.x = cx
+    menuAgua.botoes.um.y = cy
+
+    menuAgua.botoes.dois = button("+2 Água -2 Ação", function () realizarTrocaAgua(2) end, nil, 140, 30)
+    menuAgua.botoes.dois.x = cx
+    menuAgua.botoes.dois.y = cy + 40
+
+    menuAgua.botoes.tres = button("+3 Água -3 Ação", function () realizarTrocaAgua(3) end, nil, 140, 30)
+    menuAgua.botoes.tres.x = cx
+    menuAgua.botoes.tres.y = cy + 80
+
+    menuAgua.botoes.cancelar = button("Cancelar", cancelarTroca, nil, 100, 30)
+    menuAgua.botoes.um.x = cx + 20
+    menuAgua.botoes.um.y = cy + 130
+
+    cartas.setAdicionarAgua(adicionarAgua)
+    cartas.setAbrirMenuAgua(function ()
+        if acoesRestantes >= 1 then
+            menuAgua.ativa = true
+        else
+            print("Sem ações suficientes")
+        end
+    end)
     --Iniciar o jogo com os Hex vermelhos
         for i = 1, #pontosMovimentação do
             if i ~= 3 then
@@ -356,15 +413,15 @@ function love.load()
             
         end
 --baralho azul
-     cartas.construirBaralho()
+    cartas.construirBaralho()
 -- carregar cartas aleatórias     
     cartas.selecionarCartasRodada()
 --carregar conflito
-        conflitos.selecionar()
+    conflitos.selecionar()
 --Guarda florestal
     movGuarda.imagem = love.graphics.newImage("sprites/Guarda Provisorio.png")
 
-        --Configura a posição inicial do guarda
+--Configura a posição inicial do guarda
     movGuarda.x = pontosMovimentação[movGuarda.indiceAtual].x
     movGuarda.y = pontosMovimentação[movGuarda.indiceAtual].y
 
@@ -377,8 +434,7 @@ function love.load()
             (i-1) * larguraQuadro, 0,
             larguraQuadro, alturaQuadro,
             movGuarda.imagem:getDimensions()
-        ))
-        
+        ))   
     end
 end
 
@@ -500,7 +556,25 @@ function love.draw()
         buttons.running_state.pass_rodada:draw(675, 350, 10, 10)
         buttons.running_state.exit_in_game:draw(700, 10, 10, 10)
         
+        if menuAgua.ativa then
+            love.graphics.setColor(0, 0, 0, 0.8)
+            love.graphics.rectangle("fill", love.graphics.getWidth()/2 - 100, love.graphics.getHeight()/2 - 100, 200, 200, 10, 10)
+            love.graphics.setColor(1, 1, 1, 1)
+
+            love.graphics.print("Escolha a quantidade: ", love.graphics.getWidth()/2 - 40, love.graphics.getHeight()/2 - 80)
         
+            menuAgua.botoes.um:draw(menuAgua.botoes.um.x, menuAgua.botoes.um.y, 10, 10)
+            
+            if acoesRestantes >= 2 then
+                menuAgua.botoes.dois:draw(menuAgua.botoes.dois.x, menuAgua.botoes.dois.y, 10, 10)
+            end
+            if acoesRestantes >= 3 then
+                menuAgua.botoes.tres:draw(menuAgua.botoes.tres.x, menuAgua.botoes.tres.y, 10, 10)
+            end
+            
+            menuAgua.botoes.cancelar:draw(menuAgua.botoes.cancelar.x, menuAgua.botoes.cancelar.y, 10, 10)
+        end
+
         if confirmacao.ativa then
             --Fundinho preto transparente
             love.graphics.setColor(0, 0, 0, 0.7)
