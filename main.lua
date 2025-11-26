@@ -1,15 +1,18 @@
 local love = require "love"
 local button = require "Button"
-local cartas = require "cartas"
 local conflitos = require "conflitos"
 local hitbox = require "Hitbox"
 local ost = require "OST"
-
+local cartas = require "cartas"
+cartas.setAdicionarAgua(adicionarAgua)
 local movimento={
         mx=10,
         my=220
 }
 local agua = 5
+function adicionarAgua(qtd)
+    agua = agua + qtd
+end
 local imagemAgua={
         ficha=love.graphics.newImage("sprites/ficha gota.png"),
         fx=movimento.mx-5, fy=movimento.my+25     
@@ -147,9 +150,9 @@ end
 
 local game = {
     state = {
-        menu = false,
+        menu = true,
         paused = false,
-        running =true,
+        running =false,
         ended = false,
         
     },

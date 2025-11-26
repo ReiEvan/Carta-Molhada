@@ -7,10 +7,11 @@ local todasAliadas = {
         descricao = "Super Eficiente\nComece está rodada com 1 ação a mais."
     },
  {
+        id = "nascente",
         img = love.graphics.newImage("sprites/carta nascente.png"),
         descricao = "Carta da Nascente\nGanhe 2 águas."
     },
-    
+
     {
         img = love.graphics.newImage("sprites/carta 8 clarividencia.png"),
         descricao = 
@@ -60,7 +61,16 @@ local todasAliadas = {
             '(até o limite de 3)'
     }
 }
+local function aplicarEfeito(carta)
+    if carta.id == "nascente" and adicionarAgua then
+        adicionarAgua(2)    -- ⭐ AQUI É ONDE A ÁGUA AUMENTA
+    end
+end
+local adicionarAgua = nil
 
+local function setAdicionarAgua(func)
+    adicionarAgua = func
+end
 local CARD_WIDTH = 140
 local CARD_HEIGHT = 185
 local OFFSET_BETWEEN_CARDS = 3  
@@ -70,6 +80,9 @@ local contadorBaralho = CARDS_IN_BARALHO
 local HOVER_OFFSET = 120
 local descarte = {}
 local baralho = {}
+local cartaSelecionada = nil
+local efeitoDaCarta = nil
+local escolhaBloqueada = false
 
 local function criarFundo(x, y)
     return {
@@ -138,14 +151,22 @@ local cartaSelecionada = nil  -- armazena qual foi escolhida
 local efeitoDaCarta = nil     -- string mostrando qual efeito ocorreu
 
 local function selecionarCartaPorTecla(key)
+   if escolhaBloqueada then
+        return
+    end
+
     if key == "1" and cartasRodada[1] then
         cartaSelecionada = cartasRodada[1]
+        aplicarEfeito(cartaSelecionada)
         efeitoDaCarta = "Você escolheu a carta da ESQUERDA!"
+        escolhaBloqueada = true  -- agora trava corretamente
         print("Carta da esquerda ativada: " .. cartaSelecionada.descricao)
 
     elseif key == "2" and cartasRodada[2] then
         cartaSelecionada = cartasRodada[2]
+        aplicarEfeito(cartaSelecionada)
         efeitoDaCarta = "Você escolheu a carta da DIREITA!"
+        escolhaBloqueada = true
         print("Carta da direita ativada: " .. cartaSelecionada.descricao)
     end
 end
@@ -203,7 +224,9 @@ end
 -- SORTEIO DE 2 CARTAS
 local function selecionarCartasRodada()
     cartasRodada = {}
-
+    cartaSelecionada = nil
+    escolhaBloqueada = false
+    efeitoDaCarta = nil
     -- 1° carta garantida
     cartasRodada[1] = puxarCartaGarantido()
 
@@ -322,5 +345,6 @@ return {
     desenharCartasRodada = desenharCartasRodada,
 
     selecionarCartaPorTecla = selecionarCartaPorTecla,
-    desenharResultadoEscolha = desenharResultadoEscolha
+    desenharResultadoEscolha = desenharResultadoEscolha,
+        setAdicionarAgua = setAdicionarAgua
 }
