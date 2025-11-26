@@ -6,7 +6,31 @@ local ost = require "OST"
 local cartas = require "cartas"
 -- função que gerencia a quantidade de água
 local agua = 5
+<<<<<<< HEAD
 local aguaMax = 10
+=======
+function adicionarAgua(qtd)
+    agua = agua + qtd
+end
+local function adicionarAgua(valor)
+    agua = agua + valor
+    if agua < 0 then agua = 0 end
+end
+
+-- vincula a função de água aos módulos
+cartas.setAdicionarAgua(adicionarAgua)
+conflitos.setAdicionarAgua(adicionarAgua)
+
+local movimento={
+        mx=10,
+        my=220
+}
+
+local imagemAgua={
+        ficha=love.graphics.newImage("sprites/ficha gota.png"),
+        fx=movimento.mx-5, fy=movimento.my+25     
+}
+>>>>>>> d9213879074dd4a8c507d313be8721869568074b
 local escala = 0.5
 local rodada = 1
 local card_back_image
@@ -18,6 +42,7 @@ local escalaHex = 0.1111
 local rodadasPorPonto = {}
 local estadoTransformacao = {}
 local pontosBloqueados = {}
+<<<<<<< HEAD
 local movimentosRestantes = 2
 local acoesRestantes = 4
 --Variaveis de Vitória/Derrota
@@ -60,6 +85,31 @@ local imagemAgua={
     end
     --conflitos.setCallbacks(addAgua, addAcoes)
 
+=======
+local confirmacao = {
+    ativa = false,
+    indiceDestino = nil,
+    posicaoX = 0,
+    posicaoY = 0,
+    botoes= {}
+}
+
+--Desativa a confirmação após escolher
+    confirmacao.ativa = false
+    confirmacao.indiceDestino = nil
+local movimentosRestantes = 2
+local acoesRestantes = 4
+-- função de água
+local agua = 5
+local function adicionarAgua(valor)
+    agua = agua + valor
+    if agua < 0 then agua = 0 end
+end
+
+-- vincula aos módulos
+cartas.setAdicionarAgua(adicionarAgua)
+conflitos.setAdicionarAgua(adicionarAgua)
+>>>>>>> d9213879074dd4a8c507d313be8721869568074b
 local deck = {}
 --lista de pontos de movimentação
 local pontosMovimentação = {
@@ -123,15 +173,6 @@ local movGuarda = {
     frameAtual = 1,
     quadros = {}
 }
-
-local confirmacao = {
-    ativa = false,
-    indiceDestino = nil,
-    posicaoX = 0,
-    posicaoY = 0,
-    botoes = {}
-}
-
 local function confirmarMovimento()
     local destIndex = confirmacao.indiceDestino
 
@@ -149,17 +190,11 @@ local function confirmarMovimento()
             rodadasPorPonto[destIndex] = 0
         end
     end
-
---Desativa a confirmação após escolher
-    confirmacao.ativa = false
-    confirmacao.indiceDestino = nil
 end
-
 local function cancelarMovimento()
     confirmacao.ativa = false
     confirmacao.indiceDestino = nil
 end
-
 -- Funcao auxiliar para encontrar um valor em uma lista (substitui table.find)
 local function findInTable(t, value)
     for i, v in ipairs(t) do
@@ -178,25 +213,16 @@ local function movimentoPermitido(origem, destino)
     if not ehAdjascente(origem, destino) then
         return false
     end
---Verifica se o destino foi destruido
-    if pontosBloqueados[destino] then
-        return false
-    end
-
---Se o guarda está na base, ele sempre pode sair para qualquer vizinho vivo
-    if origem == 3 then
-        return true
-    end
-    
-    local estadoOrigem = hexAtivos[origem]
+--Estado atual e do destino
+    local estadoAtual = hexAtivos[origem]
     local estadoDestino = hexAtivos[destino]
---Não pode andar por cima do vermelho
+--Se está em uma zona nil, pode se mover para o vermelho
+    if estadoAtual == nil then
+        return estadoDestino == 1
+    end
+--Se está em uma zona vermelha ou marrom, não pode mover para o vermelho
     if estadoDestino == 1 then
-        if estadoOrigem == nil then
-            return true
-        else
-            return false
-        end
+        return false
     end
 --Se chegou aqui pode mover para vazio ou marrom
     return true
@@ -302,7 +328,7 @@ local function proxRodada()
                 hexAtivos[i] = nil
                 estadoTransformacao[i] = nil
                 rodadasPorPonto[i] = nil
-                
+                pontosBloqueados[i] = true
             end
         end
         
@@ -416,16 +442,11 @@ function love.mousepressed(x, y, button, isTouch, presses)
             return
         end
 
-        if confirmacao.ativa then
-            confirmacao.botoes.sim:checkPressed(x, y, player.radius)
-            confirmacao.botoes.nao:checkPressed(x, y, player.radius)
-            return
-        end
         --Garante que o guarda não está em movimento
         if movGuarda.destino ~= nil then
             return
         end
-        --logica de clicar no mapa
+
         local origem = movGuarda.indiceAtual
         --verfica colisão com cada ponto de movimentação
         for i, ponto in ipairs(pontosMovimentação) do
@@ -433,18 +454,21 @@ function love.mousepressed(x, y, button, isTouch, presses)
             if distancia <= ponto.raio then
                 local indiceDestino = i
                 if movimentosRestantes > 0 and movimentoPermitido(origem, indiceDestino) then
-
-                    confirmacao.ativa = true
-                    confirmacao.indiceDestino = indiceDestino
-                    confirmacao.posicaoX = ponto.x
-                    confirmacao.posicaoY = ponto.y
-                
-                    confirmacao.botoes.sim.x = ponto.x - 30
-                    confirmacao.botoes.sim.y = ponto.y - 20
-                    
-                    confirmacao.botoes.nao.x = ponto.x - 30
-                    confirmacao.botoes.nao.y = ponto.y + 15
+            movGuarda.destino = {x = ponto.x, y = ponto.y}
+            movimentosRestantes = movimentosRestantes - 1
+            --Atualiza o estado da imagem num ponto
+            if not pontosBloqueados[indiceDestino] then
+            if not hexAtivos[indiceDestino] then
+                hexAtivos[indiceDestino] = 1
+                estadoTransformacao[indiceDestino] = false
+                rodadasPorPonto[indiceDestino] = 0 
+            elseif hexAtivos[indiceDestino] == 1 then
+                hexAtivos[indiceDestino] = 2
+                estadoTransformacao[indiceDestino] = true
+                rodadasPorPonto[indiceDestino] = 0
             end
+        end
+        end
     return
     end
 end
@@ -453,8 +477,6 @@ end
     end
 
 end
-
-
 function love.load()
     love.mouse.setVisible(false)
     love.window.setTitle("Última Gota") --isso tá funcionando? // É o titulo que aparece na Janela do game
@@ -514,7 +536,7 @@ function love.load()
 -- carregar cartas aleatórias     
     cartas.selecionarCartasRodada()
 --carregar conflito
-    conflitos.selecionar()
+    conflitos.construirBaralho()
 --Guarda florestal
     movGuarda.imagem = love.graphics.newImage("sprites/Guarda Provisorio.png")
 
@@ -631,9 +653,11 @@ function love.draw()
         end
         
         cartas.desenharBaralho()
+        cartas.desenharCartasRodada()
         --conflitos.fundoConflito()
-        conflitos.draw()
         cartas.desenharResultadoEscolha()
+        conflitos.draw()
+        
         --Desenhar a hitbox enquanto o jogo ta rodando
         hitbox.desenhar(love.graphics.getWidth()/2 + 15, love.graphics.getHeight()/2 - 245, 45)
         hitbox.desenhar(love.graphics.getWidth()/2 + 15, love.graphics.getHeight()/2 - 145, 45)
@@ -654,7 +678,7 @@ function love.draw()
         hitbox.desenhar(love.graphics.getWidth()/2 - 75, love.graphics.getHeight()/2 - 95, 45)
         hitbox.desenhar(love.graphics.getWidth()/2 - 75, love.graphics.getHeight()/2 + 5, 45)
         hitbox.desenhar(love.graphics.getWidth()/2 - 75, love.graphics.getHeight()/2 + 105, 45)
-        cartas.desenharCartasRodada()
+        
         -- Guardinha florestal
         if  movGuarda.quadros[movGuarda.frameAtual] then
         love.graphics.draw(movGuarda.imagem, movGuarda.quadros[movGuarda.frameAtual], movGuarda.x-20, movGuarda.y-20, 0, 0.2, 0.2)
@@ -707,7 +731,7 @@ function love.draw()
         end
 
         love.graphics.circle("fill", player.x, player.y, player.radius)
-
+        
     elseif game.state["menu"] then
         buttons.menu_state.play_game:draw(10, 20, 10, 10)
         buttons.menu_state.settings:draw(10, 70, 10, 10)
@@ -728,6 +752,15 @@ function love.keypressed(key)
     if key == "escape" then
         game.state["paused"] = not game.state["paused"]
     end
-    cartas.selecionarCartaPorTecla(key)
+     cartas.selecionarCartaPorTecla(key)
+
+    if key == "1" or key == "2" then
+        -- aplica efeito da carta de aliados
+        -- depois aplica o conflito
+        conflitos.aplicarConflito()
+
+        -- prepara próxima rodada
+        cartas.selecionarCartasRodada()
+    end
 end
 

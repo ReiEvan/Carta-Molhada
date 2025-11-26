@@ -7,13 +7,15 @@ local todasAliadas = {
         descricao = "Comece esta rodada com 1 ação a mais."
     },
 
-    {
-        id = "Carta da Nascente",
-        img = love.graphics.newImage("sprites/carta nascente.png"),
-        descricao = "Ganhe 2 águas.",
-        efeito = function()
+   { 
+    id = "Carta da Nascente",
+    img = love.graphics.newImage("sprites/carta nascente.png"),
+    descricao = "Ganhe 2 águas.",
+    efeito = function()
+        if adicionarAgua then
             adicionarAgua(2)
         end
+    end
     },
 
     {
