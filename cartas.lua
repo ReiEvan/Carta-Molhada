@@ -66,7 +66,9 @@ local todasAliadas = {
         descricao =
             "Troque 1 ação por 1 ficha de água\n(até o limite de 3)",
         efeito = function()
-            adicionarAgua(1)
+            if abrirMenuAgua then
+                abrirMenuAgua()
+            end
         end
     }
 }
@@ -75,11 +77,15 @@ local todasAliadas = {
 -- FUNÇÕES DE SINCRONIZAÇÃO COM O MAIN
 ---------------------------------------------------------
 local adicionarAgua = nil
+local abrirMenuAgua = nil
 
 function setAdicionarAgua(func)
     adicionarAgua = func
 end
 
+function setAbrirMenuAgua(func)
+    abrirMenuAgua = func
+end
 ---------------------------------------------------------
 -- CONFIGURAÇÕES GERAIS
 ---------------------------------------------------------
@@ -356,5 +362,6 @@ return {
     selecionarCartaPorTecla = selecionarCartaPorTecla,
     desenharResultadoEscolha = desenharResultadoEscolha,
 
-    setAdicionarAgua = setAdicionarAgua
+    setAdicionarAgua = setAdicionarAgua,
+    setAbrirMenuAgua = setAbrirMenuAgua
 }
