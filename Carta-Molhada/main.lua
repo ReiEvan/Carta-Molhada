@@ -7,25 +7,6 @@ local cartas = require "cartas"
 -- função que gerencia a quantidade de água
 local agua = 5
 local aguaMax = 10
-function adicionarAgua(qtd)
-    agua = agua + qtd
-end
-local function adicionarAgua(valor)
-    agua = agua + valor
-    if agua < 0 then agua = 0 end
-end
-
--- vincula a função de água aos módulos
-cartas.setAdicionarAgua(adicionarAgua)
-local movimento={
-        mx=10,
-        my=220
-}
-
-local imagemAgua={
-        ficha=love.graphics.newImage("sprites/ficha gota.png"),
-        fx=movimento.mx-5, fy=movimento.my+25     
-}
 local escala = 0.5
 local rodada = 1
 local card_back_image
@@ -49,8 +30,18 @@ local fimDeJogo = {
     mensagem = "",
     cor = {1, 1, 1}
 }
+
+local confirmacao = {
+    ativa = false,
+    indiceDestino = nil,
+    posicaoX = 0,
+    posicaoY = 0,
+    botoes = {}
+}
+
 -- vincula a função de água aos módulos
 cartas.setAdicionarAgua(adicionarAgua)
+conflitos.setAdicionarAgua(adicionarAgua)
 
 local movimento={
     mx=10,
@@ -59,7 +50,7 @@ local movimento={
 
 local imagemAgua={
         ficha=love.graphics.newImage("sprites/ficha gota.png"),
-        fx=movimento.mx-5, fy=movimento.my+25     
+        fx=movimento.mx-5, fy=movimento.my+25
     }
     local function addAgua(v)
         agua = math.max(0, math.min(agua + v, aguaMax))
@@ -78,34 +69,6 @@ local imagemAgua={
     end
     --conflitos.setCallbacks(addAgua, addAcoes)
 
-local confirmacao = {
-    ativa = false,
-    indiceDestino = nil,
-    posicaoX = 0,
-    posicaoY = 0,
-    botoes= {}
-}
-local rodadaAtiva = false
-local efeitoConflitoAplicado = false
-
-
-    cartas.selecionarCartasRodada()
---Desativa a confirmação após escolher
-    confirmacao.ativa = false
-    confirmacao.indiceDestino = nil
-local movimentosRestantes = 2
-local acoesRestantes = 4
--- função de água
-local agua = 5
-local function adicionarAgua(valor)
-    agua = agua + valor
-    if agua < 0 then 
-    agua = 0 
-    end
-end
-
--- vincula aos módulos
-cartas.setAdicionarAgua(adicionarAgua)
 local deck = {}
 --lista de pontos de movimentação
 local pontosMovimentacao = {
@@ -293,27 +256,40 @@ local buttons = {
     running_state = {}
     
 }
+--Função que executa a troca (pelos botões)
+local function realizarTrocaAgua(qtd)
+    if acoesRestantes >= qtd then
+        acoesRestantes = acoesRestantes - qtd
+        adicionarAgua(qtd)
+        menuAgua.ativa = false --fecha o menu
+        print("Trocou " .. qtd .. " ações por água.")
+    end
+end
+--Função para cancelar (usada pelo botão Cancelar)
+local function cancelarTroca()
+    menuAgua.ativa = false
+end
 
 local function proxRodada()
         rodada = rodada + 1
         movimentosRestantes = 2
         cartas.selecionarCartasRodada()
-        agua = agua-1
-        if agua < 0 then
-        agua = 0
-    end
+        agua = math.max(0, agua - 1)
+        
 
 --verifica e remove as imagens q foram transformadas depois de duas rodadas
     for i = 1, #pontosMovimentacao do
-        if rodadasPorPonto[i] then
-            rodadasPorPonto[i] = rodadasPorPonto[i] + 1
-
-            --só remove se a imagem foi transformada e completou duas rodadas
-            if estadoTransformacao[i] and rodadasPorPonto[i] >= 2 then
-                hexAtivos[i] = nil
-                estadoTransformacao[i] = nil
-                rodadasPorPonto[i] = nil
-                pontosBloqueados[i] = true
+        if i ~= 3 then
+            if rodadasPorPonto[i] then
+                rodadasPorPonto[i] = rodadasPorPonto[i] + 1
+                
+                --só remove se a imagem foi transformada e completou duas rodadas
+                if estadoTransformacao[i] and rodadasPorPonto[i] >= 2 then
+                    hexAtivos[i] = nil
+                    estadoTransformacao[i] = nil
+                    rodadasPorPonto[i] = nil
+                    pontosBloqueados[i] = true
+                end
             end
         end
         
@@ -414,6 +390,18 @@ end
 function love.mousepressed(x, y, button, isTouch, presses)
     if button == 1 and not game.state["paused"] then
         
+        if menuAgua.ativa then
+            menuAgua.botoes.um:checkPressed(x, y, player.radius)
+            menuAgua.botoes.cancelar:checkPressed(x, y, player.radius)
+        
+            if acoesRestantes >= 2 then
+                menuAgua.botoes.dois:checkPressed(x, y, player.radius)
+            end
+            if acoesRestantes >= 3 then
+                menuAgua.botoes.tres:checkPressed(x, y, player.radius)
+            end
+            return
+        end
 
         --Garante que o guarda não está em movimento
         if movGuarda.destino ~= nil then
@@ -472,10 +460,30 @@ function love.load()
     --Botões do Menu de Água (Carta)
     local cx, cy = love.graphics.getWidth()/2 - 70, love.graphics.getHeight()/2 - 50
 
-    
+    menuAgua.botoes.um = button("+1 Água -1 Ação", function () realizarTrocaAgua(1) end, nil, 140, 30)
+    menuAgua.botoes.um.x = cx
+    menuAgua.botoes.um.y = cy
 
+    menuAgua.botoes.dois = button("+2 Água -2 Ação", function () realizarTrocaAgua(2) end, nil, 140, 30)
+    menuAgua.botoes.dois.x = cx
+    menuAgua.botoes.dois.y = cy + 40
 
+    menuAgua.botoes.tres = button("+3 Água -3 Ação", function () realizarTrocaAgua(3) end, nil, 140, 30)
+    menuAgua.botoes.tres.x = cx
+    menuAgua.botoes.tres.y = cy + 80
 
+    menuAgua.botoes.cancelar = button("Cancelar", cancelarTroca, nil, 100, 30)
+    menuAgua.botoes.um.x = cx + 20
+    menuAgua.botoes.um.y = cy + 130
+
+    cartas.setAdicionarAgua(adicionarAgua)
+    cartas.setAbrirMenuAgua(function ()
+        if acoesRestantes >= 1 then
+            menuAgua.ativa = true
+        else
+            print("Sem ações suficientes")
+        end
+    end)
     --Iniciar o jogo com os Hex vermelhos
         for i = 1, #pontosMovimentacao do
             if i ~= 3 then
@@ -486,15 +494,12 @@ function love.load()
             end
             
         end
-    cartas.setAdicionarAgua(adicionarAgua)
-    
-    
 --baralho azul
     cartas.construirBaralho()
 -- carregar cartas aleatórias     
     cartas.selecionarCartasRodada()
 --carregar conflito
-    --conflitos.construirBaralho()
+    conflitos.construirBaralho()
 --Guarda florestal
     movGuarda.imagem = love.graphics.newImage("sprites/Guarda Provisorio.png")
 
@@ -612,11 +617,10 @@ function love.draw()
         
         cartas.desenharBaralho()
         cartas.desenharCartasRodada()
-        conflitos.fundoConflito()
+        --conflitos.fundoConflito()
         cartas.desenharResultadoEscolha()
-
-       
-
+        conflitos.draw()
+        
         --Desenhar a hitbox enquanto o jogo ta rodando
         hitbox.desenhar(love.graphics.getWidth()/2 + 15, love.graphics.getHeight()/2 - 245, 45)
         hitbox.desenhar(love.graphics.getWidth()/2 + 15, love.graphics.getHeight()/2 - 145, 45)
@@ -648,6 +652,25 @@ function love.draw()
         buttons.running_state.pass_rodada:draw(675, 350, 10, 10)
         buttons.running_state.exit_in_game:draw(700, 10, 10, 10)
         
+        if menuAgua.ativa then
+            love.graphics.setColor(0, 0, 0, 0.8)
+            love.graphics.rectangle("fill", love.graphics.getWidth()/2 - 100, love.graphics.getHeight()/2 - 100, 200, 200, 10, 10)
+            love.graphics.setColor(1, 1, 1, 1)
+
+            love.graphics.print("Escolha a quantidade: ", love.graphics.getWidth()/2 - 40, love.graphics.getHeight()/2 - 80)
+        
+            menuAgua.botoes.um:draw(menuAgua.botoes.um.x, menuAgua.botoes.um.y, 10, 10)
+            
+            if acoesRestantes >= 2 then
+                menuAgua.botoes.dois:draw(menuAgua.botoes.dois.x, menuAgua.botoes.dois.y, 10, 10)
+            end
+            if acoesRestantes >= 3 then
+                menuAgua.botoes.tres:draw(menuAgua.botoes.tres.x, menuAgua.botoes.tres.y, 10, 10)
+            end
+            
+            menuAgua.botoes.cancelar:draw(menuAgua.botoes.cancelar.x, menuAgua.botoes.cancelar.y, 10, 10)
+        end
+
         if confirmacao.ativa then
             --Fundinho preto transparente
             love.graphics.setColor(0, 0, 0, 0.7)
@@ -688,12 +711,19 @@ function love.draw()
     end
 
 end
-
 function love.keypressed(key)
     if key == "escape" then
         game.state["paused"] = not game.state["paused"]
     end
      cartas.selecionarCartaPorTecla(key)
 
-    
+    if key == "1" or key == "2" then
+        -- aplica efeito da carta de aliados
+        -- depois aplica o conflito
+        conflitos.aplicarConflito()
+
+        -- prepara próxima rodada
+        cartas.selecionarCartasRodada()
+    end
 end
+
