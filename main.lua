@@ -176,7 +176,7 @@ local function proxRodada()
         rodada = rodada + 1
         movimentosRestantes = 2
         cartas.selecionarCartasRodada()
-        agua = agua-1
+        agua = math.max(0, agua - 1)
         
 
 --verifica e remove as imagens q foram transformadas depois de duas rodadas
