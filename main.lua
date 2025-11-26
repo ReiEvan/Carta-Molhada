@@ -169,6 +169,10 @@ local movGuarda = {
     frameAtual = 1,
     quadros = {}
 }
+local function cancelarMovimento()
+    confirmacao.ativa = false
+    confirmacao.indiceDestino = nil
+end
 local function confirmarMovimento()
     local destIndex = confirmacao.indiceDestino
 
@@ -180,16 +184,18 @@ local function confirmarMovimento()
     acoesRestantes = acoesRestantes - 1
 
     if destIndex ~= 3 and not pontosBloqueados[destIndex] then
-        if hexAtivos[destIndex] == 1 then
-            hexAtivos[destIndex] = 2
-            estadoTransformacao[destIndex] = true
+        if not hexAtivos[destIndex] then
+            hexAtivos[destIndex] = 1
+            estadoTransformacao[destIndex] = false
             rodadasPorPonto[destIndex] = 0
+
+            elseif hexAtivos[destIndex] == 1 then
+                hexAtivos[destIndex] = 2
+                estadoTransformacao[destIndex] = true
+                rodadasPorPonto[destIndex] = 0
         end
     end
-end
-local function cancelarMovimento()
-    confirmacao.ativa = false
-    confirmacao.indiceDestino = nil
+    cancelarMovimento()
 end
 -- Funcao auxiliar para encontrar um valor em uma lista (substitui table.find)
 local function findInTable(t, value)
@@ -297,6 +303,7 @@ local buttons = {
 local function proxRodada()
         rodada = rodada + 1
         movimentosRestantes = 2
+        acoesRestantes = 4
         cartas.selecionarCartasRodada()
         agua = agua-1
         if agua < 0 then
@@ -414,6 +421,11 @@ end
 function love.mousepressed(x, y, button, isTouch, presses)
     if button == 1 and not game.state["paused"] then
         
+        if confirmacao.ativa then
+            confirmacao.botoes.sim:checkPressed(x, y, player.radius)
+            confirmacao.botoes.nao:checkPressed(x, y, player.radius)
+            return
+        end
 
         --Garante que o guarda não está em movimento
         if movGuarda.destino ~= nil then
@@ -427,31 +439,31 @@ function love.mousepressed(x, y, button, isTouch, presses)
             if distancia <= ponto.raio then
                 local indiceDestino = i
                 if movimentosRestantes > 0 and movimentoPermitido(origem, indiceDestino) then
-            movGuarda.destino = {x = ponto.x, y = ponto.y}
-            movimentosRestantes = movimentosRestantes - 1
-            if indiceDestino ~= 3 then
-                --Atualiza o estado da imagem num ponto
-                if not pontosBloqueados[indiceDestino] then
-                    if not hexAtivos[indiceDestino] then
-                        hexAtivos[indiceDestino] = 1
-                        estadoTransformacao[indiceDestino] = false
-                        rodadasPorPonto[indiceDestino] = 0 
-                    elseif hexAtivos[indiceDestino] == 1 then
-                        hexAtivos[indiceDestino] = 2
-                        estadoTransformacao[indiceDestino] = true
-                        rodadasPorPonto[indiceDestino] = 0
-                    end
+        --Ativa o menu de confirmação
+                    confirmacao.ativa = true
+                    confirmacao.indiceDestino = indiceDestino
+        --Define a posição da caixa de confirmação
+                    confirmacao.posicaoX = ponto.x
+                    confirmacao.posicaoY = ponto.y
+        --Posiciona os botões "Sim" e "Não"
+                    local yBase = ponto.y + 10
+                    local offset = 35
+
+                    confirmacao.botoes.sim.x = ponto.x - offset
+                    confirmacao.botoes.sim.y = yBase
+
+                    confirmacao.botoes.nao.x = ponto.x + offset
+                    confirmacao.botoes.nao.y = yBase
+
+                    return
                 end
             end
         end
-    return
     end
-end
-
     handle_button_click(x, y, player.radius)
-    end
-
 end
+
+
 function love.load()
     love.mouse.setVisible(false)
     love.window.setTitle("Última Gota") --isso tá funcionando? // É o titulo que aparece na Janela do game
