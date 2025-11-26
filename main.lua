@@ -99,6 +99,42 @@ local movGuarda = {
     quadros = {}
 }
 
+local confirmacao = {
+    ativa = false,
+    indiceDestino = nil,
+    posicaoX = 0,
+    posicaoY = 0,
+    botoes = {}
+}
+
+local function confirmarMovimento()
+    local destIndex = confirmacao.indiceDestino
+
+--Recupera a posição do destino baseada no índice salvo
+    local pontoDestino = pontosMovimentação[destIndex]
+--Executa a movimentação
+    movGuarda.destino = {x = pontoDestino.x, y = pontoDestino.y}
+    movimentosRestantes = movimentosRestantes - 1
+    acoesRestantes = acoesRestantes - 1
+
+    if destIndex ~= 3 and not pontosBloqueados[destIndex] then
+        if hexAtivos[destIndex] == 1 then
+            hexAtivos[destIndex] = 2
+            estadoTransformacao[destIndex] = true
+            rodadasPorPonto[destIndex] = 0
+        end
+    end
+
+--Desativa a confirmação após escolher
+    confirmacao.ativa = false
+    confirmacao.indiceDestino = nil
+end
+
+local function cancelarMovimento()
+    confirmacao.ativa = false
+    confirmacao.indiceDestino = nil
+end
+
 -- Funcao auxiliar para encontrar um valor em uma lista (substitui table.find)
 local function findInTable(t, value)
     for i, v in ipairs(t) do
@@ -117,16 +153,25 @@ local function movimentoPermitido(origem, destino)
     if not ehAdjascente(origem, destino) then
         return false
     end
---Estado atual e do destino
-    local estadoAtual = hexAtivos[origem]
-    local estadoDestino = hexAtivos[destino]
---Se está em uma zona nil, pode se mover para o vermelho
-    if estadoAtual == nil then
-        return estadoDestino == 1
-    end
---Se está em uma zona vermelha ou marrom, não pode mover para o vermelho
-    if estadoDestino == 1 then
+--Verifica se o destino foi destruido
+    if pontosBloqueados[destino] then
         return false
+    end
+
+--Se o guarda está na base, ele sempre pode sair para qualquer vizinho vivo
+    if origem == 3 then
+        return true
+    end
+    
+    local estadoOrigem = hexAtivos[origem]
+    local estadoDestino = hexAtivos[destino]
+--Não pode andar por cima do vermelho
+    if estadoDestino == 1 then
+        if estadoOrigem == nil then
+            return true
+        else
+            return false
+        end
     end
 --Se chegou aqui pode mover para vazio ou marrom
     return true
@@ -189,7 +234,7 @@ local function proxRodada()
                 hexAtivos[i] = nil
                 estadoTransformacao[i] = nil
                 rodadasPorPonto[i] = nil
-                pontosBloqueados[i] = true
+                
             end
         end
         
@@ -226,11 +271,16 @@ end
 function love.mousepressed(x, y, button, isTouch, presses)
     if button == 1 and not game.state["paused"] then
 
+        if confirmacao.ativa then
+            confirmacao.botoes.sim:checkPressed(x, y, player.radius)
+            confirmacao.botoes.nao:checkPressed(x, y, player.radius)
+            return
+        end
         --Garante que o guarda não está em movimento
         if movGuarda.destino ~= nil then
             return
         end
-
+        --logica de clicar no mapa
         local origem = movGuarda.indiceAtual
         --verfica colisão com cada ponto de movimentação
         for i, ponto in ipairs(pontosMovimentação) do
@@ -238,21 +288,18 @@ function love.mousepressed(x, y, button, isTouch, presses)
             if distancia <= ponto.raio then
                 local indiceDestino = i
                 if movimentosRestantes > 0 and movimentoPermitido(origem, indiceDestino) then
-            movGuarda.destino = {x = ponto.x, y = ponto.y}
-            movimentosRestantes = movimentosRestantes - 1
-            --Atualiza o estado da imagem num ponto
-            if not pontosBloqueados[indiceDestino] then
-            if not hexAtivos[indiceDestino] then
-                hexAtivos[indiceDestino] = 1
-                estadoTransformacao[indiceDestino] = false
-                rodadasPorPonto[indiceDestino] = 0 
-            elseif hexAtivos[indiceDestino] == 1 then
-                hexAtivos[indiceDestino] = 2
-                estadoTransformacao[indiceDestino] = true
-                rodadasPorPonto[indiceDestino] = 0
+
+                    confirmacao.ativa = true
+                    confirmacao.indiceDestino = indiceDestino
+                    confirmacao.posicaoX = ponto.x
+                    confirmacao.posicaoY = ponto.y
+                
+                    confirmacao.botoes.sim.x = ponto.x - 30
+                    confirmacao.botoes.sim.y = ponto.y - 20
+                    
+                    confirmacao.botoes.nao.x = ponto.x - 30
+                    confirmacao.botoes.nao.y = ponto.y + 15
             end
-        end
-        end
     return
     end
 end
@@ -277,7 +324,8 @@ function love.load()
     --Botões no jogo rodando
         buttons.running_state.pass_rodada = button("Passar Rodada", proxRodada, nil, 120, 30)
         buttons.running_state.exit_in_game = button("Sair", love.event.quit, nil, 80, 30)
-
+        confirmacao.botoes.sim = button("Sim", confirmarMovimento, nil, 50, 25)
+        confirmacao.botoes.nao = button("Não", cancelarMovimento, nil, 50, 25)
     --Iniciar o jogo com os Hex vermelhos
         for i = 1, #pontosMovimentação do
             if i ~= 3 then
@@ -430,8 +478,21 @@ function love.draw()
         buttons.running_state.pass_rodada:draw(675, 350, 10, 10)
         buttons.running_state.exit_in_game:draw(700, 10, 10, 10)
         
-        love.graphics.circle("fill", player.x, player.y, player.radius)
         
+        if confirmacao.ativa then
+            --Fundinho preto transparente
+            love.graphics.setColor(0, 0, 0, 0.7)
+            love.graphics.rectangle("fill", confirmacao.posicaoX - 40, confirmacao.posicaoY - 30, 80, 80, 10, 10)
+            love.graphics.setColor(1, 1, 1, 1)
+            --Desenho dos botoes
+            confirmacao.botoes.sim:draw(confirmacao.botoes.sim.x, confirmacao.botoes.sim.y, 10, 10)
+            confirmacao.botoes.nao:draw(confirmacao.botoes.nao.x, confirmacao.botoes.nao.y, 10, 10)
+            
+            love.graphics.print("Mover?", confirmacao.posicaoX - 25, confirmacao.posicaoY - 45)
+        end
+        
+        love.graphics.circle("fill", player.x, player.y, player.radius)
+
     elseif game.state["menu"] then
         buttons.menu_state.play_game:draw(10, 20, 10, 10)
         buttons.menu_state.settings:draw(10, 70, 10, 10)
