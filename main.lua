@@ -173,6 +173,8 @@ local function proxRodada()
         rodada = rodada + 1
         movimentosRestantes = 2
         cartas.selecionarCartasRodada()
+        agua = agua-1
+        
 
 --verifica e remove as imagens q foram transformadas depois de duas rodadas
     for i = 1, #pontosMovimentação do
@@ -312,7 +314,7 @@ end
 function love.update(dt)
     player.x, player.y = love.mouse.getPosition()
     cartas.reposicionarBaralho()
-    cartas.atualizarInteracaoCartas(dt)
+    cartas.atualizarInteracaoCartas()
     if movGuarda.destino then
         local dx = movGuarda.destino.x - movGuarda.x
         local dy = movGuarda.destino.y - movGuarda.y
@@ -393,6 +395,7 @@ function love.draw()
         
         cartas.desenharBaralho()
         conflitos.fundoConflito()
+        cartas.desenharResultadoEscolha()
         --Desenhar a hitbox enquanto o jogo ta rodando
         hitbox.desenhar(love.graphics.getWidth()/2 + 15, love.graphics.getHeight()/2 - 245, 45)
         hitbox.desenhar(love.graphics.getWidth()/2 + 15, love.graphics.getHeight()/2 - 145, 45)
@@ -446,5 +449,6 @@ function love.keypressed(key)
     if key == "escape" then
         game.state["paused"] = not game.state["paused"]
     end
+    cartas.selecionarCartaPorTecla(key)
 end
 

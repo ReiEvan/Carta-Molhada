@@ -3,15 +3,18 @@ local love = require "love"
 
 local todasAliadas = {
     {
+        img = love.graphics.newImage("sprites/carta super eficiente.png"),
+        descricao = "Super Eficiente\nComece está rodada com 1 ação a mais."
+    },
+ {
         img = love.graphics.newImage("sprites/carta nascente.png"),
         descricao = "Carta da Nascente\nGanhe 2 águas."
     },
-
+    
     {
         img = love.graphics.newImage("sprites/carta 8 clarividencia.png"),
         descricao = 
-        "Clarividência\nDescubra qual\n"..
-        "será o conflito do próximo turno."
+        "Clarividência\nDescubra qual será o conflito do próximo turno."
     },
 
     {
@@ -127,6 +130,36 @@ end
 local cartasRodada = {}
 local hoverIndex = nil
 
+-----------------------------------------------------
+-- SELEÇÃO DE CARTAS (TECLAS 1 E 2)
+-----------------------------------------------------
+
+local cartaSelecionada = nil  -- armazena qual foi escolhida
+local efeitoDaCarta = nil     -- string mostrando qual efeito ocorreu
+
+local function selecionarCartaPorTecla(key)
+    if key == "1" and cartasRodada[1] then
+        cartaSelecionada = cartasRodada[1]
+        efeitoDaCarta = "Você escolheu a carta da ESQUERDA!"
+        print("Carta da esquerda ativada: " .. cartaSelecionada.descricao)
+
+    elseif key == "2" and cartasRodada[2] then
+        cartaSelecionada = cartasRodada[2]
+        efeitoDaCarta = "Você escolheu a carta da DIREITA!"
+        print("Carta da direita ativada: " .. cartaSelecionada.descricao)
+    end
+end
+
+-----------------------------------------------------
+-- DESENHAR RESULTADO DA ESCOLHA NA TELA
+-----------------------------------------------------
+local function desenharResultadoEscolha()
+    if efeitoDaCarta then
+        love.graphics.setColor(1, 1, 0)
+        love.graphics.print(efeitoDaCarta, 50, 100)
+        love.graphics.setColor(1, 1, 1)
+    end
+end
 
 local function puxarCartaGarantido()
     -- caso o baralho tenha 0 cartas, recarrega
@@ -286,5 +319,8 @@ return {
 
     selecionarCartasRodada = selecionarCartasRodada,
     atualizarInteracaoCartas = atualizarInteracaoCartas,
-    desenharCartasRodada = desenharCartasRodada
+    desenharCartasRodada = desenharCartasRodada,
+
+    selecionarCartaPorTecla = selecionarCartaPorTecla,
+    desenharResultadoEscolha = desenharResultadoEscolha
 }
