@@ -76,7 +76,6 @@ local imagemAgua={
         agua = agua + valor
         if agua < 0 then agua = 0 end
     end
-    --conflitos.setCallbacks(addAgua, addAcoes)
 
 local confirmacao = {
     ativa = false,
