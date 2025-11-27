@@ -22,10 +22,6 @@ local movimento={
         my=220
 }
 
-local imagemAgua={
-        ficha=love.graphics.newImage("sprites/ficha gota.png"),
-        fx=movimento.mx-5, fy=movimento.my+25     
-}
 local escala = 0.5
 local rodada = 1
 local card_back_image
@@ -411,7 +407,7 @@ local function verificarEstadoJogo()
 --Checa se cumpriu os dois requisitos (3 na base + 3 fora)
     if vizinhosSeguros >= 3 and objetivosConquistados >= 3 then
         fimDeJogo.ativo = true
-        fimDeJogo.mensagem = "TRIUNFO!\nA ilha foi salva."
+        fimDeJogo.mensagem =string.format("TRIUNFO!\nVocê salvou a ilha\n em %s dias",rodada)
         fimDeJogo.cor = {0.18, 0.44, 0.25}
     end
 end
@@ -475,7 +471,7 @@ function love.load()
     buttons.menu_state.settings = button("Configurações", nil, nil, 120, 30)
     buttons.menu_state.exit_game = button("Sair", love.event.quit, nil, 80, 30)
     --Botões no jogo rodando
-    buttons.running_state.pass_rodada = button("Passar Rodada", proxRodada, nil, 120, 30)
+    buttons.running_state.pass_rodada = button("Proximo dia", proxRodada, nil, 120, 30)
     buttons.running_state.exit_in_game = button("Sair", love.event.quit, nil, 80, 30)
     --Botões de confirmação de movimento
     confirmacao.botoes.sim = button("Sim", confirmarMovimento, nil, 50, 25)
@@ -565,7 +561,7 @@ end
 
 -- Carregamento do mapa
 local mapa = love.graphics.newImage("sprites/mapagradeado.png")
-
+local background= love.graphics.newImage("sprites/logo do jogo.png")
 function love.draw()
     --Contagem do FPS
     love.graphics.printf("FPS: " .. love.timer.getFPS(), love.graphics.newFont(16),
@@ -584,7 +580,7 @@ function love.draw()
         love.graphics.setColor(1, 1, 1)
         love.graphics.setFont(fonte.normal)
         --Numeração da rodada atual
-        love.graphics.print("Rodada " .. rodada, 710, 55, 0)
+        love.graphics.print("dia " .. rodada, 710, 55, 0)
          
         --love.graphics.clear(.937,.946,.96,1) para fazer o dundo do jogo
         --Saber a posição do mouse

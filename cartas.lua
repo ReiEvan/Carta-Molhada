@@ -331,6 +331,21 @@ local function desenharCartasRodada()
         y + offset + 45,
         larguraCaixa
     )
+ --------------------------------------------------------
+-- TEXTO "APERTE 1/2 PARA ATIVAR" (AGORA LARANJA E MAIS ACIMA)
+--------------------------------------------------------
+love.graphics.setColor(1, 0.6, 0)  -- laranja
+
+local direcao = (i == 1) and "Aperte 1 para ativar" or "Aperte 2 para ativar"
+
+love.graphics.printf(
+    direcao,
+    textoX,
+    y + offset + 110,   -- SUBIDO (era 150)
+    larguraCaixa,
+    "center"
+)
+love.graphics.setColor(1, 1, 1)
 end
 
         ::continue::
