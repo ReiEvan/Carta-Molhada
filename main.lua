@@ -1,11 +1,27 @@
 local love = require "love"
 local button = require "Button"
 local conflitos = require "conflitos"
-local hitbox = require "Hitbox"
+local hitbox = require "hitbox"
 local ost = require "OST"
 local cartas = require "cartas"
 -- função que gerencia a quantidade de água
 local agua = 5
+local aguaMax = 10
+function adicionarAgua(qtd)
+    agua = agua + qtd
+end
+local function adicionarAgua(valor)
+    agua = agua + valor
+    if agua < 0 then agua = 0 end
+end
+
+-- vincula a função de água aos módulos
+cartas.setAdicionarAgua(adicionarAgua)
+local movimento={
+        mx=10,
+        my=220
+}
+
 local escala = 0.5
 local rodada = 1
 local card_back_image
@@ -31,7 +47,6 @@ local fimDeJogo = {
 }
 -- vincula a função de água aos módulos
 cartas.setAdicionarAgua(adicionarAgua)
-conflitos.setAdicionarAgua(adicionarAgua)
 
 local movimento={
     mx=10,
@@ -57,11 +72,38 @@ local imagemAgua={
         agua = agua + valor
         if agua < 0 then agua = 0 end
     end
-    --conflitos.setCallbacks(addAgua, addAcoes)
 
+local confirmacao = {
+    ativa = false,
+    indiceDestino = nil,
+    posicaoX = 0,
+    posicaoY = 0,
+    botoes= {}
+}
+local rodadaAtiva = false
+local efeitoConflitoAplicado = false
+
+
+    cartas.selecionarCartasRodada()
+--Desativa a confirmação após escolher
+    confirmacao.ativa = false
+    confirmacao.indiceDestino = nil
+local movimentosRestantes = 2
+local acoesRestantes = 4
+-- função de água
+local agua = 5
+local function adicionarAgua(valor)
+    agua = agua + valor
+    if agua < 0 then 
+    agua = 0 
+    end
+end
+
+-- vincula aos módulos
+cartas.setAdicionarAgua(adicionarAgua)
 local deck = {}
 --lista de pontos de movimentação
-local pontosMovimentação = {
+local pontosMovimentacao = {
 
     {x = love.graphics.getWidth()/2 + 15, y = love.graphics.getHeight()/2 - 245, raio = 45},
     {x = love.graphics.getWidth()/2 + 15, y = love.graphics.getHeight()/2 - 145, raio = 45},
@@ -110,39 +152,45 @@ local pontosAdjascentes = {
 
 --Estado do guarda (onde ele está)
 local movGuarda = {
-    x = pontosMovimentação[3].x,
-    y = pontosMovimentação[3].y,
+    x = pontosMovimentacao[3].x,
+    y = pontosMovimentacao[3].y,
     indiceAtual = 3,
     imagem = love.graphics.newImage("sprites/Guarda Provisorio.png"),
     destino = nil,
     velocidade = 200,
-    raioColisão = 30,
+    raioColisao = 30,
     interagindo = false,
     direcao = "direita",
     frameAtual = 1,
     quadros = {}
 }
+local function cancelarMovimento()
+    confirmacao.ativa = false
+    confirmacao.indiceDestino = nil
+end
 local function confirmarMovimento()
     local destIndex = confirmacao.indiceDestino
 
 --Recupera a posição do destino baseada no índice salvo
-    local pontoDestino = pontosMovimentação[destIndex]
+    local pontoDestino = pontosMovimentacao[destIndex]
 --Executa a movimentação
     movGuarda.destino = {x = pontoDestino.x, y = pontoDestino.y}
     movimentosRestantes = movimentosRestantes - 1
     acoesRestantes = acoesRestantes - 1
 
     if destIndex ~= 3 and not pontosBloqueados[destIndex] then
-        if hexAtivos[destIndex] == 1 then
-            hexAtivos[destIndex] = 2
-            estadoTransformacao[destIndex] = true
+        if not hexAtivos[destIndex] then
+            hexAtivos[destIndex] = 1
+            estadoTransformacao[destIndex] = false
             rodadasPorPonto[destIndex] = 0
+
+            elseif hexAtivos[destIndex] == 1 then
+                hexAtivos[destIndex] = 2
+                estadoTransformacao[destIndex] = true
+                rodadasPorPonto[destIndex] = 0
         end
     end
-end
-local function cancelarMovimento()
-    confirmacao.ativa = false
-    confirmacao.indiceDestino = nil
+    cancelarMovimento()
 end
 -- Funcao auxiliar para encontrar um valor em uma lista (substitui table.find)
 local function findInTable(t, value)
@@ -167,7 +215,7 @@ local function movimentoPermitido(origem, destino)
     local estadoDestino = hexAtivos[destino]
 --Se está em uma zona nil, pode se mover para o vermelho
     if estadoAtual == nil then
-        return estadoDestino == 1
+        return true
     end
 --Se está em uma zona vermelha ou marrom, não pode mover para o vermelho
     if estadoDestino == 1 then
@@ -198,7 +246,7 @@ local function definirObjetivos()
     --Lista todos os pontos que não são a base (3) nem adjascentes a ela
     local vizinhosBase = pontosAdjascentes[3]
 
-    for i = 1, #pontosMovimentação do
+    for i = 1, #pontosMovimentacao do
         local ehVizinho = false
         for _, v in ipairs(vizinhosBase) do
             if i == v then ehVizinho = true break end
@@ -246,29 +294,19 @@ local buttons = {
     running_state = {}
     
 }
---Função que executa a troca (pelos botões)
-local function realizarTrocaAgua(qtd)
-    if acoesRestantes >= qtd then
-        acoesRestantes = acoesRestantes - qtd
-        adicionarAgua(qtd)
-        menuAgua.ativa = false --fecha o menu
-        print("Trocou " .. qtd .. " ações por água.")
-    end
-end
---Função para cancelar (usada pelo botão Cancelar)
-local function cancelarTroca()
-    menuAgua.ativa = false
-end
 
 local function proxRodada()
         rodada = rodada + 1
         movimentosRestantes = 2
+        acoesRestantes = 4
         cartas.selecionarCartasRodada()
-        agua = math.max(0, agua - 1)
-        
+        agua = agua-1
+        if agua < 0 then
+        agua = 0
+    end
 
 --verifica e remove as imagens q foram transformadas depois de duas rodadas
-    for i = 1, #pontosMovimentação do
+    for i = 1, #pontosMovimentacao do
         if rodadasPorPonto[i] then
             rodadasPorPonto[i] = rodadasPorPonto[i] + 1
 
@@ -329,7 +367,7 @@ local function verificarEstadoJogo()
     end
 --Ficar sem areas verdes
     local temVerde = false
-    for i = 1, #pontosMovimentação do
+    for i = 1, #pontosMovimentacao do
         if hexAtivos[i] == nil and not pontosBloqueados[i] then
             temVerde = true
             break
@@ -354,7 +392,7 @@ local function verificarEstadoJogo()
     local vizinhosBase = pontosAdjascentes[3]
     if vizinhosBase then
         for _, vizinhoIndex in ipairs(vizinhosBase) do
-            if hexAtivos[vizinhoIndex] == nil and not pontosBloqueados[vizinhoIndex] then
+            if hexAtivos[vizinhoIndex] == nil then
                 vizinhosSeguros = vizinhosSeguros + 1
             end
         end
@@ -362,15 +400,15 @@ local function verificarEstadoJogo()
 
     local objetivosConquistados = 0
     for _, objIndex in ipairs(objetivosExternos) do
-        if hexAtivos[objIndex] == nil and not pontosBloqueados[objIndex] then
+        if hexAtivos[objIndex] == nil then
             objetivosConquistados = objetivosConquistados + 1
         end
     end
 --Checa se cumpriu os dois requisitos (3 na base + 3 fora)
     if vizinhosSeguros >= 3 and objetivosConquistados >= 3 then
         fimDeJogo.ativo = true
-        fimDeJogo.mensagem = "TRIUNFO!\nA ilha foi salva."
-        fimDeJogo.cor = {46, 111, 64}
+        fimDeJogo.mensagem =string.format("TRIUNFO!\nVocê salvou a ilha\n em %s dias",rodada)
+        fimDeJogo.cor = {0.18, 0.44, 0.25}
     end
 end
 
@@ -378,16 +416,9 @@ end
 function love.mousepressed(x, y, button, isTouch, presses)
     if button == 1 and not game.state["paused"] then
         
-        if menuAgua.ativa then
-            menuAgua.botoes.um:checkPressed(x, y, player.radius)
-            menuAgua.botoes.cancelar:checkPressed(x, y, player.radius)
-        
-            if acoesRestantes >= 2 then
-                menuAgua.botoes.dois:checkPressed(x, y, player.radius)
-            end
-            if acoesRestantes >= 3 then
-                menuAgua.botoes.tres:checkPressed(x, y, player.radius)
-            end
+        if confirmacao.ativa then
+            confirmacao.botoes.sim:checkPressed(x, y, player.radius)
+            confirmacao.botoes.nao:checkPressed(x, y, player.radius)
             return
         end
 
@@ -398,34 +429,36 @@ function love.mousepressed(x, y, button, isTouch, presses)
 
         local origem = movGuarda.indiceAtual
         --verfica colisão com cada ponto de movimentação
-        for i, ponto in ipairs(pontosMovimentação) do
+        for i, ponto in ipairs(pontosMovimentacao) do
         local distancia = math.sqrt((ponto.x - x)^2 + (ponto.y - y)^2)
             if distancia <= ponto.raio then
                 local indiceDestino = i
                 if movimentosRestantes > 0 and movimentoPermitido(origem, indiceDestino) then
-            movGuarda.destino = {x = ponto.x, y = ponto.y}
-            movimentosRestantes = movimentosRestantes - 1
-            --Atualiza o estado da imagem num ponto
-            if not pontosBloqueados[indiceDestino] then
-            if not hexAtivos[indiceDestino] then
-                hexAtivos[indiceDestino] = 1
-                estadoTransformacao[indiceDestino] = false
-                rodadasPorPonto[indiceDestino] = 0 
-            elseif hexAtivos[indiceDestino] == 1 then
-                hexAtivos[indiceDestino] = 2
-                estadoTransformacao[indiceDestino] = true
-                rodadasPorPonto[indiceDestino] = 0
+        --Ativa o menu de confirmação
+                    confirmacao.ativa = true
+                    confirmacao.indiceDestino = indiceDestino
+        --Define a posição da caixa de confirmação
+                    confirmacao.posicaoX = ponto.x
+                    confirmacao.posicaoY = ponto.y
+        --Posiciona os botões "Sim" e "Não"
+                    local yBase = ponto.y + 10
+                    local offset = 35
+
+                    confirmacao.botoes.sim.x = ponto.x - offset
+                    confirmacao.botoes.sim.y = yBase
+
+                    confirmacao.botoes.nao.x = ponto.x + offset
+                    confirmacao.botoes.nao.y = yBase
+
+                    return
+                end
             end
         end
-        end
-    return
     end
-end
-
     handle_button_click(x, y, player.radius)
-    end
-
 end
+
+
 function love.load()
     love.mouse.setVisible(false)
     love.window.setTitle("Última Gota") --isso tá funcionando? // É o titulo que aparece na Janela do game
@@ -438,7 +471,7 @@ function love.load()
     buttons.menu_state.settings = button("Configurações", nil, nil, 120, 30)
     buttons.menu_state.exit_game = button("Sair", love.event.quit, nil, 80, 30)
     --Botões no jogo rodando
-    buttons.running_state.pass_rodada = button("Passar Rodada", proxRodada, nil, 120, 30)
+    buttons.running_state.pass_rodada = button("Proximo dia", proxRodada, nil, 120, 30)
     buttons.running_state.exit_in_game = button("Sair", love.event.quit, nil, 80, 30)
     --Botões de confirmação de movimento
     confirmacao.botoes.sim = button("Sim", confirmarMovimento, nil, 50, 25)
@@ -446,32 +479,12 @@ function love.load()
     --Botões do Menu de Água (Carta)
     local cx, cy = love.graphics.getWidth()/2 - 70, love.graphics.getHeight()/2 - 50
 
-    menuAgua.botoes.um = button("+1 Água -1 Ação", function () realizarTrocaAgua(1) end, nil, 140, 30)
-    menuAgua.botoes.um.x = cx
-    menuAgua.botoes.um.y = cy
+    
 
-    menuAgua.botoes.dois = button("+2 Água -2 Ação", function () realizarTrocaAgua(2) end, nil, 140, 30)
-    menuAgua.botoes.dois.x = cx
-    menuAgua.botoes.dois.y = cy + 40
 
-    menuAgua.botoes.tres = button("+3 Água -3 Ação", function () realizarTrocaAgua(3) end, nil, 140, 30)
-    menuAgua.botoes.tres.x = cx
-    menuAgua.botoes.tres.y = cy + 80
 
-    menuAgua.botoes.cancelar = button("Cancelar", cancelarTroca, nil, 100, 30)
-    menuAgua.botoes.um.x = cx + 20
-    menuAgua.botoes.um.y = cy + 130
-
-    cartas.setAdicionarAgua(adicionarAgua)
-    cartas.setAbrirMenuAgua(function ()
-        if acoesRestantes >= 1 then
-            menuAgua.ativa = true
-        else
-            print("Sem ações suficientes")
-        end
-    end)
     --Iniciar o jogo com os Hex vermelhos
-        for i = 1, #pontosMovimentação do
+        for i = 1, #pontosMovimentacao do
             if i ~= 3 then
                 hexAtivos[i] = 1
                 estadoTransformacao[i] = false
@@ -480,18 +493,21 @@ function love.load()
             end
             
         end
+    cartas.setAdicionarAgua(adicionarAgua)
+    
+    
 --baralho azul
     cartas.construirBaralho()
 -- carregar cartas aleatórias     
     cartas.selecionarCartasRodada()
 --carregar conflito
-    conflitos.construirBaralho()
+    --conflitos.construirBaralho()
 --Guarda florestal
     movGuarda.imagem = love.graphics.newImage("sprites/Guarda Provisorio.png")
 
 --Configura a posição inicial do guarda
-    movGuarda.x = pontosMovimentação[movGuarda.indiceAtual].x
-    movGuarda.y = pontosMovimentação[movGuarda.indiceAtual].y
+    movGuarda.x = pontosMovimentacao[movGuarda.indiceAtual].x
+    movGuarda.y = pontosMovimentacao[movGuarda.indiceAtual].y
 
     local larguraQuadro = movGuarda.imagem:getWidth()
     local alturaQuadro = movGuarda.imagem:getHeight()
@@ -523,7 +539,7 @@ function love.update(dt)
             movGuarda.x = movGuarda.destino.x
             movGuarda.y = movGuarda.destino.y
             
-            for i, ponto in ipairs(pontosMovimentação) do
+            for i, ponto in ipairs(pontosMovimentacao) do
                 if math.abs(ponto.x - movGuarda.x) < 5 and
                     math.abs(ponto.y - movGuarda.y) < 5 then
                         movGuarda.indiceAtual = i
@@ -545,7 +561,7 @@ end
 
 -- Carregamento do mapa
 local mapa = love.graphics.newImage("sprites/mapagradeado.png")
-
+local background= love.graphics.newImage("sprites/logo do jogo.png")
 function love.draw()
     --Contagem do FPS
     love.graphics.printf("FPS: " .. love.timer.getFPS(), love.graphics.newFont(16),
@@ -564,7 +580,7 @@ function love.draw()
         love.graphics.setColor(1, 1, 1)
         love.graphics.setFont(fonte.normal)
         --Numeração da rodada atual
-        love.graphics.print("Rodada " .. rodada, 710, 55, 0)
+        love.graphics.print("dia " .. rodada, 710, 55, 0)
          
         --love.graphics.clear(.937,.946,.96,1) para fazer o dundo do jogo
         --Saber a posição do mouse
@@ -574,7 +590,7 @@ function love.draw()
         --desenhar o mapa
         love.graphics.draw(mapa, love.graphics.getWidth()/4 - 200, love.graphics.getHeight()/2 - 370, 0, .35, .35)
         --Desenhar os filtros vermelhos e marrons
-        for i, ponto in ipairs(pontosMovimentação) do
+        for i, ponto in ipairs(pontosMovimentacao) do
             if i ~= 3 then
                 if hexAtivos[i] == 1 then
                     love.graphics.draw(hexVermelho, 
@@ -595,18 +611,19 @@ function love.draw()
         --Desenhar Bandeira nos Objetivos Externos
         love.graphics.setColor(1, 1, 1)
         for _, indice in ipairs(objetivosExternos) do
-            local p = pontosMovimentação[indice]
+            local p = pontosMovimentacao[indice]
             --Desenha a bandeira um pouco acima do centro do hex
             --Ajuste o offset (x, y) e a escala (0.5) conforme o tamanho da imagem
-            love.graphics.draw(imgBandeira, p.x - 15, p.y - 30, 0, 0.5, 0.5)
+            love.graphics.draw(imgBandeira, p.x - 15, p.y - 30, 0, 0.1, 0.1)
         end
         
         cartas.desenharBaralho()
         cartas.desenharCartasRodada()
-        --conflitos.fundoConflito()
+        conflitos.fundoConflito()
         cartas.desenharResultadoEscolha()
-        conflitos.draw()
-        
+
+       
+
         --Desenhar a hitbox enquanto o jogo ta rodando
         hitbox.desenhar(love.graphics.getWidth()/2 + 15, love.graphics.getHeight()/2 - 245, 45)
         hitbox.desenhar(love.graphics.getWidth()/2 + 15, love.graphics.getHeight()/2 - 145, 45)
@@ -638,25 +655,6 @@ function love.draw()
         buttons.running_state.pass_rodada:draw(675, 350, 10, 10)
         buttons.running_state.exit_in_game:draw(700, 10, 10, 10)
         
-        if menuAgua.ativa then
-            love.graphics.setColor(0, 0, 0, 0.8)
-            love.graphics.rectangle("fill", love.graphics.getWidth()/2 - 100, love.graphics.getHeight()/2 - 100, 200, 200, 10, 10)
-            love.graphics.setColor(1, 1, 1, 1)
-
-            love.graphics.print("Escolha a quantidade: ", love.graphics.getWidth()/2 - 40, love.graphics.getHeight()/2 - 80)
-        
-            menuAgua.botoes.um:draw(menuAgua.botoes.um.x, menuAgua.botoes.um.y, 10, 10)
-            
-            if acoesRestantes >= 2 then
-                menuAgua.botoes.dois:draw(menuAgua.botoes.dois.x, menuAgua.botoes.dois.y, 10, 10)
-            end
-            if acoesRestantes >= 3 then
-                menuAgua.botoes.tres:draw(menuAgua.botoes.tres.x, menuAgua.botoes.tres.y, 10, 10)
-            end
-            
-            menuAgua.botoes.cancelar:draw(menuAgua.botoes.cancelar.x, menuAgua.botoes.cancelar.y, 10, 10)
-        end
-
         if confirmacao.ativa then
             --Fundinho preto transparente
             love.graphics.setColor(0, 0, 0, 0.7)
@@ -697,19 +695,12 @@ function love.draw()
     end
 
 end
+
 function love.keypressed(key)
     if key == "escape" then
         game.state["paused"] = not game.state["paused"]
     end
      cartas.selecionarCartaPorTecla(key)
 
-    if key == "1" or key == "2" then
-        -- aplica efeito da carta de aliados
-        -- depois aplica o conflito
-        conflitos.aplicarConflito()
-
-        -- prepara próxima rodada
-        cartas.selecionarCartasRodada()
-    end
+    
 end
-
