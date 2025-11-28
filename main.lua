@@ -247,23 +247,54 @@ local function definirObjetivos()
     local vizinhosBase = pontosAdjascentes[3]
 
     for i = 1, #pontosMovimentacao do
-        local ehVizinho = false
-        for _, v in ipairs(vizinhosBase) do
-            if i == v then ehVizinho = true break end
+        local ehVizinhoDaBase = false
+
+        if vizinhosBase then
+            for _, v in ipairs(vizinhosBase) do
+                if i == v then ehVizinhoDaBase = true break end
+            end
         end
 
-        if i ~= 3 and not ehVizinho then
+        if i ~= 3 and not ehVizinhoDaBase then
             table.insert(possiveis, i)
         end
     end
 
-    --Sorteia 3 dessa lista
-    for k = 1, 3 do
-        if #possiveis > 0 then
-            local randIndex = love.math.random(1, #possiveis)
-            table.insert(objetivosExternos, possiveis[randIndex])
-            table.remove(possiveis, randIndex)
+    --Sorteia 4 bandeiras com distanciamento
+    local qtdDesejada = 4
+    --Enquanto não tiver 4 bandeiras e ainda houver lugares possiveis
+    while #objetivosExternos < qtdDesejada and #possiveis > 0 do
+        
+        --sorteia um índice da lista de possíveis
+        local randIndex = love.math.random(1, #possiveis)
+        local escolhido = possiveis[randIndex]
+
+        --Adiciona aos objetivos
+        table.insert(objetivosExternos, escolhido)
+
+        --Nova lista de possiveis removendo o escolhido
+        local novaListaPossiveis = {}
+
+        for _, candidato in ipairs(possiveis) do
+            local deveManter = true
+            if candidato == escolhido then
+                deveManter = false
+            else
+                local vizinhoDoEscolhido = pontosAdjascentes[escolhido]
+                if vizinhoDoEscolhido then
+                    for _, vizinho in ipairs(vizinhoDoEscolhido) do
+                        if candidato == vizinho then
+                            deveManter = false
+                            break
+                        end
+                    end
+                end
+            end
+            if deveManter then
+                table.insert(novaListaPossiveis, candidato)
+            end
         end
+        possiveis  = novaListaPossiveis
     end
 end
 
@@ -388,24 +419,14 @@ local function verificarEstadoJogo()
     end
 
 ----------------------- Condições de Vitória (Triunfo) ----------------
-    local vizinhosSeguros = 0
-    local vizinhosBase = pontosAdjascentes[3]
-    if vizinhosBase then
-        for _, vizinhoIndex in ipairs(vizinhosBase) do
-            if hexAtivos[vizinhoIndex] == nil then
-                vizinhosSeguros = vizinhosSeguros + 1
-            end
-        end
-    end
-
     local objetivosConquistados = 0
     for _, objIndex in ipairs(objetivosExternos) do
         if hexAtivos[objIndex] == nil then
             objetivosConquistados = objetivosConquistados + 1
         end
     end
---Checa se cumpriu os dois requisitos (3 na base + 3 fora)
-    if vizinhosSeguros >= 3 and objetivosConquistados >= 3 then
+--Checa se cumpriu os dois requisitos (4 bandeiras)
+    if objetivosConquistados >= 4 then
         fimDeJogo.ativo = true
         fimDeJogo.mensagem =string.format("TRIUNFO!\nVocê salvou a ilha\n em %s dias",rodada)
         fimDeJogo.cor = {0.18, 0.44, 0.25}
@@ -580,7 +601,7 @@ function love.draw()
         love.graphics.setColor(1, 1, 1)
         love.graphics.setFont(fonte.normal)
         --Numeração da rodada atual
-        love.graphics.print("dia " .. rodada, 710, 55, 0)
+        love.graphics.print("dia " .. rodada, love.graphics.getWidth()/2 + 310, 55, 0)
          
         --love.graphics.clear(.937,.946,.96,1) para fazer o dundo do jogo
         --Saber a posição do mouse
@@ -588,13 +609,13 @@ function love.draw()
         --love.graphics.draw(fundo, 100, 100)
         -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo
         --desenhar o mapa
-        love.graphics.draw(mapa, love.graphics.getWidth()/4 - 200, love.graphics.getHeight()/2 - 370, 0, .35, .35)
+        love.graphics.draw(mapa, love.graphics.getWidth()/2 - 400, love.graphics.getHeight()/2 - 370, 0, .35, .35)
         --Desenhar os filtros vermelhos e marrons
         for i, ponto in ipairs(pontosMovimentacao) do
             if i ~= 3 then
                 if hexAtivos[i] == 1 then
                     love.graphics.draw(hexVermelho, 
-                    ponto.x - hexVermelho:getWidth() * escalaHex / 2,
+                        ponto.x - hexVermelho:getWidth() * escalaHex / 2,
                         ponto.y - hexVermelho:getHeight() * escalaHex / 2,
                         0, escalaHex, escalaHex)
                     elseif hexAtivos[i] == 2 then
@@ -629,7 +650,7 @@ function love.draw()
         hitbox.desenhar(love.graphics.getWidth()/2 + 15, love.graphics.getHeight()/2 - 145, 45)
         hitbox.desenhar(love.graphics.getWidth()/2 + 15, love.graphics.getHeight()/2 - 45, 45)
         hitbox.desenhar(love.graphics.getWidth()/2 + 15, love.graphics.getHeight()/2 + 55, 45)
-        hitbox.desenhar(love.graphics.getWidth()/2 + 15, love.graphics.getHeight()/2 + 155, 45)
+        hitbox.desenhar(love.graphics.getWidth()/2 + 15, love.graphics.getHeight()/2 + 155, 45) --5
         hitbox.desenhar(love.graphics.getWidth()/2 + 190, love.graphics.getHeight()/2 - 145, 45)
         hitbox.desenhar(love.graphics.getWidth()/2 + 190, love.graphics.getHeight()/2 + 55, 45)
         hitbox.desenhar(love.graphics.getWidth()/2 + 190, love.graphics.getHeight()/2 - 45, 45)
@@ -652,8 +673,8 @@ function love.draw()
             love.graphics.draw(movGuarda.imagem, movGuarda.x-20, movGuarda.y-20)
         end
         --Desenhar os botões enquato o jogo ta rodando
-        buttons.running_state.pass_rodada:draw(675, 350, 10, 10)
-        buttons.running_state.exit_in_game:draw(700, 10, 10, 10)
+        buttons.running_state.pass_rodada:draw(love.graphics.getWidth() - 125, love.graphics.getHeight() - 250, 10, 10)
+        buttons.running_state.exit_in_game:draw(love.graphics.getWidth() - 100, 10, 10, 10)
         
         if confirmacao.ativa then
             --Fundinho preto transparente
@@ -680,9 +701,9 @@ function love.draw()
         love.graphics.circle("fill", player.x, player.y, player.radius)
         
     elseif game.state["menu"] then
-        buttons.menu_state.play_game:draw(10, 20, 10, 10)
-        buttons.menu_state.settings:draw(10, 70, 10, 10)
-        buttons.menu_state.exit_game:draw(10, 120, 10, 10)
+        buttons.menu_state.play_game:draw(love.graphics.getWidth()/2 - 30, love.graphics.getHeight()/2 - 50, 20, 10, 10)
+        buttons.menu_state.settings:draw(love.graphics.getWidth()/2 - 50, love.graphics.getHeight()/2, 10, 10)
+        buttons.menu_state.exit_game:draw(love.graphics.getWidth()/2 - 30, love.graphics.getHeight()/2 + 50, 10, 10)
 
         love.graphics.circle("fill", player.x, player.y, player.radius)
     end
@@ -702,5 +723,9 @@ function love.keypressed(key)
     end
      cartas.selecionarCartaPorTecla(key)
 
+    if key == "f11" then
+        local isFullscreen = love.window.getFullscreen()
+        love.window.setFullscreen(not isFullscreen) --Inverte, se tá on desliga, se tá off liga.
+    end
     
 end
