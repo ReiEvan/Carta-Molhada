@@ -6,31 +6,6 @@ local ost = require "OST"
 local cartas = require "cartas"
 -- função que gerencia a quantidade de água
 local agua = 5
-<<<<<<< HEAD
-local aguaMax = 10
-=======
-function adicionarAgua(qtd)
-    agua = agua + qtd
-end
-local function adicionarAgua(valor)
-    agua = agua + valor
-    if agua < 0 then agua = 0 end
-end
-
--- vincula a função de água aos módulos
-cartas.setAdicionarAgua(adicionarAgua)
-conflitos.setAdicionarAgua(adicionarAgua)
-
-local movimento={
-        mx=10,
-        my=220
-}
-
-local imagemAgua={
-        ficha=love.graphics.newImage("sprites/ficha gota.png"),
-        fx=movimento.mx-5, fy=movimento.my+25     
-}
->>>>>>> d9213879074dd4a8c507d313be8721869568074b
 local escala = 0.5
 local rodada = 1
 local card_back_image
@@ -42,7 +17,6 @@ local escalaHex = 0.1111
 local rodadasPorPonto = {}
 local estadoTransformacao = {}
 local pontosBloqueados = {}
-<<<<<<< HEAD
 local movimentosRestantes = 2
 local acoesRestantes = 4
 --Variaveis de Vitória/Derrota
@@ -85,31 +59,6 @@ local imagemAgua={
     end
     --conflitos.setCallbacks(addAgua, addAcoes)
 
-=======
-local confirmacao = {
-    ativa = false,
-    indiceDestino = nil,
-    posicaoX = 0,
-    posicaoY = 0,
-    botoes= {}
-}
-
---Desativa a confirmação após escolher
-    confirmacao.ativa = false
-    confirmacao.indiceDestino = nil
-local movimentosRestantes = 2
-local acoesRestantes = 4
--- função de água
-local agua = 5
-local function adicionarAgua(valor)
-    agua = agua + valor
-    if agua < 0 then agua = 0 end
-end
-
--- vincula aos módulos
-cartas.setAdicionarAgua(adicionarAgua)
-conflitos.setAdicionarAgua(adicionarAgua)
->>>>>>> d9213879074dd4a8c507d313be8721869568074b
 local deck = {}
 --lista de pontos de movimentação
 local pontosMovimentação = {
