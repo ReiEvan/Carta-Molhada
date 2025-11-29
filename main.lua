@@ -293,7 +293,7 @@ local game = {
 }
 
 local player ={
-    radius = 15,
+    radius = 13,
     x = 30,
     y = 30
 }
@@ -365,7 +365,7 @@ local function verificarEstadoJogo()
     if fimDeJogo.ativo then return end
 -----------------------Condições de Derrota: -----------------------
 --Passar da rodada 15
-    if rodada > 15 then
+    if rodada > 20 then
         fimDeJogo.ativo = true
         fimDeJogo.mensagem = "DERROTA\nO tempo acabou!"
         fimDeJogo.cor = {1, 0, 0}
@@ -576,10 +576,8 @@ function love.draw()
         --Numeração da rodada atual
         love.graphics.print("dia " .. rodada, love.graphics.getWidth()/2, 10, 0)
          
-        --love.graphics.clear(.937,.946,.96,1) para fazer o dundo do jogo
         --Saber a posição do mouse
         love.graphics.print("Mouse x: " .. love.mouse.getX() .. " y: " .. love.mouse.getY(), 300, 10, 0)
-        --love.graphics.draw(fundo, 100, 100)
         -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo
         --desenhar o mapa
         love.graphics.draw(mapa, love.graphics.getWidth()/2 - 400, love.graphics.getHeight()/2 - 370, 0, .35, .35)
@@ -647,7 +645,6 @@ function love.draw()
         end
         --Desenhar os botões enquato o jogo ta rodando
         buttons.running_state.pass_rodada:draw(love.graphics.getWidth() - 125, love.graphics.getHeight() - 250, 10, 10)
-        buttons.running_state.exit_in_game:draw(love.graphics.getWidth() - 100, 10, 10, 10)
         
         if confirmacao.ativa then
             --Fundinho preto transparente
@@ -655,8 +652,8 @@ function love.draw()
             love.graphics.rectangle("fill", confirmacao.posicaoX - 40, confirmacao.posicaoY - 30, 80, 80, 10, 10)
             love.graphics.setColor(1, 1, 1, 1)
             --Desenho dos botoes
-            confirmacao.botoes.sim:draw(confirmacao.botoes.sim.x, confirmacao.botoes.sim.y, 10, 10)
-            confirmacao.botoes.nao:draw(confirmacao.botoes.nao.x, confirmacao.botoes.nao.y, 10, 10)
+            confirmacao.botoes.sim:draw(confirmacao.botoes.sim.x + 10, confirmacao.botoes.sim.y - 30, 10, 5)
+            confirmacao.botoes.nao:draw(confirmacao.botoes.nao.x - 60, confirmacao.botoes.nao.y + 5, 10, 5)
             
             love.graphics.print("Mover ?", confirmacao.posicaoX - 25, confirmacao.posicaoY - 45)
         end
@@ -670,7 +667,10 @@ function love.draw()
             love.graphics.setColor(unpack(fimDeJogo.cor))
             love.graphics.printf(fimDeJogo.mensagem, 0, love.graphics.getHeight()/2 - 50, love.graphics.getWidth(), "center")
         end
-
+        --Botão de sair por cima de tudo
+        buttons.running_state.exit_in_game:draw(love.graphics.getWidth() - 100, 10, 10, 10)
+        
+        
         love.graphics.circle("fill", player.x, player.y, player.radius)
         
     elseif game.state["menu"] then
@@ -702,5 +702,10 @@ function love.keypressed(key)
         local isFullscreen = love.window.getFullscreen()
         love.window.setFullscreen(not isFullscreen) --Inverte, se tá on desliga, se tá off liga.
     end
-    
+    if key == "space" then
+        proxRodada()
+    end
+    if key == "r" then
+        startNewGame()
+    end
 end
