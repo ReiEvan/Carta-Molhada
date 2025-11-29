@@ -4,6 +4,21 @@ local button = require "Button"
 local hitbox = require "hitbox"
 local ost = require "OST"
 local cartas = require "cartas"
+-- função que gerencia a quantidade de água
+local agua = 5
+local aguaMax = 10
+function adicionarAgua(qtd)
+    agua = agua + qtd
+end
+local function adicionarAgua(valor)
+    agua = agua + valor
+    if agua < 0 then agua = -1 end
+end
+-- VINCULAR A FUNÇÃO DAS CARTAS AOS MÓDULOS
+-- vincula a função de água
+cartas.setAdicionarAgua(adicionarAgua)
+
+
 
 local movimento={
         mx=10,
@@ -34,7 +49,6 @@ local agua = 5
 local aguaMax = 10
 local function adicionarAgua(valor)
     agua = agua + valor
-    if agua < 0 then agua = 0 end
 end
 local function alterarmovimento(pes)
     movimentosRestantes= movimentosRestantes + pes
@@ -54,7 +68,7 @@ local fimDeJogo = {
 
 local movimento={
     mx=10,
-    my=200
+    my=220
 }
 
 local imagemAgua={
@@ -371,7 +385,7 @@ end
 local function verificarEstadoJogo()
     if fimDeJogo.ativo then return end
 -----------------------Condições de Derrota: -----------------------
---Passar da rodada 15
+--Passar da rodada 20
     if rodada > 20 then
         fimDeJogo.ativo = true
         fimDeJogo.mensagem = "DERROTA\nO tempo acabou!"
@@ -399,7 +413,12 @@ local function verificarEstadoJogo()
         fimDeJogo.cor = {0.5, 0, 0}
         return
     end
-
+ --Ficar sem água
+    if agua < 0 then
+        fimDeJogo.ativo = true
+        fimDeJogo.mensagem = "DERROTA\nSem água!"
+        fimDeJogo.cor = {0.5, 0, 0}
+    end
 ----------------------- Condições de Vitória (Triunfo) ----------------
     local objetivosConquistados = 0
     for _, objIndex in ipairs(objetivosExternos) do
@@ -570,7 +589,7 @@ function love.draw()
     10, love.graphics.getHeight() - 30, love.graphics.getWidth())
      if game.state["running"] then
         --Movimentos Restantes
-        love.graphics.setFont(fonte.media)
+         love.graphics.setFont(fonte.media)
         love.graphics.print("Movimentos: " .. movimentosRestantes, movimento.mx, movimento.my, 0)
         
         --Feddback visual da quantidade de agua
@@ -674,7 +693,7 @@ function love.draw()
         
         if fimDeJogo.ativo then
             --Fundo preto transparente
-            love.graphics.setColor(0, 0, 0, 0.9)
+            love.graphics.setColor(0, 0, 0)
             love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
             --Texto
             love.graphics.setFont(fonte.grande)
