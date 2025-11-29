@@ -8,7 +8,7 @@ function hit.desenhar(x, y, raio)
     g = 0
     b = 1
 
-            love.graphics.setColor(r,g,b)
+            love.graphics.setColor(r,g,b,"0")
             love.graphics.circle("fill", x, y, raio)
             love.graphics.setColor(255,255,255)
             
