@@ -14,9 +14,12 @@ local function adicionarAgua(valor)
     agua = agua + valor
     if agua < 0 then agua = 0 end
 end
-
--- vincula a função de água aos módulos
+-- VINCULAR A FUNÇÃO DAS CARTAS AOS MÓDULOS
+-- vincula a função de água
 cartas.setAdicionarAgua(adicionarAgua)
+
+
+
 local movimento={
         mx=10,
         my=220
@@ -45,8 +48,6 @@ local fimDeJogo = {
     mensagem = "",
     cor = {1, 1, 1}
 }
--- vincula a função de água aos módulos
-cartas.setAdicionarAgua(adicionarAgua)
 
 local movimento={
     mx=10,
@@ -57,21 +58,7 @@ local imagemAgua={
         ficha=love.graphics.newImage("sprites/ficha gota.png"),
         fx=movimento.mx-5, fy=movimento.my+25     
     }
-    local function addAgua(v)
-        agua = math.max(0, math.min(agua + v, aguaMax))
-    end
-    
-    local function addAcoes(v)
-        acoesRestantes = math.max(0, acoesRestantes + v)
-    end
-    
-    function adicionarAgua(qtd)
-        agua = agua + qtd
-    end
-    local function adicionarAgua(valor)
-        agua = agua + valor
-        if agua < 0 then agua = 0 end
-    end
+
 
 local confirmacao = {
     ativa = false,
@@ -90,17 +77,8 @@ local efeitoConflitoAplicado = false
     confirmacao.indiceDestino = nil
 local movimentosRestantes = 2
 local acoesRestantes = 4
--- função de água
-local agua = 5
-local function adicionarAgua(valor)
-    agua = agua + valor
-    if agua < 0 then 
-    agua = 0 
-    end
-end
 
--- vincula aos módulos
-cartas.setAdicionarAgua(adicionarAgua)
+
 local deck = {}
 --lista de pontos de movimentação
 local pontosMovimentacao = {
@@ -331,10 +309,8 @@ local function proxRodada()
         movimentosRestantes = 2
         acoesRestantes = 4
         cartas.selecionarCartasRodada()
-        agua = agua-1
-        if agua < 0 then
-        agua = 0
-    end
+       adicionarAgua(-1)
+
 
 --verifica e remove as imagens q foram transformadas depois de duas rodadas
     for i = 1, #pontosMovimentacao do
