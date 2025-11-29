@@ -49,7 +49,6 @@ local agua = 5
 local aguaMax = 10
 local function adicionarAgua(valor)
     agua = agua + valor
-    if agua < 0 then agua = 0 end
 end
 local function alterarmovimento(pes)
     movimentosRestantes= movimentosRestantes +pes
