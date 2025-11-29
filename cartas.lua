@@ -1,4 +1,3 @@
--- carta unica(check),baralho todo(check),animação baralho único(?),retirar 2 cartas p turno
 local love = require "love"
 
 local todasAliadas = {
@@ -68,11 +67,21 @@ local function aplicarEfeito(carta)
     if carta.id == "nascente" and adicionarAgua then
         adicionarAgua(2)   
     end
+    if carta.id == "Super Eficiente" and alterarmovimento then
+        alterarmovimento(1)
+    end
+    if carta.id == "Procurando água" and alterarmovimento and adicionarAgua then
+        alterarmovimento(-1)
+        adicionarAgua(1)
+    end
 end
 
 
 local function setAdicionarAgua(func)
     adicionarAgua = func
+end
+local function setalterarmovimento(func)
+    alterarmovimento = func
 end
 local CARD_WIDTH = 140
 local CARD_HEIGHT = 185
@@ -376,5 +385,6 @@ return {
 
     selecionarCartaPorTecla = selecionarCartaPorTecla,
     desenharResultadoEscolha = desenharResultadoEscolha,
-    setAdicionarAgua = setAdicionarAgua
+    setAdicionarAgua = setAdicionarAgua,
+    setalterarmovimento=setalterarmovimento,
 }

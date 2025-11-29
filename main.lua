@@ -4,21 +4,6 @@ local conflitos = require "conflitos"
 local hitbox = require "hitbox"
 local ost = require "OST"
 local cartas = require "cartas"
--- função que gerencia a quantidade de água
-local agua = 5
-local aguaMax = 10
-function adicionarAgua(qtd)
-    agua = agua + qtd
-end
-local function adicionarAgua(valor)
-    agua = agua + valor
-    if agua < 0 then agua = 0 end
-end
--- VINCULAR A FUNÇÃO DAS CARTAS AOS MÓDULOS
--- vincula a função de água
-cartas.setAdicionarAgua(adicionarAgua)
-
-
 
 local movimento={
         mx=10,
@@ -43,7 +28,24 @@ local pontosBloqueados = {}
 --Variaveis de Vitória/Derrota
 local imgBandeira = love.graphics.newImage("sprites/bandeira vermelha.png")
 local objetivosExternos =  {}
+
+-- função que gerencia a quantidade de água
+local agua = 5
+local aguaMax = 10
+local function adicionarAgua(valor)
+    agua = agua + valor
+    if agua < 0 then agua = 0 end
+end
+local function alterarmovimento(pes)
+    movimentosRestantes= movimentosRestantes +pes
+end
+-- VINCULAR A FUNÇÃO DAS CARTAS AOS MÓDULOS
+-- vincula a função de água
+cartas.setAdicionarAgua(adicionarAgua)
+-- vincula a função de movimento
+cartas.setalterarmovimento(alterarmovimento)
 --Textos de fim de jogo
+
 local fimDeJogo = {
     ativo = false,
     mensagem = "",
