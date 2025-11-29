@@ -604,11 +604,11 @@ function love.draw()
         love.graphics.setColor(1, 1, 1)
         love.graphics.setFont(fonte.normal)
         --Numeração da rodada atual
-        love.graphics.print("dia " .. rodada, love.graphics.getWidth()/2 + 310, 55, 0)
+        love.graphics.print("dia " .. rodada, love.graphics.getWidth()/2, 10, 0)
          
         --love.graphics.clear(.937,.946,.96,1) para fazer o dundo do jogo
         --Saber a posição do mouse
-        love.graphics.print("Mouse x: " .. love.mouse.getX() .. " y: " .. love.mouse.getY(), 500, 10, 0)
+        love.graphics.print("Mouse x: " .. love.mouse.getX() .. " y: " .. love.mouse.getY(), 300, 10, 0)
         --love.graphics.draw(fundo, 100, 100)
         -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo
         --desenhar o mapa
