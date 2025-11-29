@@ -1,6 +1,6 @@
 local love = require "love"
 local button = require "Button"
-local conflitos = require "conflitos"
+--local conflitos = require "conflitos"
 local hitbox = require "hitbox"
 local ost = require "OST"
 local cartas = require "cartas"
@@ -37,7 +37,7 @@ local function adicionarAgua(valor)
     if agua < 0 then agua = 0 end
 end
 local function alterarmovimento(pes)
-    movimentosRestantes= movimentosRestantes +pes
+    movimentosRestantes= movimentosRestantes + pes
 end
 -- VINCULAR A FUNÇÃO DAS CARTAS AOS MÓDULOS
 -- vincula a função de água
@@ -75,6 +75,10 @@ local efeitoConflitoAplicado = false
 
 
     cartas.selecionarCartasRodada()
+    if rodada ~=1 then
+        cartas.sortearConflitoRodada()
+    end
+    
 --Desativa a confirmação após escolher
     confirmacao.ativa = false
     confirmacao.indiceDestino = nil
@@ -310,7 +314,8 @@ local function proxRodada()
         rodada = rodada + 1
         movimentosRestantes = 3
         cartas.selecionarCartasRodada()
-       adicionarAgua(-1)
+        adicionarAgua(-1)
+        cartas.prepararConflitoDaRodada(rodada)
 
 
 --verifica e remove as imagens q foram transformadas depois de duas rodadas
@@ -499,8 +504,6 @@ function love.load()
     cartas.construirBaralho()
 -- carregar cartas aleatórias     
     cartas.selecionarCartasRodada()
---carregar conflito
-    --conflitos.construirBaralho()
 --Guarda florestal
     movGuarda.imagem = love.graphics.newImage("sprites/Guarda Provisorio.png")
 
@@ -615,8 +618,15 @@ function love.draw()
         
         cartas.desenharBaralho()
         cartas.desenharCartasRodada()
-        conflitos.fundoConflito()
         cartas.desenharResultadoEscolha()
+    -- Sempre aparece
+        cartas.desenharFundoConflito()
+    -- Só aparece se não for a 1ª rodada
+        cartas.desenharConflito()
+    -- Suas outras partes do jogo
+        cartas.desenharCartasRodada()
+        
+        
 
        
 

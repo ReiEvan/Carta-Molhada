@@ -368,13 +368,159 @@ end
         ::continue::
     end
 end
---///////////////////////////////////////////////////////
---                      CONFLITOS
---///////////////////////////////////////////////////////
+-- CONFIGURAÇÃO DE POSIÇÃO DO CONFLITO
+---------------------------------------------------------
+local CONFLITO_WIDTH = 134
+local CONFLITO_HEIGHT = 176
 
+local conflitoX = 0
+local conflitoY = 0
 
+-- Fundo permanente do conflito (sempre aparece)
+local fundoConflitoSprite = love.graphics.newImage("sprites/FUNDO CARTA VERMELHA.png")
 
+---------------------------------------------------------
+-- LISTA INICIAL DE CONFLITOS
+---------------------------------------------------------
+local conflitosBase = {
+    {
+        id = "Bomba d'agua quebrou",
+        img = love.graphics.newImage("sprites/conflitos/bomba dagua quebrou.png"),
+        descricao = "Perca 2 fichas de água",
+        efeito = function() if adicionarAgua then adicionarAgua(-2) end end
+    },
+    {
+        id = "Incendio criminoso",
+        img = love.graphics.newImage("sprites/conflitos/incendio criminoso.png"),
+        descricao = "Perca uma área verde que não tenha um guarda"
+    },
+    {
+        id = "Dia quente de trabalho",
+        img = love.graphics.newImage("sprites/conflitos/dia quente de trabalho.png"),
+        descricao = "Os guardas gastam 2 águas ao invés de 1 e o número de ações cai em 1"
+    },
+    {
+        id = "Guarda inoperante",
+        img = love.graphics.newImage("sprites/conflitos/Guarda inoperante.png"),
+        descricao = "Um dos guardas fica inoperante até o fim dessa rodada"
+    },
+    {
+        id = "Sabotagem",
+        img = love.graphics.newImage("sprites/conflitos/sabotagem.png"),
+        descricao = "Sua próxima carta de Aliados será anulada"
+    },
+    {
+        id = "A carta cinza",
+        img = love.graphics.newImage("sprites/conflitos/A carta cinza.png"),
+        descricao = "Perca 2 áreas verdes"
+    }
+}
+
+---------------------------------------------------------
+-- BARALHO DE CONFLITOS
+---------------------------------------------------------
+local baralhoConflitos = {}
+local descarteConflitos = {}
+local conflitoAtual = nil
+local primeiraRodada = true
+
+-- ==========================
+-- FUNÇÃO: Copia base → baralho
+-- ==========================
+local function inicializarConflitos()
+    baralhoConflitos = {}
+    for i = 1, #conflitosBase do
+        baralhoConflitos[i] = conflitosBase[i]
+    end
+end
+
+inicializarConflitos()
+
+---------------------------------------------------------
+-- EMBARALHAR LISTA
+---------------------------------------------------------
+local function embaralhar(t)
+    for i = #t, 2, -1 do
+        local j = love.math.random(1, i)
+        t[i], t[j] = t[j], t[i]
+    end
+end
+
+---------------------------------------------------------
+-- PUXAR 1 CONFLITO DA PILHA
+---------------------------------------------------------
+local function puxarConflito()
+    if #baralhoConflitos == 0 then
+        for i = 1, #descarteConflitos do
+            table.insert(baralhoConflitos, descarteConflitos[i])
+        end
+        descarteConflitos = {}
+    end
+
+    local copia = {}
+    for i = 1, #baralhoConflitos do copia[i] = baralhoConflitos[i] end
+    embaralhar(copia)
+
+    local escolhido = copia[1]
+
+    for i = #baralhoConflitos, 1, -1 do
+        if baralhoConflitos[i] == escolhido then
+            table.insert(descarteConflitos, escolhido)
+            table.remove(baralhoConflitos, i)
+            break
+        end
+    end
+
+    return escolhido
+end
+
+---------------------------------------------------------
+-- SORTEAR CONFLITO E APLICAR EFEITO
+---------------------------------------------------------
+local function sortearConflitoRodada()
+    conflitoAtual = puxarConflito()
+    if conflitoAtual.efeito then conflitoAtual.efeito() end
+end
+
+---------------------------------------------------------
+-- PREPARAR CONFLITO (USADO PELO MAIN)
+---------------------------------------------------------
+local function prepararConflitoDaRodada(numeroDaRodada)
+    if numeroDaRodada == 1 then
+        -- 1ª rodada → sem conflito
+        conflitoAtual = nil
+        primeiraRodada = false
+    else
+        -- A partir da 2ª → sorteia um
+        sortearConflitoRodada()
+    end
+end
+
+---------------------------------------------------------
+-- DESENHAR FUNDO DO CONFLITO (sempre aparece)
+---------------------------------------------------------
+local function desenharFundoConflito()
+    love.graphics.draw(fundoConflitoSprite, conflitoX, conflitoY)
+end
+
+---------------------------------------------------------
+-- DESENHAR O CONFLITO (se houver)
+---------------------------------------------------------
+local function desenharConflito()
+    if not conflitoAtual then return end
+
+    love.graphics.draw(conflitoAtual.img, conflitoX, conflitoY)
+
+    love.graphics.setColor(1,1,1)
+    love.graphics.print(conflitoAtual.id, conflitoX, conflitoY + CONFLITO_HEIGHT + 5)
+    love.graphics.print(conflitoAtual.descricao, conflitoX, conflitoY + CONFLITO_HEIGHT + 25)
+end
+
+---------------------------------------------------------
+-- EXPORTAR FUNÇÕES
+---------------------------------------------------------
 return {
+    -- (as funções antigas do usuário permanecem aqui)
     construirBaralho = construirBaralho,
     desenharBaralho = desenharBaralho,
     reposicionarBaralho = reposicionarBaralho,
@@ -386,5 +532,10 @@ return {
     selecionarCartaPorTecla = selecionarCartaPorTecla,
     desenharResultadoEscolha = desenharResultadoEscolha,
     setAdicionarAgua = setAdicionarAgua,
-    setalterarmovimento=setalterarmovimento,
+    setalterarmovimento = setalterarmovimento,
+
+    -- Novas funções
+    prepararConflitoDaRodada = prepararConflitoDaRodada,
+    desenharFundoConflito = desenharFundoConflito,
+    desenharConflito = desenharConflito
 }
