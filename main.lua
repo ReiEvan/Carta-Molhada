@@ -14,9 +14,12 @@ local function adicionarAgua(valor)
     agua = agua + valor
     if agua < 0 then agua = 0 end
 end
-
--- vincula a função de água aos módulos
+-- VINCULAR A FUNÇÃO DAS CARTAS AOS MÓDULOS
+-- vincula a função de água
 cartas.setAdicionarAgua(adicionarAgua)
+
+
+
 local movimento={
         mx=10,
         my=220
@@ -27,8 +30,7 @@ local bg_escalay = 0.5
 local escala = 0.5
 local rodada = 1
 local numGuardas = 1
-local movimentosRestantes = 2
-local acoesRestantes = 4
+local movimentosRestantes = 3
 local card_back_image
 local fonte= {}
 local hexAtivos = {}
@@ -47,8 +49,6 @@ local fimDeJogo = {
     mensagem = "",
     cor = {1, 1, 1}
 }
--- vincula a função de água aos módulos
-cartas.setAdicionarAgua(adicionarAgua)
 
 local movimento={
     mx=10,
@@ -59,21 +59,7 @@ local imagemAgua={
         ficha=love.graphics.newImage("sprites/ficha gota.png"),
         fx=movimento.mx-5, fy=movimento.my+25     
     }
-    local function addAgua(v)
-        agua = math.max(0, math.min(agua + v, aguaMax))
-    end
-    
-    local function addAcoes(v)
-        acoesRestantes = math.max(0, acoesRestantes + v)
-    end
-    
-    function adicionarAgua(qtd)
-        agua = agua + qtd
-    end
-    local function adicionarAgua(valor)
-        agua = agua + valor
-        if agua < 0 then agua = 0 end
-    end
+
 
 local confirmacao = {
     ativa = false,
@@ -90,19 +76,9 @@ local efeitoConflitoAplicado = false
 --Desativa a confirmação após escolher
     confirmacao.ativa = false
     confirmacao.indiceDestino = nil
-local movimentosRestantes = 2
-local acoesRestantes = 4
--- função de água
-local agua = 5
-local function adicionarAgua(valor)
-    agua = agua + valor
-    if agua < 0 then 
-    agua = 0 
-    end
-end
 
--- vincula aos módulos
-cartas.setAdicionarAgua(adicionarAgua)
+
+
 local deck = {}
 --lista de pontos de movimentação
 local pontosMovimentacao = {
@@ -178,7 +154,6 @@ local function confirmarMovimento()
 --Executa a movimentação
     movGuarda.destino = {x = pontoDestino.x, y = pontoDestino.y}
     movimentosRestantes = movimentosRestantes - 1
-    acoesRestantes = acoesRestantes - 1
 
     if destIndex ~= 3 and not pontosBloqueados[destIndex] then
         if not hexAtivos[destIndex] then
@@ -331,13 +306,10 @@ local buttons = {
 
 local function proxRodada()
         rodada = rodada + 1
-        movimentosRestantes = 2
-        acoesRestantes = 4
+        movimentosRestantes = 3
         cartas.selecionarCartasRodada()
-        agua = agua-1
-        if agua < 0 then
-        agua = 0
-    end
+       adicionarAgua(-1)
+
 
 --verifica e remove as imagens q foram transformadas depois de duas rodadas
     for i = 1, #pontosMovimentacao do
@@ -591,8 +563,6 @@ function love.draw()
     love.graphics.printf("FPS: " .. love.timer.getFPS(), love.graphics.newFont(16),
     10, love.graphics.getHeight() - 30, love.graphics.getWidth())
      if game.state["running"] then
-        --Ações Restantes
-        love.graphics.print("Ações: " .. acoesRestantes, movimento.mx, movimento.my-20,0)
         --Movimentos Restantes
         love.graphics.print("Movimentos: " .. movimentosRestantes, movimento.mx, movimento.my, 0)
         
@@ -710,7 +680,6 @@ function love.draw()
         buttons.menu_state.play_game:draw(love.graphics.getWidth()/2 - 30, love.graphics.getHeight()/2 - 50, 20, 10, 10)
         buttons.menu_state.settings:draw(love.graphics.getWidth()/2 - 50, love.graphics.getHeight()/2, 10, 10)
         buttons.running_state.exit_in_game:draw(love.graphics.getWidth()/2 - 30, love.graphics.getHeight()/2 + 50, 10, 10)
-
         love.graphics.circle("fill", player.x, player.y, player.radius)
     end
 

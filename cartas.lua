@@ -273,6 +273,13 @@ local function desenharCartasRodada()
         local card = cartasRodada[i]
         if not card then goto continue end
 
+        
+    -- ESCONDER CARTA NÃO ESCOLHIDA
+    if escolhaBloqueada and cartasRodada[i] ~= cartaSelecionada then
+        goto continue
+    end
+
+
         local x = startX + (i - 1) * (CARD_WIDTH + 30)
         local y = posY
 
@@ -351,6 +358,11 @@ end
         ::continue::
     end
 end
+--///////////////////////////////////////////////////////
+--                      CONFLITOS
+--///////////////////////////////////////////////////////
+
+
 
 return {
     construirBaralho = construirBaralho,
