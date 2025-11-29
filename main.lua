@@ -22,8 +22,13 @@ local movimento={
         my=220
 }
 
+local bg_escalax = 0.7
+local bg_escalay = 0.5
 local escala = 0.5
 local rodada = 1
+local numGuardas = 1
+local movimentosRestantes = 2
+local acoesRestantes = 4
 local card_back_image
 local fonte= {}
 local hexAtivos = {}
@@ -33,12 +38,9 @@ local escalaHex = 0.1111
 local rodadasPorPonto = {}
 local estadoTransformacao = {}
 local pontosBloqueados = {}
-local movimentosRestantes = 2
-local acoesRestantes = 4
 --Variaveis de Vitória/Derrota
 local imgBandeira = love.graphics.newImage("sprites/bandeira vermelha.png")
 local objetivosExternos =  {}
-local numGuardas = 1
 --Textos de fim de jogo
 local fimDeJogo = {
     ativo = false,
@@ -306,10 +308,11 @@ local menuAgua = {
 local game = {
     state = {
         menu = true,
+        config = false,
         paused = false,
-        running =false,
-        ended = false,
-        
+        running = false,
+        ended = false
+         
     },
     points = 0,
 }
@@ -685,7 +688,7 @@ function love.draw()
             confirmacao.botoes.sim:draw(confirmacao.botoes.sim.x, confirmacao.botoes.sim.y, 10, 10)
             confirmacao.botoes.nao:draw(confirmacao.botoes.nao.x, confirmacao.botoes.nao.y, 10, 10)
             
-            love.graphics.print("Mover?", confirmacao.posicaoX - 25, confirmacao.posicaoY - 45)
+            love.graphics.print("Mover ?", confirmacao.posicaoX - 25, confirmacao.posicaoY - 45)
         end
         
         if fimDeJogo.ativo then
@@ -701,9 +704,12 @@ function love.draw()
         love.graphics.circle("fill", player.x, player.y, player.radius)
         
     elseif game.state["menu"] then
+        --love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
+        love.graphics.draw(background, 0, 0, 0, bg_escalax, bg_escalay)
+        
         buttons.menu_state.play_game:draw(love.graphics.getWidth()/2 - 30, love.graphics.getHeight()/2 - 50, 20, 10, 10)
         buttons.menu_state.settings:draw(love.graphics.getWidth()/2 - 50, love.graphics.getHeight()/2, 10, 10)
-        buttons.menu_state.exit_game:draw(love.graphics.getWidth()/2 - 30, love.graphics.getHeight()/2 + 50, 10, 10)
+        buttons.running_state.exit_in_game:draw(love.graphics.getWidth()/2 - 30, love.graphics.getHeight()/2 + 50, 10, 10)
 
         love.graphics.circle("fill", player.x, player.y, player.radius)
     end
