@@ -43,7 +43,24 @@ local pontosBloqueados = {}
 --Variaveis de Vitória/Derrota
 local imgBandeira = love.graphics.newImage("sprites/bandeira vermelha.png")
 local objetivosExternos =  {}
+
+-- função que gerencia a quantidade de água
+local agua = 5
+local aguaMax = 10
+local function adicionarAgua(valor)
+    agua = agua + valor
+    if agua < 0 then agua = 0 end
+end
+local function alterarmovimento(pes)
+    movimentosRestantes= movimentosRestantes +pes
+end
+-- VINCULAR A FUNÇÃO DAS CARTAS AOS MÓDULOS
+-- vincula a função de água
+cartas.setAdicionarAgua(adicionarAgua)
+-- vincula a função de movimento
+cartas.setalterarmovimento(alterarmovimento)
 --Textos de fim de jogo
+
 local fimDeJogo = {
     ativo = false,
     mensagem = "",
@@ -577,10 +594,10 @@ function love.draw()
         love.graphics.setFont(fonte.grande)  
         love.graphics.print(tostring(agua), imagemAgua.fx+40, imagemAgua.fy+8)
         love.graphics.setColor(1, 1, 1)
-        love.graphics.setFont(fonte.normal)
+
         --Numeração da rodada atual
-        love.graphics.print("dia " .. rodada, love.graphics.getWidth()/2, 10, 0)
-         
+        love.graphics.print("Dia " .. rodada .. "/20", love.graphics.getWidth()/2-80, 10, 0)
+         love.graphics.setFont(fonte.normal)
         --Saber a posição do mouse
         love.graphics.print("Mouse x: " .. love.mouse.getX() .. " y: " .. love.mouse.getY(), 300, 10, 0)
         -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo
