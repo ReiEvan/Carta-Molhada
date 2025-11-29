@@ -3,8 +3,9 @@ local love = require "love"
 
 local todasAliadas = {
     {
+        id = "Super Eficiente",
         img = love.graphics.newImage("sprites/carta super eficiente.png"),
-        descricao = "Super Eficiente\nComece está rodada com 1 ação a mais."
+        descricao = "Comece está rodada com 1 movimento a mais."
     },
  {
         id = "nascente",
@@ -13,15 +14,16 @@ local todasAliadas = {
     },
 
     {
+        id = "Clarividência",
         img = love.graphics.newImage("sprites/carta 8 clarividencia.png"),
         descricao = 
-        "Clarividência\nDescubra qual será o conflito do próximo turno."
+        "Descubra qual será o conflito do próximo turno."
     },
 
     {
+        id = "Movimento Livre",
         img = love.graphics.newImage("sprites/carta mov livre.png"),
         descricao =
-            "Movimento Livre\n" ..
             "Use esta carta para se \n".. 
             "mover para qualquer espaço\n".. 
             "sem gastar uma ação\n" ..
@@ -30,32 +32,32 @@ local todasAliadas = {
     },
 
     {
+        id = "Carta Dourada",
         img = love.graphics.newImage("sprites/carta dourada.png"),
         descricao =
-            "Carta Dourada\n" ..
             "Escolha uma área verde\n".. 
             "(exceto o ponto de origem).\n" ..
             "Ela não pode ser perdida \n".. 
             "por cartas de conflito"
     },
     {
+        id = "Dissolvendo problemas",
         img = love.graphics.newImage("sprites/carta Dissolvendo problemas.png"),
         descricao=
-            'Dissolvendo problemas\n'..
             'Gaste 2 águas e anule\n'..
             'o conflitos da rodada'
     },
     {
+        id = "Esforço recompensado",
         img = love.graphics.newImage('sprites/carta Esforco recompensado.png'),
         descricao=
-            'Esforço recompensado\n'..
             'Se tiver 3 áreas verdes\n'..
             'ganhe 3 fichas de água.'
     },
     {
+        id = "Procurando água",
         img = love.graphics.newImage('sprites/carta Procurando agua.png'),
         descricao = 
-            'Procurando água\n'..
             'Troque 1 ação por\n'..
             '1 ficha de água\n'..
             '(até o limite de 3)'
@@ -299,9 +301,8 @@ local function desenharCartasRodada()
     --------------------------------------------------------
     -- SEPARAR TÍTULO (1ª linha) E CORPO DO TEXTO
     --------------------------------------------------------
-    local titulo, corpo = texto:match("([^\n]+)\n?(.*)")
-    corpo = corpo or ""
-
+    local titulo= card.id
+    local corpo = card.descricao
     --------------------------------------------------------
     -- DESENHAR O QUADRADO CINZA
     --------------------------------------------------------
@@ -348,7 +349,7 @@ local direcao = (i == 1) and "Aperte 1 para ativar" or "Aperte 2 para ativar"
 love.graphics.printf(
     direcao,
     textoX,
-    y + offset + 110,   -- SUBIDO (era 150)
+    y + offset + 120, 
     larguraCaixa,
     "center"
 )

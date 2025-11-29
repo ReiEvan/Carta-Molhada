@@ -52,12 +52,12 @@ local fimDeJogo = {
 
 local movimento={
     mx=10,
-    my=220
+    my=200
 }
 
 local imagemAgua={
         ficha=love.graphics.newImage("sprites/ficha gota.png"),
-        fx=movimento.mx-5, fy=movimento.my+25     
+        fx=movimento.mx-5, fy=movimento.my+60     
     }
 
 
@@ -459,6 +459,7 @@ function love.load()
     love.mouse.setVisible(false)
     love.window.setTitle("Última Gota") --isso tá funcionando? // É o titulo que aparece na Janela do game
     fonte.grande = love.graphics.newFont(40)
+    fonte.media = love.graphics.newFont(30)
     fonte.normal = love.graphics.newFont(13)
     love.graphics.setFont(fonte.normal)
     ost.somteste()
@@ -564,6 +565,7 @@ function love.draw()
     10, love.graphics.getHeight() - 30, love.graphics.getWidth())
      if game.state["running"] then
         --Movimentos Restantes
+        love.graphics.setFont(fonte.media)
         love.graphics.print("Movimentos: " .. movimentosRestantes, movimento.mx, movimento.my, 0)
         
         --Feddback visual da quantidade de agua
@@ -573,13 +575,23 @@ function love.draw()
         love.graphics.print(tostring(agua), imagemAgua.fx+40, imagemAgua.fy+8)
         love.graphics.setColor(1, 1, 1)
         love.graphics.setFont(fonte.normal)
+
         --Numeração da rodada atual
+<<<<<<< HEAD
         love.graphics.print("dia " .. rodada, love.graphics.getWidth()/2, 10, 0)
          
         --Saber a posição do mouse
         love.graphics.print("Mouse x: " .. love.mouse.getX() .. " y: " .. love.mouse.getY(), 300, 10, 0)
         -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo
         --desenhar o mapa
+=======
+        love.graphics.setFont(fonte.media)
+        love.graphics.print("Dia " .. rodada .. "/20", love.graphics.getWidth()/2-20, 10, 0)
+        love.graphics.setFont(fonte.normal)
+
+        love.graphics.print("Mouse x: " .. love.mouse.getX() .. " y: " .. love.mouse.getY(), 300, 10, 0)
+
+>>>>>>> 2e545a3ac107a3bf16029fbef313edba45e33df4
         love.graphics.draw(mapa, love.graphics.getWidth()/2 - 400, love.graphics.getHeight()/2 - 370, 0, .35, .35)
         --Desenhar os filtros vermelhos e marrons
         for i, ponto in ipairs(pontosMovimentacao) do
