@@ -7,9 +7,9 @@ local todasAliadas = {
         descricao = "Comece está rodada com 1 movimento a mais."
     },
  {
-        id = "nascente",
+        id = "Carta da Nascente",
         img = love.graphics.newImage("sprites/carta nascente.png"),
-        descricao = "Carta da Nascente\nGanhe 2 águas."
+        descricao = "Ganhe 2 águas."
     },
 
     {
@@ -64,7 +64,8 @@ local todasAliadas = {
 }
 local adicionarAgua = nil
 local function aplicarEfeito(carta)
-    if carta.id == "nascente" and adicionarAgua then
+    if carta.id == "Carta da Nascente" and adicionarAgua then
+        print("EFEITO: +2 água")
         adicionarAgua(2)   
     end
     if carta.id == "Super Eficiente" and alterarmovimento then
@@ -298,7 +299,7 @@ local function desenharCartasRodada()
         love.graphics.draw(card.img, x, y + offset)
 
         if hoverIndex == i then
-    local texto = card.descricao
+       
 
     local textoX
     if i == 1 then
@@ -368,10 +369,14 @@ end
         ::continue::
     end
 end
--- CONFIGURAÇÃO DE POSIÇÃO DO CONFLITO
----------------------------------------------------------
+--///////////////////////////////////////////////////////////////////////////////////////////////
+--                                         CONFLITOS
+--//////////////////////////////////////////////////////////////////////////////////////////////
+local fonte= {}
 local CONFLITO_WIDTH = 134
 local CONFLITO_HEIGHT = 176
+fonte.media = love.graphics.newFont(20)
+fonte.normal = love.graphics.newFont(15)
 
 local conflitoX = 0
 local conflitoY = 0
@@ -382,12 +387,16 @@ local fundoConflitoSprite = love.graphics.newImage("sprites/FUNDO CARTA VERMELHA
 ---------------------------------------------------------
 -- LISTA INICIAL DE CONFLITOS
 ---------------------------------------------------------
-local conflitosBase = {
+local conflitos = {
     {
         id = "Bomba d'agua quebrou",
         img = love.graphics.newImage("sprites/conflitos/bomba dagua quebrou.png"),
         descricao = "Perca 2 fichas de água",
-        efeito = function() if adicionarAgua then adicionarAgua(-2) end end
+        efeito = 
+        function() 
+            if adicionarAgua then adicionarAgua(-2) 
+            end
+        end
     },
     {
         id = "Incendio criminoso",
@@ -397,12 +406,13 @@ local conflitosBase = {
     {
         id = "Dia quente de trabalho",
         img = love.graphics.newImage("sprites/conflitos/dia quente de trabalho.png"),
-        descricao = "Os guardas gastam 2 águas ao invés de 1 e o número de ações cai em 1"
+        descricao = "Os guardas gastam 2 águas ao invés de 1 e o movimento cai em 1"
     },
     {
         id = "Guarda inoperante",
         img = love.graphics.newImage("sprites/conflitos/Guarda inoperante.png"),
-        descricao = "Um dos guardas fica inoperante até o fim dessa rodada"
+        descricao = "Um dos guardas fica inoperante até o fim dessa rodada",
+       -- efeito= ele deve impedir de se mover nn gastar todas as movimentações
     },
     {
         id = "Sabotagem",
@@ -413,6 +423,11 @@ local conflitosBase = {
         id = "A carta cinza",
         img = love.graphics.newImage("sprites/conflitos/A carta cinza.png"),
         descricao = "Perca 2 áreas verdes"
+    },
+     {
+        id = "Terreno difícil",
+        img = love.graphics.newImage("sprites/conflitos/Terreno dificil.png"),
+        descricao = "retarde o tratamento de todas as áreas desse turno"
     }
 }
 
@@ -422,15 +437,15 @@ local conflitosBase = {
 local baralhoConflitos = {}
 local descarteConflitos = {}
 local conflitoAtual = nil
-local primeiraRodada = true
+
 
 -- ==========================
 -- FUNÇÃO: Copia base → baralho
 -- ==========================
 local function inicializarConflitos()
     baralhoConflitos = {}
-    for i = 1, #conflitosBase do
-        baralhoConflitos[i] = conflitosBase[i]
+    for i = 1, #conflitos do
+        baralhoConflitos[i] = conflitos[i]
     end
 end
 
@@ -511,16 +526,15 @@ local function desenharConflito()
 
     love.graphics.draw(conflitoAtual.img, conflitoX, conflitoY)
 
+    love.graphics.setColor(1,0,0)
+    love.graphics.setFont(fonte.media)
+    love.graphics.print(conflitoAtual.id, conflitoX+140, conflitoY + 5)
+    love.graphics.setFont(fonte.normal)
     love.graphics.setColor(1,1,1)
-    love.graphics.print(conflitoAtual.id, conflitoX, conflitoY + CONFLITO_HEIGHT + 5)
-    love.graphics.print(conflitoAtual.descricao, conflitoX, conflitoY + CONFLITO_HEIGHT + 25)
+    love.graphics.print(conflitoAtual.descricao, conflitoX+140, conflitoY + CONFLITO_HEIGHT-130)
 end
 
----------------------------------------------------------
--- EXPORTAR FUNÇÕES
----------------------------------------------------------
 return {
-    -- (as funções antigas do usuário permanecem aqui)
     construirBaralho = construirBaralho,
     desenharBaralho = desenharBaralho,
     reposicionarBaralho = reposicionarBaralho,
@@ -534,8 +548,9 @@ return {
     setAdicionarAgua = setAdicionarAgua,
     setalterarmovimento = setalterarmovimento,
 
-    -- Novas funções
+    -- conflitos
     prepararConflitoDaRodada = prepararConflitoDaRodada,
     desenharFundoConflito = desenharFundoConflito,
     desenharConflito = desenharConflito
+
 }

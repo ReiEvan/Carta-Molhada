@@ -7,18 +7,15 @@ local cartas = require "cartas"
 -- função que gerencia a quantidade de água
 local agua = 5
 local aguaMax = 10
-function adicionarAgua(qtd)
-    agua = agua + qtd
-end
 local function adicionarAgua(valor)
     agua = agua + valor
     if agua < 0 then agua = -1 end
 end
 -- VINCULAR A FUNÇÃO DAS CARTAS AOS MÓDULOS
 -- vincula a função de água
-cartas.setAdicionarAgua(adicionarAgua)
-
-
+cartas.setAdicionarAgua(function(qtd)
+    agua = agua + qtd
+end)
 
 local movimento={
         mx=10,
@@ -85,14 +82,9 @@ local confirmacao = {
     botoes= {}
 }
 local rodadaAtiva = false
-local efeitoConflitoAplicado = false
 
 
     cartas.selecionarCartasRodada()
-    if rodada ~=1 then
-        cartas.sortearConflitoRodada()
-    end
-    
 --Desativa a confirmação após escolher
     confirmacao.ativa = false
     confirmacao.indiceDestino = nil
@@ -416,7 +408,7 @@ local function verificarEstadoJogo()
  --Ficar sem água
     if agua < 0 then
         fimDeJogo.ativo = true
-        fimDeJogo.mensagem = "DERROTA\nSem água!"
+        fimDeJogo.mensagem = "DERROTA\nO Guardinha não pode trabalhar\nsem água!"
         fimDeJogo.cor = {0.5, 0, 0}
     end
 ----------------------- Condições de Vitória (Triunfo) ----------------
@@ -589,7 +581,7 @@ function love.draw()
     10, love.graphics.getHeight() - 30, love.graphics.getWidth())
      if game.state["running"] then
         --Movimentos Restantes
-         love.graphics.setFont(fonte.media)
+        love.graphics.setFont(fonte.media)
         love.graphics.print("Movimentos: " .. movimentosRestantes, movimento.mx, movimento.my, 0)
         
         --Feddback visual da quantidade de agua
@@ -642,8 +634,6 @@ function love.draw()
         cartas.desenharFundoConflito()
     -- Só aparece se não for a 1ª rodada
         cartas.desenharConflito()
-    -- Suas outras partes do jogo
-        cartas.desenharCartasRodada()
         
         
 
