@@ -6,17 +6,7 @@ local ost = require "OST"
 local cartas = require "cartas"
 -- função que gerencia a quantidade de água
 local agua = 5
-local aguaMax = 10
-local function adicionarAgua(valor)
-    agua = agua + valor
-    if agua < 0 then agua = -1 end
-end
--- VINCULAR A FUNÇÃO DAS CARTAS AOS MÓDULOS
--- vincula a função de água
-cartas.setAdicionarAgua(function(qtd)
-    agua = agua + qtd
-end)
-
+local movimentosRestantes = 3
 local movimento={
         mx=10,
         my=220
@@ -27,7 +17,6 @@ local bg_escalay = 0.5
 local escala = 0.5
 local rodada = 1
 local numGuardas = 1
-local movimentosRestantes = 3
 local card_back_image
 local fonte= {}
 local hexAtivos = {}
@@ -42,10 +31,9 @@ local imgBandeira = love.graphics.newImage("sprites/bandeira vermelha.png")
 local objetivosExternos =  {}
 
 -- função que gerencia a quantidade de água
-local agua = 5
-local aguaMax = 10
 local function adicionarAgua(valor)
     agua = agua + valor
+    if agua < 0 then agua =-1 end
 end
 local function alterarmovimento(pes)
     movimentosRestantes= movimentosRestantes + pes

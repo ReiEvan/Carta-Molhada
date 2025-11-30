@@ -1,12 +1,8 @@
 local love = require "love"
 
-local todasAliadas = {
+local primeirasAliadas = {
+
     {
-        id = "Super Eficiente",
-        img = love.graphics.newImage("sprites/carta super eficiente.png"),
-        descricao = "Comece está rodada com 1 movimento a mais."
-    },
- {
         id = "Carta da Nascente",
         img = love.graphics.newImage("sprites/carta nascente.png"),
         descricao = "Ganhe 2 águas."
@@ -68,7 +64,7 @@ local function aplicarEfeito(carta)
         print("EFEITO: +2 água")
         adicionarAgua(2)   
     end
-    if carta.id == "Super Eficiente" and alterarmovimento then
+    if carta.id == "Movimento Livre" and alterarmovimento then
         alterarmovimento(1)
     end
     if carta.id == "Procurando água" and alterarmovimento and adicionarAgua then
@@ -87,7 +83,7 @@ end
 local CARD_WIDTH = 140
 local CARD_HEIGHT = 185
 local OFFSET_BETWEEN_CARDS = 3  
-local CARDS_IN_BARALHO = #todasAliadas
+local CARDS_IN_BARALHO = #primeirasAliadas
 local contadorBaralho = CARDS_IN_BARALHO  
 
 local HOVER_OFFSET = 120
@@ -117,7 +113,7 @@ local function construirBaralho()
 
     baralho = {}
 
-    contadorBaralho = #todasAliadas
+    contadorBaralho = #primeirasAliadas
 
     for i = 0, contadorBaralho - 1 do
         local offsetY = i * OFFSET_BETWEEN_CARDS      
@@ -198,9 +194,9 @@ end
 
 local function puxarCartaGarantido()
     -- caso o baralho tenha 0 cartas, recarrega
-    if #todasAliadas == 0 then
+    if #primeirasAliadas == 0 then
         for i = 1, #descarte do
-            table.insert(todasAliadas, descarte[i])
+            table.insert(primeirasAliadas, descarte[i])
         end
         descarte = {}
         construirBaralho()
@@ -208,7 +204,7 @@ local function puxarCartaGarantido()
 
     -- embaralha lista auxiliar
     local copia = {}
-    for i = 1, #todasAliadas do copia[i] = todasAliadas[i] end
+    for i = 1, #primeirasAliadas do copia[i] = primeirasAliadas[i] end
     for i = #copia, 2, -1 do
         local j = love.math.random(1, i)
         copia[i], copia[j] = copia[j], copia[i]
@@ -218,10 +214,10 @@ local function puxarCartaGarantido()
     local carta = copia[1]
 
     -- remove da lista original e joga no descarte
-    for i = #todasAliadas, 1, -1 do
-        if todasAliadas[i] == carta then
+    for i = #primeirasAliadas, 1, -1 do
+        if primeirasAliadas[i] == carta then
             table.insert(descarte, carta)
-            table.remove(todasAliadas, i)
+            table.remove(primeirasAliadas, i)
             break
         end
     end
