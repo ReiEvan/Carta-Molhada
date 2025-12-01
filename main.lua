@@ -24,8 +24,8 @@ local movimento={
         my=220
 }
 
-local bg_escalax = 0.7
-local bg_escalay = 0.5
+local bg_escalax = 0.8
+local bg_escalay = 0.8
 local escala = 0.5
 local rodada = 1
 local numGuardas = 1
@@ -431,7 +431,8 @@ end
 --função para o mouse no menu e in game
 function love.mousepressed(x, y, button, isTouch, presses)
     if button == 1 and not game.state["paused"] then
-        
+        if game.state["running"] then
+            
         if confirmacao.ativa then
             confirmacao.botoes.sim:checkPressed(x, y, player.radius)
             confirmacao.botoes.nao:checkPressed(x, y, player.radius)
@@ -466,7 +467,8 @@ function love.mousepressed(x, y, button, isTouch, presses)
                     confirmacao.botoes.nao.x = ponto.x + offset
                     confirmacao.botoes.nao.y = yBase
 
-                    return
+                        return
+                    end
                 end
             end
         end
@@ -476,6 +478,18 @@ end
 
 
 function love.load()
+    ------------IMAGENS DO JOGO--------------------
+    movGuarda.imagem = love.graphics.newImage("sprites/Guardinha.png")
+    local startNormal = love.graphics.newImage("sprites/botão_iniciar.png")
+    local startClicado = love.graphics.newImage("sprites/botão_iniciar_clicado.png")
+    local opcoesNormal = love.graphics.newImage("sprites/botão_opções.png")
+    local opcoesClicado = love.graphics.newImage("sprites/botão_opções_clicado.png")
+    local sairNormal = love.graphics.newImage("sprites/botão_sair.png")
+    local sairClicado = love.graphics.newImage("sprites/botão_sair_clicado.png")
+    local prxmDiaNormal = love.graphics.newImage("sprites/botão_prxm_Dia.png")
+    local prxmDiaClicado = love.graphics.newImage("sprites/botão_prxm_Dia_Clicado.png")
+
+-------------------------------------------------------------------
     love.mouse.setVisible(false)
     love.window.setTitle("Última Gota") --isso tá funcionando? // É o titulo que aparece na Janela do game
     fonte.grande = love.graphics.newFont(40)
@@ -483,23 +497,39 @@ function love.load()
     fonte.normal = love.graphics.newFont(13)
     love.graphics.setFont(fonte.normal)
     ost.somteste()
+    
+    
     --Botões da tela do menu
-    buttons.menu_state.play_game = button("Iniciar", startNewGame, nil, 80, 30)
-    buttons.menu_state.settings = button("Configurações", nil, nil, 120, 30)
-    buttons.menu_state.exit_game = button("Sair", love.event.quit, nil, 80, 30)
+    local centroX = love.graphics.getWidth() / 2
+    local centroY = love.graphics.getHeight() / 2
+    --Só pra lembrar button(ImagemNormal, Função, Parametro, Largura, Altura, ImagemPressionada)
+    buttons.menu_state.play_game = button(startNormal, startNewGame, nil, 250, nil, startClicado)
+    buttons.menu_state.play_game.x = centroX - 30
+    buttons.menu_state.play_game.y = centroY - 50
+
+    buttons.menu_state.settings = button(opcoesNormal, nil, nil, 250, nil, opcoesClicado)
+    buttons.menu_state.settings.x = centroX - 50
+    buttons.menu_state.settings.y = centroY + 3000
+
+    buttons.menu_state.exit_game = button(sairNormal, love.event.quit, nil, 150, 90, sairClicado)
+    buttons.menu_state.exit_game.x = centroX - 30 
+    buttons.menu_state.exit_game.y = centroY + 250
+    
+    
     --Botões no jogo rodando
-    buttons.running_state.pass_rodada = button("Proximo dia", proxRodada, nil, 120, 30)
-    buttons.running_state.exit_in_game = button("Sair", love.event.quit, nil, 80, 30)
+    buttons.running_state.pass_rodada = button(prxmDiaNormal, proxRodada, nil, nil, 40, prxmDiaClicado)
+    buttons.running_state.exit_in_game = button(sairNormal, love.event.quit, nil, nil, 60, sairClicado)
+    
+    
     --Botões de confirmação de movimento
     confirmacao.botoes.sim = button("Sim", confirmarMovimento, nil, 50, 25)
     confirmacao.botoes.nao = button("Não", cancelarMovimento, nil, 50, 25)
+    
+    
     --Botões do Menu de Água (Carta)
     local cx, cy = love.graphics.getWidth()/2 - 70, love.graphics.getHeight()/2 - 50
 
     
-
-
-
     --Iniciar o jogo com os Hex vermelhos
         for i = 1, #pontosMovimentacao do
             if i ~= 3 then
@@ -515,10 +545,10 @@ function love.load()
     
 --baralho azul
     cartas.construirBaralho()
+
 -- carregar cartas aleatórias     
     cartas.selecionarCartasRodada()
---Guarda florestal
-    movGuarda.imagem = love.graphics.newImage("sprites/Guardinha.png")
+
 
 --Configura a posição inicial do guarda
     movGuarda.x = pontosMovimentacao[movGuarda.indiceAtual].x
@@ -576,15 +606,15 @@ end
 
 -- Carregamento do mapa
 local mapa = love.graphics.newImage("sprites/mapagradeado.png")
-local background= love.graphics.newImage("sprites/logo do jogo.png")
+local background= love.graphics.newImage("sprites/FUNDO TELA INICIAL (20251130094623).png")
+local movImg = love.graphics.newImage("sprites/Movimentos_Arte.png")
+local diaImg = love.graphics.newImage("sprites/Dia_Arte.png")
 function love.draw()
-    --Contagem do FPS
-    love.graphics.printf("FPS: " .. love.timer.getFPS(), love.graphics.newFont(16),
-    10, love.graphics.getHeight() - 30, love.graphics.getWidth())
      if game.state["running"] then
         --Movimentos Restantes
         love.graphics.setFont(fonte.media)
-        love.graphics.print("Movimentos: " .. movimentosRestantes, movimento.mx, movimento.my, 0)
+        --love.graphics.draw(movImg, movimento.mx, movimento.my, 0, 1, 1)
+        love.graphics.print("movimentos: " .. movimentosRestantes, movimento.mx, movimento.my, 0)
         love.graphics.setFont(fonte.normal)
         --Feddback visual da quantidade de agua
         love.graphics.draw(imagemAgua.ficha, imagemAgua.fx, imagemAgua.fy, 0, escala, escala)
@@ -594,10 +624,9 @@ function love.draw()
         love.graphics.setColor(1, 1, 1)
 
         --Numeração da rodada atual
-        love.graphics.print("Dia " .. rodada .. "/20", love.graphics.getWidth()/2-80, 10, 0)
+        love.graphics.draw(diaImg, love.graphics.getWidth()/2 - 100, love.graphics.getHeight()/2 - 410, 0, 0.3, 0.3)
+        love.graphics.print(rodada .. "/20", love.graphics.getWidth()/2 + 30, 10, 0)
          love.graphics.setFont(fonte.normal)
-        --Saber a posição do mouse
-        love.graphics.print("Mouse x: " .. love.mouse.getX() .. " y: " .. love.mouse.getY(), 300, 10, 0)
         -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo
         --desenhar o mapa
         love.graphics.draw(mapa, love.graphics.getWidth()/2 - 400, love.graphics.getHeight()/2 - 370, 0, .35, .35)
@@ -660,7 +689,7 @@ function love.draw()
         
         -- Guardinha florestal
         if  movGuarda.quadros[movGuarda.frameAtual] then
-        love.graphics.draw(movGuarda.imagem, movGuarda.quadros[movGuarda.frameAtual], movGuarda.x-20, movGuarda.y-20, 0, 0.2, 0.2)
+        love.graphics.draw(movGuarda.imagem, movGuarda.quadros[movGuarda.frameAtual], movGuarda.x-90, movGuarda.y-50, 0, 0.09, 0.09)
         else
             love.graphics.draw(movGuarda.imagem, movGuarda.x-20, movGuarda.y-20)
         end
@@ -698,10 +727,13 @@ function love.draw()
         --love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
         love.graphics.draw(background, 0, 0, 0, bg_escalax, bg_escalay)
         
-        buttons.menu_state.play_game:draw(love.graphics.getWidth()/2 - 30, love.graphics.getHeight()/2 - 50, 20, 10, 10)
-        buttons.menu_state.settings:draw(love.graphics.getWidth()/2 - 50, love.graphics.getHeight()/2, 10, 10)
-        buttons.running_state.exit_in_game:draw(love.graphics.getWidth()/2 - 30, love.graphics.getHeight()/2 + 50, 10, 10)
+        buttons.menu_state.play_game:draw(love.graphics.getWidth()/2 - 100, love.graphics.getHeight()/2 - 25, 20, 8, 10)
+        buttons.menu_state.settings:draw(love.graphics.getWidth()/2 - 20, love.graphics.getHeight()/2 + 60, 10, 10)
+        buttons.menu_state.exit_game:draw(love.graphics.getWidth()/2 + 100, love.graphics.getHeight()/2 + 150, 25, 8, 10)
+
+        love.graphics.setColor(0,1,0)
         love.graphics.circle("fill", player.x, player.y, player.radius)
+        love.graphics.setColor(1,1,1)
     end
 
     if game.state["paused"] then
@@ -723,7 +755,7 @@ function love.keypressed(key)
         local isFullscreen = love.window.getFullscreen()
         love.window.setFullscreen(not isFullscreen) --Inverte, se tá on desliga, se tá off liga.
     end
-    if key == "space" then
+    if key == "space" and game.state["running"] then
         proxRodada()
     end
     if key == "r" then

@@ -1,12 +1,28 @@
 local love = require "love"
 
-function Button(text, func, func_param, width, height)
+function Button(textOrImg, func, func_param, width, height, imagePressed)
+    
+    local isImage = (type(textOrImg) == "userdata")
+    local btnWidth = width
+    local btnHeight = height
+    
+    --Se for imagem e não tiver largura definida, usa o tamanho da imagem
+    if isImage then
+        if not btnWidth then btnWidth = textOrImg:getWidth() end
+        if not btnHeight then btnHeight = textOrImg:getHeight() end
+    else
+        --Se for texto, usa o padrão 100x100 se não for informado
+        btnWidth = width or 100
+        btnHeight = height or 100
+    end
+
     return{
         width = width or 100,
         height = height or 100,
         func = func or function() print("Esse botão ainda não tem nenhuma função") end,
         func_param = func_param,
-        text = text or "Sem Texto",
+        image = isImage and textOrImg or nil,
+        text = not isImage and textOrImg or "Sem Texto",
         button_x = 0,
         button_y = 0,
         text_x = 0,
@@ -28,25 +44,54 @@ function Button(text, func, func_param, width, height)
             self.button_x = button_x or self.button_x
             self.button_y = button_y or self.button_y
 
-            if text_x then
-                self.text_x = text_x + self.button_x
-            else
-                self.text_x = self.button_x
+            --Detecção de clique visual
+            local imgParaDesenhar = self.image
+
+            --Se tivermos uma imagem de "pressionado", verificamos se devemos usá-la
+            if self.imagePressed then
+                local mx, my = love.mouse.getPosition()
+                local isDown = love.mouse.isDown(1) --1 é o botão esquerdo
+
+                --Verifica colisão Mouse vs Retangulo do botão
+                local mouseEmCima = (mx >= self.button_x) and (mx <= self.button_x + self.width) and
+                                    (my >= self.button_y) and (my <= self.button_y + self.height)
+
+                --Se o mouse ta em cima e botão apertado, troca a imagem
+                if mouseEmCima and isDown then
+                    imgParaDesenhar = self.imagePressed
+                end
             end
 
-            if text_y then
-                self.text_y = text_y + self.button_y
+            if self.image then
+                love.graphics.setColor(1,1,1)
+
+                --Calcula a escala para a imagem caber exatamente na largura/altura definida
+                local sx = self.width / imgParaDesenhar:getWidth()
+                local sy = self.height / imgParaDesenhar:getHeight()
+
+                love.graphics.draw(imgParaDesenhar, self.button_x, self.button_y, 0, sx, sy)
+
             else
-                self.text_y = self.button_y
+                if text_x then
+                    self.text_x = text_x + self.button_x
+                else
+                    self.text_x = self.button_x
+                end
+
+                if text_y then
+                    self.text_y = text_y + self.button_y
+                else
+                    self.text_y = self.button_y
+                end
+
+                love.graphics.setColor(0.6,0.6,0.6)
+                love.graphics.rectangle("fill", self.button_x, self.button_y, self.width, self.height)
+
+                love.graphics.setColor(0,0,0)
+                love.graphics.print(self.text, self.text_x, self.text_y)
+
+                love.graphics.setColor(1,1,1)
             end
-
-            love.graphics.setColor(0.6,0.6,0.6)
-            love.graphics.rectangle("fill", self.button_x, self.button_y, self.width, self.height)
-
-            love.graphics.setColor(0,0,0)
-            love.graphics.print(self.text, self.text_x, self.text_y)
-
-            love.graphics.setColor(1,1,1)
         end
     }
 
