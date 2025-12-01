@@ -1,12 +1,25 @@
 local love = require "love"
 local button = require "Button"
---local conflitos = require "conflitos"
+local conflitos = require "conflitos"
 local hitbox = require "hitbox"
 local ost = require "OST"
 local cartas = require "cartas"
 -- função que gerencia a quantidade de água
 local agua = 5
-local movimentosRestantes = 3
+local aguaMax = 10
+function adicionarAgua(qtd)
+    agua = agua + qtd
+end
+local function adicionarAgua(valor)
+    agua = agua + valor
+    if agua < 0 then agua = -1 end
+end
+-- VINCULAR A FUNÇÃO DAS CARTAS AOS MÓDULOS
+-- vincula a função de água
+cartas.setAdicionarAgua(adicionarAgua)
+
+
+
 local movimento={
         mx=10,
         my=220
@@ -17,6 +30,7 @@ local bg_escalay = 0.5
 local escala = 0.5
 local rodada = 1
 local numGuardas = 1
+local movimentosRestantes = 3
 local card_back_image
 local fonte= {}
 local hexAtivos = {}
@@ -31,12 +45,13 @@ local imgBandeira = love.graphics.newImage("sprites/bandeira vermelha.png")
 local objetivosExternos =  {}
 
 -- função que gerencia a quantidade de água
+local agua = 5
+local aguaMax = 10
 local function adicionarAgua(valor)
     agua = agua + valor
-    if agua < 0 then agua =-1 end
 end
 local function alterarmovimento(pes)
-    movimentosRestantes= movimentosRestantes + pes
+    movimentosRestantes= movimentosRestantes +pes
 end
 -- VINCULAR A FUNÇÃO DAS CARTAS AOS MÓDULOS
 -- vincula a função de água
@@ -58,7 +73,7 @@ local movimento={
 
 local imagemAgua={
         ficha=love.graphics.newImage("sprites/ficha gota.png"),
-        fx=movimento.mx-5, fy=movimento.my+60     
+        fx=movimento.mx-5, fy=movimento.my+25     
     }
 
 
@@ -70,6 +85,7 @@ local confirmacao = {
     botoes= {}
 }
 local rodadaAtiva = false
+local efeitoConflitoAplicado = false
 
 
     cartas.selecionarCartasRodada()
@@ -308,8 +324,7 @@ local function proxRodada()
         rodada = rodada + 1
         movimentosRestantes = 3
         cartas.selecionarCartasRodada()
-        adicionarAgua(-1)
-        cartas.prepararConflitoDaRodada(rodada)
+       adicionarAgua(-1)
 
 
 --verifica e remove as imagens q foram transformadas depois de duas rodadas
@@ -396,7 +411,7 @@ local function verificarEstadoJogo()
  --Ficar sem água
     if agua < 0 then
         fimDeJogo.ativo = true
-        fimDeJogo.mensagem = "DERROTA\nO Guardinha não pode trabalhar\nsem água!"
+        fimDeJogo.mensagem = "DERROTA\nSem água!"
         fimDeJogo.cor = {0.5, 0, 0}
     end
 ----------------------- Condições de Vitória (Triunfo) ----------------
@@ -465,7 +480,6 @@ function love.load()
     love.mouse.setVisible(false)
     love.window.setTitle("Última Gota") --isso tá funcionando? // É o titulo que aparece na Janela do game
     fonte.grande = love.graphics.newFont(40)
-    fonte.media = love.graphics.newFont(30)
     fonte.normal = love.graphics.newFont(13)
     love.graphics.setFont(fonte.normal)
     ost.somteste()
@@ -503,6 +517,8 @@ function love.load()
     cartas.construirBaralho()
 -- carregar cartas aleatórias     
     cartas.selecionarCartasRodada()
+--carregar conflito
+    --conflitos.construirBaralho()
 --Guarda florestal
     movGuarda.imagem = love.graphics.newImage("sprites/Guarda Provisorio.png")
 
@@ -569,7 +585,6 @@ function love.draw()
     10, love.graphics.getHeight() - 30, love.graphics.getWidth())
      if game.state["running"] then
         --Movimentos Restantes
-        love.graphics.setFont(fonte.media)
         love.graphics.print("Movimentos: " .. movimentosRestantes, movimento.mx, movimento.my, 0)
         
         --Feddback visual da quantidade de agua
@@ -617,13 +632,8 @@ function love.draw()
         
         cartas.desenharBaralho()
         cartas.desenharCartasRodada()
+        conflitos.fundoConflito()
         cartas.desenharResultadoEscolha()
-    -- Sempre aparece
-        cartas.desenharFundoConflito()
-    -- Só aparece se não for a 1ª rodada
-        cartas.desenharConflito()
-        
-        
 
        
 
