@@ -1,4 +1,4 @@
-local love = require "love"
+local love = require ("love")
 
 local primeirasAliadas = {
 
@@ -289,7 +289,7 @@ local function desenharCartasRodada()
 
         
     -- ESCONDER CARTA NÃO ESCOLHIDA
-    if escolhaBloqueada and cartasRodada[i] ~= cartaSelecionada then
+    if escolhaBloqueada and cartasRodada[i] == cartaSelecionada then
         goto continue
     end
 
