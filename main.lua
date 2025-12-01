@@ -1,6 +1,5 @@
 local love = require "love"
 local button = require "Button"
-local conflitos = require "conflitos"
 local hitbox = require "hitbox"
 local ost = require "OST"
 local cartas = require "cartas"
@@ -85,7 +84,6 @@ local confirmacao = {
     botoes= {}
 }
 local rodadaAtiva = false
-local efeitoConflitoAplicado = false
 
 
     cartas.selecionarCartasRodada()
@@ -324,7 +322,8 @@ local function proxRodada()
         rodada = rodada + 1
         movimentosRestantes = 3
         cartas.selecionarCartasRodada()
-       adicionarAgua(-1)
+        adicionarAgua(-1)
+        cartas.prepararConflitoDaRodada(rodada)
 
 
 --verifica e remove as imagens q foram transformadas depois de duas rodadas
@@ -480,6 +479,7 @@ function love.load()
     love.mouse.setVisible(false)
     love.window.setTitle("Última Gota") --isso tá funcionando? // É o titulo que aparece na Janela do game
     fonte.grande = love.graphics.newFont(40)
+    fonte.media = love.graphics.newFont(30)
     fonte.normal = love.graphics.newFont(13)
     love.graphics.setFont(fonte.normal)
     ost.somteste()
@@ -517,8 +517,6 @@ function love.load()
     cartas.construirBaralho()
 -- carregar cartas aleatórias     
     cartas.selecionarCartasRodada()
---carregar conflito
-    --conflitos.construirBaralho()
 --Guarda florestal
     movGuarda.imagem = love.graphics.newImage("sprites/Guardinha.png")
 
@@ -585,8 +583,9 @@ function love.draw()
     10, love.graphics.getHeight() - 30, love.graphics.getWidth())
      if game.state["running"] then
         --Movimentos Restantes
+        love.graphics.setFont(fonte.media)
         love.graphics.print("Movimentos: " .. movimentosRestantes, movimento.mx, movimento.my, 0)
-        
+        love.graphics.setFont(fonte.normal)
         --Feddback visual da quantidade de agua
         love.graphics.draw(imagemAgua.ficha, imagemAgua.fx, imagemAgua.fy, 0, escala, escala)
         love.graphics.setColor(255, 255, 255)
@@ -629,10 +628,11 @@ function love.draw()
             --Ajuste o offset (x, y) e a escala (0.5) conforme o tamanho da imagem
             love.graphics.draw(imgBandeira, p.x - 15, p.y - 30, 0, 0.1, 0.1)
         end
-        
+
+        cartas.desenharFundoConflito()   
+        cartas.desenharConflito()      
         cartas.desenharBaralho()
         cartas.desenharCartasRodada()
-        conflitos.fundoConflito()
         cartas.desenharResultadoEscolha()
 
        

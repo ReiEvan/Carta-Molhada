@@ -2,6 +2,12 @@ local love = require "love"
 
 local primeirasAliadas = {
 
+     {
+        id = "Garrafa termica",
+        img = love.graphics.newImage("sprites/carta garrafa termica.png"),
+        descricao = "Seu guarda não vai gastar água nessa rodada."
+    },
+    
     {
         id = "Carta da Nascente",
         img = love.graphics.newImage("sprites/carta nascente.png"),
