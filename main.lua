@@ -2,21 +2,18 @@ local love = require "love"
 local button = require "Button"
 local hitbox = require "hitbox"
 local ost = require "OST"
-local cartas = require "cartas"
+local cartas = require ("cartas")
 -- função que gerencia a quantidade de água
 local agua = 5
-local aguaMax = 10
-function adicionarAgua(qtd)
+local movimentosRestantes = 3
+function alterarAgua(qtd)
     agua = agua + qtd
-end
-local function adicionarAgua(valor)
-    agua = agua + valor
     if agua < 0 then agua = -1 end
 end
--- VINCULAR A FUNÇÃO DAS CARTAS AOS MÓDULOS
--- vincula a função de água
-cartas.setAdicionarAgua(adicionarAgua)
 
+function alterarMovimento(qtd)
+    movimentosRestantes = movimentosRestantes + qtd
+end
 
 
 local movimento={
@@ -29,7 +26,7 @@ local bg_escalay = 0.8
 local escala = 0.5
 local rodada = 1
 local numGuardas = 1
-local movimentosRestantes = 3
+
 local card_back_image
 local fonte= {}
 local hexAtivos = {}
@@ -45,20 +42,6 @@ local imgBandeiraConquistada = love.graphics.newImage("sprites/Bandeira_branca.p
 local objetivosExternos =  {}
 local objetivosRecompensados = {}
 
--- função que gerencia a quantidade de água
-local agua = 5
-local aguaMax = 10
-local function adicionarAgua(valor)
-    agua = agua + valor
-end
-local function alterarmovimento(pes)
-    movimentosRestantes= movimentosRestantes +pes
-end
--- VINCULAR A FUNÇÃO DAS CARTAS AOS MÓDULOS
--- vincula a função de água
-cartas.setAdicionarAgua(adicionarAgua)
--- vincula a função de movimento
-cartas.setalterarmovimento(alterarmovimento)
 --Textos de fim de jogo
 
 local fimDeJogo = {
@@ -88,7 +71,6 @@ local confirmacao = {
 local rodadaAtiva = false
 
 
-    cartas.selecionarCartasRodada()
 --Desativa a confirmação após escolher
     confirmacao.ativa = false
     confirmacao.indiceDestino = nil
@@ -324,7 +306,7 @@ local function proxRodada()
         rodada = rodada + 1
         movimentosRestantes = 3
         cartas.selecionarCartasRodada()
-        adicionarAgua(-1)
+        alterarAgua(-1)
         cartas.prepararConflitoDaRodada(rodada)
 
 
@@ -347,7 +329,7 @@ local function proxRodada()
                         --Se for um objetivo e ainda não foi recompensado
                         if not objetivosRecompensados[i] then
                             objetivosRecompensados[i] = true --Marca como recompensado
-                            adicionarAgua(3)
+                            alterarAgua(3)
                         end
                         break
                     end
@@ -493,6 +475,7 @@ function love.mousepressed(x, y, button, isTouch, presses)
         end
     end
     handle_button_click(x, y, player.radius)
+    cartas.mousepressed(x, y, button, movimentosRestantes)
 end
 
 
@@ -559,15 +542,15 @@ function love.load()
             end
             
         end
-    cartas.setAdicionarAgua(adicionarAgua)
     
     
 --baralho azul
     cartas.construirBaralho()
 
--- carregar cartas aleatórias     
+-- carregar cartas aleatórias
+    cartas.setCallbacks(alterarAgua, alterarMovimento)
     cartas.selecionarCartasRodada()
-
+    
 
 --Configura a posição inicial do guarda
     movGuarda.x = pontosMovimentacao[movGuarda.indiceAtual].x
@@ -590,6 +573,7 @@ function love.update(dt)
     player.x, player.y = love.mouse.getPosition()
     cartas.reposicionarBaralho()
     cartas.atualizarInteracaoCartas()
+    cartas.notificarErro(dt)
     if movGuarda.destino then
         local dx = movGuarda.destino.x - movGuarda.x
         local dy = movGuarda.destino.y - movGuarda.y
@@ -690,13 +674,13 @@ function love.draw()
             --Ajuste o offset (x, y) e a escala (0.5) conforme o tamanho da imagem
             love.graphics.draw(imagemParaDesenhar, p.x - ajusteX, p.y - ajusteY, 0, escalaAtual, escalaAtual)
         end
-
+        cartas.desenharTroca()
         cartas.desenharFundoConflito()   
         cartas.desenharConflito()      
         cartas.desenharBaralho()
         cartas.desenharCartasRodada()
         cartas.desenharResultadoEscolha()
-
+    
        
 
         --Desenhar a hitbox enquanto o jogo ta rodando
@@ -782,7 +766,7 @@ function love.keypressed(key)
     if key == "escape" then
         game.state["paused"] = not game.state["paused"]
     end
-     cartas.selecionarCartaPorTecla(key)
+     cartas.keypressed(key)
 
     if key == "f11" then
         local isFullscreen = love.window.getFullscreen()
