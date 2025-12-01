@@ -39,11 +39,7 @@ local primeirasAliadas = {
         id = "Movimento Livre",
         img = love.graphics.newImage("sprites/carta mov livre.png"),
         descricao =
-            "Use esta carta para se \n".. 
-            "mover para qualquer espaço\n".. 
-            "sem gastar uma ação\n" ..
-            "(mantendo a regra de \n".. 
-            "movimento padrão)"
+            'Começe a rodada com um movimento a mais'
     },
 
     {
@@ -411,7 +407,7 @@ local function desenharCartasRodada()
             love.graphics.printf(card.descricao, textoX, y + offset + 45, larguraCaixa)
 
             love.graphics.setColor(1, 0.6, 0)
-            local direcao = (i == 1) and "Aperte 1 para ativar" or "Aperte 2 para ativar"
+            local direcao = (i == 1) and "CLIQUE NA CARTA" or "CLIQUE NA CARTA"
             love.graphics.printf(direcao, textoX, y + offset + 120, larguraCaixa, "center")
             love.graphics.setColor(1,1,1)
         end
@@ -459,7 +455,7 @@ local conflitos = {
         img = love.graphics.newImage("sprites/conflitos/bomba dagua quebrou.png"),
         descricao = "Perca 2 fichas de água",
         efeito = function()
-            if adicionarAgua then adicionarAgua(-2) end
+            if alterarAgua then alterarAgua(-2) end
         end
     },
 
@@ -626,7 +622,11 @@ local function desenharTroca()
 
     love.graphics.setColor(1,1,1)
 end
-
+function limparMensagens()
+        mensagemErro = ""
+        tempoErro = 0
+        escolhendoTroca = false
+end
 -----------------------------------------------------------------------------------------
 -- EXPORTAÇÃO
 -----------------------------------------------------------------------------------------
@@ -647,6 +647,7 @@ return {
     keypressed=keypressed,
     desenharTroca = desenharTroca,
     notificarErro=notificarErro,
+    limparMensagens = limparMensagens,
 
 
     prepararConflitoDaRodada = prepararConflitoDaRodada,

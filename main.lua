@@ -308,6 +308,8 @@ local function proxRodada()
         cartas.selecionarCartasRodada()
         alterarAgua(-1)
         cartas.prepararConflitoDaRodada(rodada)
+        cartas.limparMensagens()
+
 
 
 --verifica e remove as imagens q foram transformadas depois de duas rodadas
