@@ -149,7 +149,7 @@ local movGuarda = {
     x = pontosMovimentacao[3].x,
     y = pontosMovimentacao[3].y,
     indiceAtual = 3,
-    imagem = love.graphics.newImage("sprites/Guarda Provisorio.png"),
+    imagem = love.graphics.newImage("sprites/Guardinha.png"),
     destino = nil,
     velocidade = 200,
     raioColisao = 30,
@@ -520,7 +520,7 @@ function love.load()
 --carregar conflito
     --conflitos.construirBaralho()
 --Guarda florestal
-    movGuarda.imagem = love.graphics.newImage("sprites/Guarda Provisorio.png")
+    movGuarda.imagem = love.graphics.newImage("sprites/Guardinha.png")
 
 --Configura a posição inicial do guarda
     movGuarda.x = pontosMovimentacao[movGuarda.indiceAtual].x
