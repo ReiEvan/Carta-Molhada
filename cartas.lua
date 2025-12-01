@@ -7,20 +7,16 @@ function setCallbacks(funcAgua, funcMov)
     alterarMovimento = funcMov
 end
 
+--Variavel para controlar a dificuldade
+local eraAtual = 1
+
 --//////////////////////////////////////////////////////////////////////////////////////////
 --                                   CARTAS ALIADAS
 --//////////////////////////////////////////////////////////////////////////////////////////
 
 local primeirasAliadas = {
 
-    {
-        id = "Garrafa termica",
-        img = love.graphics.newImage("sprites/carta garrafa termica.png"),
-        descricao = "Seu guarda não vai gastar água nessa rodada."
-        -- DICA: no main, antes de gastar água do guarda, coloque:
-        -- if garrafaTermicaAtiva then não gastar água
-    },
-
+    
     {
         id = "Carta da Nascente",
         img = love.graphics.newImage("sprites/carta nascente.png"),
@@ -41,7 +37,40 @@ local primeirasAliadas = {
         descricao =
             'Começe a rodada com um movimento a mais'
     },
-
+    {
+        id = "Procurando água",
+        img = love.graphics.newImage('sprites/carta Procurando agua.png'),
+        descricao = 
+            'Troque 1 ação por\n'..
+            '1 ficha de água\n'..
+            '(até o limite de 3)'
+    }
+}
+local segundasAliadas={
+{
+        id = "Esforço recompensado",
+        img = love.graphics.newImage('sprites/carta Esforco recompensado.png'),
+        descricao=
+            'Se tiver 3 áreas verdes\n'..
+            'ganhe 3 fichas de água.'
+        -- DICA: no main, conte áreas verdes e adicione água se >= 3
+    },
+    {
+        id = "Dissolvendo problemas",
+        img = love.graphics.newImage("sprites/carta Dissolvendo problemas.png"),
+        descricao=
+            'Gaste 2 águas e anule\n'..
+            'o conflitos da rodada'
+        -- DICA: no main, antes de aplicar conflito:
+        -- if dissolvendoAtivo then conflitoAtual = nil
+    },
+    {   
+        id = "Garrafa termica",
+        img = love.graphics.newImage("sprites/carta garrafa termica.png"),
+        descricao = "Seu guarda não vai gastar água nessa rodada."
+        -- DICA: no main, antes de gastar água do guarda, coloque:
+        -- if garrafaTermicaAtiva then não gastar água
+    },
     {
         id = "Carta Dourada",
         img = love.graphics.newImage("sprites/carta dourada.png"),
@@ -53,33 +82,6 @@ local primeirasAliadas = {
         -- DICA: marque area.protegida = true e ao aplicar conflito pule áreas protegidas
     },
 
-    {
-        id = "Dissolvendo problemas",
-        img = love.graphics.newImage("sprites/carta Dissolvendo problemas.png"),
-        descricao=
-            'Gaste 2 águas e anule\n'..
-            'o conflitos da rodada'
-        -- DICA: no main, antes de aplicar conflito:
-        -- if dissolvendoAtivo then conflitoAtual = nil
-    },
-
-    {
-        id = "Esforço recompensado",
-        img = love.graphics.newImage('sprites/carta Esforco recompensado.png'),
-        descricao=
-            'Se tiver 3 áreas verdes\n'..
-            'ganhe 3 fichas de água.'
-        -- DICA: no main, conte áreas verdes e adicione água se >= 3
-    },
-
-    {
-        id = "Procurando água",
-        img = love.graphics.newImage('sprites/carta Procurando agua.png'),
-        descricao = 
-            'Troque 1 ação por\n'..
-            '1 ficha de água\n'..
-            '(até o limite de 3)'
-    }
 }
 -- estado de troca
 local escolhendoTroca = false
@@ -448,12 +450,13 @@ local fundoConflitoSprite = love.graphics.newImage("sprites/FUNDO CARTA VERMELHA
 -- LISTA DE CONFLITOS
 -----------------------------------------------------------------------------------------
 
-local conflitos = {
+local conflitos1 = {
 
     {
         id = "Bomba d'agua quebrou",
         img = love.graphics.newImage("sprites/conflitos/bomba dagua quebrou.png"),
         descricao = "Perca 2 fichas de água",
+        eraMinima = 1,
         efeito = function()
             if alterarAgua then alterarAgua(-2) end
         end
@@ -462,50 +465,59 @@ local conflitos = {
     {
         id = "Incendio criminoso",
         img = love.graphics.newImage("sprites/conflitos/incendio criminoso.png"),
-        descricao = "Perca uma área verde que não tenha um guarda"
+        descricao = "Perca uma área verde que não tenha um guarda",
+        eraMinima = 1
         -- DICA: no main:
         -- encontre áreas sem guarda e remova 1 aleatória
     },
 
     {
-        id = "Dia quente de trabalho",
-        img = love.graphics.newImage("sprites/conflitos/dia quente de trabalho.png"),
-        descricao = "Os guardas gastam 2 águas ao invés de 1 e o movimento cai em 1"
-        -- DICA: no gasto de água do guarda → gasto = 2
-        -- DICA: reduzir movimento: movimento = movimento - 1
-    },
-
-    {
         id = "Guarda inoperante",
         img = love.graphics.newImage("sprites/conflitos/Guarda inoperante.png"),
-        descricao = "Um dos guardas fica inoperante até o fim da rodada"
+        descricao = "Um dos guardas fica inoperante até o fim da rodada",
+        eraMinima = 1
         -- DICA: marque guarda.inoperante = true e ignore ações dele no turno
     },
 
     {
         id = "Sabotagem",
         img = love.graphics.newImage("sprites/conflitos/sabotagem.png"),
-        descricao = "Sua próxima carta de Aliados será anulada"
+        descricao = "Sua próxima carta de Aliados será anulada",
+        eraMinima = 1
         -- DICA: no cartas.lua → antes de aplicar uma carta:
         -- if sabotagemAtiva then ignorar efeito
     },
 
-    {
-        id = "A carta cinza",
-        img = love.graphics.newImage("sprites/conflitos/A carta cinza.png"),
-        descricao = "Perca 2 áreas verdes"
-        -- DICA: remova 2 áreas verdes aleatórias (ignorando as protegidas)
-    },
-
+    
     {
         id = "Terreno difícil",
         img = love.graphics.newImage("sprites/conflitos/Terreno dificil.png"),
-        descricao = "retarde o tratamento de todas as áreas desse turno"
+        descricao = "retarde o tratamento de todas as áreas desse turno",
+        eraMinima = 1
         -- DICA: no main:
         -- tratamentoDasAreasPausado = true
     }
 }
+local conflitos2={
+    {
+        id = "A carta cinza",
+        img = love.graphics.newImage("sprites/conflitos/A carta cinza.png"),
+        descricao = "Perca 2 áreas verdes",
+        eraMinima = 2
+        -- DICA: remova 2 áreas verdes aleatórias (ignorando as protegidas)
+    },
+    {
+        id = "Dia quente de trabalho",
+        img = love.graphics.newImage("sprites/conflitos/dia quente de trabalho.png"),
+        descricao = "Os guardas gastam 2 águas ao invés de 1 e o movimento cai em 1",
+        eraMinima = 2
+        -- DICA: no gasto de água do guarda → gasto = 2
+        -- DICA: reduzir movimento: movimento = movimento - 1
+    },
 
+
+
+}
 -----------------------------------------------------------------------------------------
 -- BARALHO DE CONFLITOS
 -----------------------------------------------------------------------------------------
@@ -514,14 +526,6 @@ local baralhoConflitos = {}
 local descarteConflitos = {}
 local conflitoAtual = nil
 
-local function inicializarConflitos()
-    baralhoConflitos = {}
-    for i = 1, #conflitos do
-        baralhoConflitos[i] = conflitos[i]
-    end
-end
-inicializarConflitos()
-
 local function embaralhar(t)
     for i = #t, 2, -1 do
         local j = love.math.random(1,i)
@@ -529,34 +533,48 @@ local function embaralhar(t)
     end
 end
 
+local function inicializarConflitos()
+    baralhoConflitos = {}
+    descarteConflitos = {} --Reseta o descarte ao mudar de era para garantir que as novas entrem
+
+    for i = 1, #conflitos1 do
+        --Verifica se a carta pode ser usada na era atual
+        local requisito = conflitos1[i].eraMinima or 1
+
+        if requisito <= eraAtual then
+            table.insert(baralhoConflitos, conflitos1[i])
+        end
+    end
+
+    --Embaralha tudo imediatamente
+    embaralhar(baralhoConflitos)
+end
+
+inicializarConflitos()
+
+
 local function puxarConflito()
     if #baralhoConflitos == 0 then
         for i = 1,#descarteConflitos do
             table.insert(baralhoConflitos, descarteConflitos[i])
         end
         descarteConflitos = {}
+        embaralhar(baralhoConflitos)
     end
 
-    local copia = {}
-    for i=1,#baralhoConflitos do copia[i]=baralhoConflitos[i] end
-    embaralhar(copia)
+    if #baralhoConflitos == 0 then return nil end
 
-    local escolhido = copia[1]
+    local escolhido = baralhoConflitos[1]
+    table.remove(baralhoConflitos, 1)
 
-    for i = #baralhoConflitos,1,-1 do
-        if baralhoConflitos[i] == escolhido then
-            table.insert(descarteConflitos,escolhido)
-            table.remove(baralhoConflitos,i)
-            break
-        end
-    end
+    table.insert(descarteConflitos, escolhido)
 
     return escolhido
 end
 
 local function sortearConflitoRodada()
     conflitoAtual = puxarConflito()
-    if conflitoAtual.efeito then conflitoAtual.efeito() end
+    if conflitoAtual.efeito and conflitoAtual then conflitoAtual.efeito() end
 end
 
 local function prepararConflitoDaRodada(numeroDaRodada)
@@ -627,6 +645,52 @@ function limparMensagens()
         tempoErro = 0
         escolhendoTroca = false
 end
+
+--Função para o main.lua chamar quando trocar de Era
+local function setEra(novaEra)
+    if novaEra ~= eraAtual then
+        eraAtual = novaEra
+        -- Inicializa conflitos da nova era
+        inicializarConflitos()
+    end
+
+    -- Adiciona cartas aliadas sem repetir
+    for i = 1, #segundasAliadas do
+        local existe = false
+        for j = 1, #primeirasAliadas do
+            if primeirasAliadas[j].id == segundasAliadas[i].id then
+                existe = true
+                break
+            end
+        end
+        if not existe then
+            table.insert(primeirasAliadas, segundasAliadas[i])
+        end
+    end
+
+    -- Adiciona conflitos sem repetir
+    for i = 1, #conflitos2 do
+        local existe = false
+        for j = 1, #conflitos1 do
+            if conflitos1[j].id == conflitos2[i].id then
+                existe = true
+                break
+            end
+        end
+        if not existe then
+            table.insert(conflitos1, conflitos2[i])
+        end
+    end
+    embaralhar(primeirasAliadas)
+    embaralhar(conflitos1)
+
+    -- Reconstroi o baralho visual
+    construirBaralho()
+end
+
+
+
+
 -----------------------------------------------------------------------------------------
 -- EXPORTAÇÃO
 -----------------------------------------------------------------------------------------
@@ -652,5 +716,7 @@ return {
 
     prepararConflitoDaRodada = prepararConflitoDaRodada,
     desenharFundoConflito = desenharFundoConflito,
-    desenharConflito = desenharConflito
+    desenharConflito = desenharConflito,
+
+    setEra = setEra
 }

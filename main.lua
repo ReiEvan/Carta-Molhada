@@ -146,25 +146,25 @@ local function cancelarMovimento()
 end
 local function confirmarMovimento()
     local destIndex = confirmacao.indiceDestino
-
---Recupera a posição do destino baseada no índice salvo
+    
+    --Recupera a posição do destino baseada no índice salvo
     local pontoDestino = pontosMovimentacao[destIndex]
---Executa a movimentação
+    --Executa a movimentação
     movGuarda.destino = {x = pontoDestino.x, y = pontoDestino.y}
     movimentosRestantes = movimentosRestantes - 1
-
+    
     if destIndex ~= 3 and not pontosBloqueados[destIndex] then
         if not hexAtivos[destIndex] then
             hexAtivos[destIndex] = 1
             estadoTransformacao[destIndex] = false
             rodadasPorPonto[destIndex] = 0
-
-            elseif hexAtivos[destIndex] == 1 then
-                hexAtivos[destIndex] = 2
+            
+        elseif hexAtivos[destIndex] == 1 then
+            hexAtivos[destIndex] = 2
                 estadoTransformacao[destIndex] = true
                 rodadasPorPonto[destIndex] = 0
+            end
         end
-    end
     cancelarMovimento()
 end
 -- Funcao auxiliar para encontrar um valor em uma lista (substitui table.find)
@@ -188,17 +188,30 @@ local function movimentoPermitido(origem, destino)
 --Estado atual e do destino
     local estadoAtual = hexAtivos[origem]
     local estadoDestino = hexAtivos[destino]
---Se está em uma zona nil, pode se mover para o vermelho
+    --Se está em uma zona nil, pode se mover para o vermelho
     if estadoAtual == nil then
         return true
     end
---Se está em uma zona vermelha ou marrom, não pode mover para o vermelho
+    --Se está em uma zona vermelha ou marrom, não pode mover para o vermelho
     if estadoDestino == 1 then
         return false
     end
---Se chegou aqui pode mover para vazio ou marrom
+    --Se chegou aqui pode mover para vazio ou marrom
     return true
 end
+
+
+-- Sistema de eras
+local eraAtual = 1
+local telaEra = {
+    ativa = false,
+    tempoTotal = 4, --O tempo da tela de mudança de era
+    timer = 0,
+    titulo = "ERA II",
+    texto = "AS INDÚSTRIAS TE DESCOBRIRAM...\nNOVOS PERIGOS SURGEM."
+}
+
+
 --Estados possiveis do hexagono
 --nil: vazio (permitido)
 --1: vermelho (permitido)
@@ -331,18 +344,34 @@ local function proxRodada()
                         --Se for um objetivo e ainda não foi recompensado
                         if not objetivosRecompensados[i] then
                             objetivosRecompensados[i] = true --Marca como recompensado
-                            alterarAgua(3)
+                            alterarAgua(4)
                         end
                         break
                     end
                 end
-
             end
         end
         
     end
 
+--Lógica de mudança de era
+local contagemBandeiras = 0
+for _, idx in ipairs(objetivosExternos) do
+    if hexAtivos[idx] == nil then
+        contagemBandeiras = contagemBandeiras + 1
+    end
+end
+--Se conquistou 2 ou mais e ainda está na Era 1
+if contagemBandeiras >= 2 and eraAtual == 1 then
+    eraAtual = 2
 
+    --Ativa o feedback visual
+    telaEra.ativa = true
+    telaEra.timer = telaEra.tempoTotal
+
+    --Avisa o módulo de cartas que a era mudou
+    cartas.setEra(eraAtual)
+    end
 end
 
 local function startNewGame()
@@ -378,6 +407,9 @@ function handle_button_click(x, y, radius)
     end
     
 end
+
+
+
 
 local function verificarEstadoJogo()
     if fimDeJogo.ativo then return end
@@ -576,6 +608,15 @@ function love.update(dt)
     cartas.reposicionarBaralho()
     cartas.atualizarInteracaoCartas()
     cartas.notificarErro(dt)
+    
+    --Atualiza o timer da tela de Era
+    if telaEra.ativa then
+        telaEra.timer = telaEra.timer - dt
+        if telaEra.timer <= 0 then
+            telaEra.ativa = false
+        end
+    end
+
     if movGuarda.destino then
         local dx = movGuarda.destino.x - movGuarda.x
         local dy = movGuarda.destino.y - movGuarda.y
@@ -594,13 +635,9 @@ function love.update(dt)
                     math.abs(ponto.y - movGuarda.y) < 5 then
                         movGuarda.indiceAtual = i
                     break
-                end
-                
+                end  
             end
-            
-            
             movGuarda.destino = nil
-            
         end
     end
 
@@ -739,6 +776,29 @@ function love.draw()
         --Botão de sair por cima de tudo
         buttons.running_state.exit_in_game:draw(love.graphics.getWidth() - 100, 10, 10, 10)
         
+        --DESENHAR TELA DE TRANSIÇÃO DE ERA
+        if telaEra.ativa then
+            local w, h = love.graphics.getDimensions()
+
+            --Fundo preto semitransparente
+            love.graphics.setColor(0, 0, 0, 0.85)
+            love.graphics.rectangle("fill", 0, 0, w, h)
+
+            --Texto
+            love.graphics.setColor(1, 1, 1, 1)
+
+            --Título grande
+            love.graphics.setFont(fonte.grande)
+            love.graphics.printf(telaEra.titulo, 0, h/2 - 60, w, "center")
+
+            --Subtítulo/lore
+            love.graphics.setFont(fonte.media)
+            love.graphics.printf(telaEra.texto, 0, h/2, w, "center")
+
+            --Restaura a cor
+            love.graphics.setColor(1, 1, 1, 1)
+
+        end
         
         love.graphics.circle("fill", player.x, player.y, player.radius)
         
