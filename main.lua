@@ -2,9 +2,13 @@ local love = require "love"
 local button = require "Button"
 local hitbox = require "hitbox"
 local ost = require "OST"
-local cartas = require ("cartas")
+local cartas = require "cartas"
 -- função que gerencia a quantidade de água
 local agua = 5
+local aguaMax = 10
+function adicionarAgua(qtd)
+    agua = agua + qtd
+end
 local function adicionarAgua(valor)
     agua = agua + valor
     if agua < 0 then agua = -1 end
@@ -12,6 +16,8 @@ end
 -- VINCULAR A FUNÇÃO DAS CARTAS AOS MÓDULOS
 -- vincula a função de água
 cartas.setAdicionarAgua(adicionarAgua)
+
+
 
 local movimento={
         mx=10,
@@ -35,9 +41,13 @@ local estadoTransformacao = {}
 local pontosBloqueados = {}
 --Variaveis de Vitória/Derrota
 local imgBandeira = love.graphics.newImage("sprites/bandeira vermelha.png")
+local imgBandeiraConquistada = love.graphics.newImage("sprites/Bandeira_branca.png")
 local objetivosExternos =  {}
+local objetivosRecompensados = {}
 
 -- função que gerencia a quantidade de água
+local agua = 5
+local aguaMax = 10
 local function adicionarAgua(valor)
     agua = agua + valor
 end
@@ -329,6 +339,20 @@ local function proxRodada()
                 estadoTransformacao[i] = nil
                 rodadasPorPonto[i] = nil
                 pontosBloqueados[i] = true
+
+                --Lógica da recompensa da bandeira
+                --Verifica se indice "i" atual é um dos objetivos
+                for _, objIndex in ipairs(objetivosExternos) do
+                    if i == objIndex then
+                        --Se for um objetivo e ainda não foi recompensado
+                        if not objetivosRecompensados[i] then
+                            objetivosRecompensados[i] = true --Marca como recompensado
+                            adicionarAgua(3)
+                        end
+                        break
+                    end
+                end
+
             end
         end
         
@@ -347,6 +371,9 @@ local function startNewGame()
     agua = 5
     numGuardas = 1
     fimDeJogo.ativo = false
+
+    --Limpa as recompensas ao reiniciar o jogo
+    objetivosRecompensados = {}
 end
 
 local button_states = {
@@ -645,9 +672,23 @@ function love.draw()
         love.graphics.setColor(1, 1, 1)
         for _, indice in ipairs(objetivosExternos) do
             local p = pontosMovimentacao[indice]
+            
+            local imagemParaDesenhar = imgBandeira --Bandeira Vermelha
+            local escalaAtual = 0.1
+            local ajusteX = 15
+            local ajusteY = 30
+            
+            if hexAtivos[indice] == nil then
+                imagemParaDesenhar = imgBandeiraConquistada --Bandeira branca
+
+                escalaAtual = 0.04
+                ajusteX = 15
+                ajusteY = 30
+            end
+            
             --Desenha a bandeira um pouco acima do centro do hex
             --Ajuste o offset (x, y) e a escala (0.5) conforme o tamanho da imagem
-            love.graphics.draw(imgBandeira, p.x - 15, p.y - 30, 0, 0.1, 0.1)
+            love.graphics.draw(imagemParaDesenhar, p.x - ajusteX, p.y - ajusteY, 0, escalaAtual, escalaAtual)
         end
 
         cartas.desenharFundoConflito()   
