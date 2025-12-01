@@ -1,4 +1,11 @@
 local love = require ("love")
+local alterarAgua = nil
+local alterarMovimento = nil
+
+function setCallbacks(funcAgua, funcMov)
+    alterarAgua = funcAgua
+    alterarMovimento = funcMov
+end
 
 --Variavel para controlar a dificuldade
 local eraAtual = 1
@@ -81,30 +88,36 @@ local primeirasAliadas = {
             '(até o limite de 3)'
     }
 }
+-- estado de troca
+local escolhendoTroca = false
+local movimentosDisponiveis = 0
 
+-- erro
+local mensagemErro = ""
+local tempoErro = 0
 -----------------------------------------------------------------------------------------
 -- efeitos aliados
------------------------------------------------------------------------------------------
-local adicionarAgua = nil
-local alterarMovimento = nil
+----------------------------------------------------------------------------------------- 
 
-local function aplicarEfeito(carta)
-    if carta.id == "Carta da Nascente" and adicionarAgua then
-        adicionarAgua(2)
+ function aplicarEfeito(carta,valorMove)
+    if carta.id == "Carta da Nascente" and alterarAgua then
+       alterarAgua(2)
     end
 
     if carta.id == "Movimento Livre" and alterarMovimento then
         alterarMovimento(1)
     end
 
-    if carta.id == "Procurando água" and alterarMovimento and adicionarAgua then
-        alterarMovimento(-1)
-        adicionarAgua(1)
+    if carta.id == "Procurando água" and alterarMovimento and alterarAgua then
+        escolhendoTroca = true
+        movimentosDisponiveis = tonumber(valorMove) or 0
+        mensagemErro = ""
+        return
     end
 end
 
-local function setAdicionarAgua(func) adicionarAgua = func end
-local function setalterarmovimento(func) alterarMovimento = func end
+--local function setAdicionarAgua(func) adicionarAgua = func end
+--local function setalterarmovimento(func) alterarMovimento = func end
 
 -----------------------------------------------------------------------------------------
 -- VISUAL DAS CARTAS
@@ -233,42 +246,132 @@ end
 -----------------------------------------------------------------------------------------
 -- HOVER E DESENHO
 -----------------------------------------------------------------------------------------
-
-local function atualizarInteracaoCartas()
-    hoverIndex = nil
-
-    local mx,my = love.mouse.getPosition()
-
+local function getPosicaoCarta(i)
     local screenWidth = love.graphics.getWidth()
     local screenHeight = love.graphics.getHeight()
+
     local totalWidth = (CARD_WIDTH * 2) + 30
     local startX = (screenWidth - totalWidth) / 2
     local posY = screenHeight * 0.90
 
-    for i = 1,2 do
-        local x = startX + (i-1)*(CARD_WIDTH+30)
-        local y = posY
+    local x = startX + (i - 1) * (CARD_WIDTH + 30)
+    local y = posY
 
-        if mx > x and mx < x+CARD_WIDTH and my>y and my<y+CARD_HEIGHT then
+    return x, y
+end
+
+local function atualizarInteracaoCartas()
+    hoverIndex = nil
+
+    local mx, my = love.mouse.getPosition()
+
+    for i = 1, 2 do
+        local x, y = getPosicaoCarta(i)
+
+        if mx > x and mx < x + CARD_WIDTH and my > y and my < y + CARD_HEIGHT then
             hoverIndex = i
         end
     end
 end
 
-local function selecionarCartaPorTecla(key)
+
+function mousepressed(mx, my, btn, moveAtual)
+    if btn ~= 1 then return end
+    if escolhendoTroca then return end
     if escolhaBloqueada then return end
 
-    if key == "1" and cartasRodada[1] then
-        cartaSelecionada = cartasRodada[1]
-        aplicarEfeito(cartaSelecionada)
-        escolhaBloqueada = true
+    for i, carta in ipairs(cartasRodada) do
+        local x, y = getPosicaoCarta(i)
 
-    elseif key == "2" and cartasRodada[2] then
-        cartaSelecionada = cartasRodada[2]
-        aplicarEfeito(cartaSelecionada)
-        escolhaBloqueada = true
+        if mx > x and mx < x + CARD_WIDTH and my > y and my < y + CARD_HEIGHT then
+            
+            cartaSelecionada = carta
+            aplicarEfeito(carta, moveAtual)
+            escolhaBloqueada = true
+            
+            return
+        end
     end
 end
+
+
+-- keypressed: escolhe 1,2 ou 3 se estiver em troca
+function keypressed(key)
+    -- se NÃO estamos na troca, apenas ignoramos teclas
+    if not escolhendoTroca then
+        return
+    end
+
+    -- estamos em fase de troca -> só aceita 1,2,3
+    local qtd = tonumber(key)
+    if not qtd then return end
+    if qtd < 1 or qtd > 3 then return end
+
+    -- checa se tem movimentos suficientes
+    if qtd > movimentosDisponiveis then
+        mensagemErro = "Você não tem movimentos suficientes!"
+        tempoErro = 2
+        return
+    end
+
+    -- aplica troca (movimento negativo)
+    if alterarMovimento then
+        alterarMovimento(-qtd)
+    end
+
+    if alterarAgua then
+        alterarAgua(qtd)
+    end
+
+    escolhendoTroca = false
+end
+
+
+function notificarErro(dt)
+    if tempoErro > 0 then
+        tempoErro = tempoErro - dt
+        if tempoErro <= 0 then mensagemErro = "" end
+    end
+end
+
+
+    -- MODO SELEÇÃO DE CARTA (sem troca de movimento)
+    if not escolhendoTroca then
+        
+        local startX = 50
+        local startY = 140
+        local spacing = 180  -- distância entre as cartas
+
+        for i, c in ipairs(primeirasAliadas) do
+            local x = startX + (i-1) * spacing
+            local y = startY
+        
+            -- GARANTIR QUE NADA É NIL
+            if x and y and CARD_WIDTH and CARD_HEIGHT then
+                love.graphics.rectangle("line", x, y, CARD_WIDTH, CARD_HEIGHT)
+                love.graphics.draw(c.img, x, y)
+                love.graphics.printf(c.id, x, y + CARD_HEIGHT + 5, CARD_WIDTH, "center")
+            else
+                love.graphics.print("ERRO: posição da carta é NIL", 50, 50)
+            end
+        end
+    end
+
+    -- MODO TROCA DE MOVIMENTO
+    if escolhendoTroca then
+        love.graphics.print("Quantos movimentos deseja trocar? (1/2/3)", 50, 240)
+        love.graphics.print("1) Trocar 1", 50, 270)
+        love.graphics.print("2) Trocar 2", 50, 300)
+        love.graphics.print("3) Trocar 3", 50, 330)
+    end
+
+    -- MENSAGEM DE ERRO
+    if mensagemErro ~= "" then
+        love.graphics.setColor(1, 0, 0)
+        love.graphics.print(mensagemErro, 50, 380)
+        love.graphics.setColor(1,1,1)
+    end
+
 
 local function desenharCartasRodada()
     local screenWidth = love.graphics.getWidth()
@@ -287,8 +390,8 @@ local function desenharCartasRodada()
             goto continue
         end
 
-        local x = startX + (i - 1) * (CARD_WIDTH + 30)
-        local y = posY
+        local x, y = getPosicaoCarta(i)
+
 
         local offset = (hoverIndex == i) and -HOVER_OFFSET or 0
 
@@ -501,6 +604,44 @@ local function desenharConflito()
     love.graphics.setColor(1,1,1)
     love.graphics.print(conflitoAtual.descricao, conflitoX+140, conflitoY + CONFLITO_HEIGHT - 130)
 end
+---------------------------------------------------------
+-- DESENHAR MENU DE TROCA NO CANTO DIREITO DA TELA
+---------------------------------------------------------
+
+local function desenharTroca()
+    if not escolhendoTroca then
+        return
+    end
+
+    local sw = love.graphics.getWidth()
+    local sh = love.graphics.getHeight()
+
+    local largura = 260
+    local altura = 160
+
+    -- canto direito + centralizado verticalmente
+    local x = sw - largura - 20
+    local y = (sh - altura) / 2
+
+    -- fundo
+    love.graphics.setColor(0, 0, 0, 0.75)
+    love.graphics.rectangle("fill", x, y, largura, altura, 12, 12)
+
+    love.graphics.setColor(1,1,1)
+    love.graphics.print("TROCA DE MOVIMENTOS", x + 20, y + 10)
+
+    love.graphics.print("1) Trocar 1 movimento", x + 20, y + 45)
+    love.graphics.print("2) Trocar 2 movimentos", x + 20, y + 70)
+    love.graphics.print("3) Trocar 3 movimentos", x + 20, y + 95)
+
+    -- mensagem de erro
+    if mensagemErro ~= "" then
+        love.graphics.setColor(1, 0.3, 0.3)
+        love.graphics.print(mensagemErro, x + 20, y + 130)
+    end
+
+    love.graphics.setColor(1,1,1)
+end
 
 --Função para o main.lua chamar quando trocar de Era
 local function setEra(novaEra)
@@ -523,12 +664,15 @@ return {
     selecionarCartasRodada = selecionarCartasRodada,
     atualizarInteracaoCartas = atualizarInteracaoCartas,
     desenharCartasRodada = desenharCartasRodada,
-
-    selecionarCartaPorTecla = selecionarCartaPorTecla,
     desenharResultadoEscolha = desenharResultadoEscolha,
+    
+    setCallbacks=setCallbacks,
+    aplicarEfeito=aplicarEfeito,
+    mousepressed=mousepressed,
+    keypressed=keypressed,
+    desenharTroca = desenharTroca,
+    notificarErro=notificarErro,
 
-    setAdicionarAgua = setAdicionarAgua,
-    setalterarmovimento = setalterarmovimento,
 
     prepararConflitoDaRodada = prepararConflitoDaRodada,
     desenharFundoConflito = desenharFundoConflito,
