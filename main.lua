@@ -41,6 +41,7 @@ local imgBandeira = love.graphics.newImage("sprites/bandeira vermelha.png")
 local imgBandeiraConquistada = love.graphics.newImage("sprites/Bandeira_branca.png")
 local objetivosExternos =  {}
 local objetivosRecompensados = {}
+local totalAreasVerdes = 0
 
 --Textos de fim de jogo
 
@@ -176,6 +177,18 @@ local function findInTable(t, value)
     end
     return nil
 end
+
+local function atualizarContagemVerdes()
+    local contagem = 0
+    for i = 1, #pontosMovimentacao do
+        --Se for nil, significa que não é vermelho nem marrom
+        if hexAtivos[i] == nil then
+            contagem = contagem + 1
+        end
+    end
+    totalAreasVerdes = contagem
+end
+
 
 local function ehAdjascente(origem, destino)
     return pontosAdjascentes[origem] and findInTable(pontosAdjascentes[origem], destino) ~= nil 
@@ -383,8 +396,42 @@ local function startNewGame()
     numGuardas = 1
     fimDeJogo.ativo = false
 
-    --Limpa as recompensas ao reiniciar o jogo
+    --Resetar recompensas e eras 
     objetivosRecompensados = {}
+    eraAtual = 1
+    cartas.setEra(1)
+    telaEra.ativa = false
+
+    --Resetar o Guarda para a Base
+    movGuarda.indiceAtual = 3
+    movGuarda.x = pontosMovimentacao[3].x
+    movGuarda.y = pontosMovimentacao[3].y
+    movGuarda.destino = nil
+
+    --Resetar o mapa
+    hexAtivos = {}
+    estadoTransformacao = {}
+    rodadasPorPonto = {}
+    pontosBloqueados = {}
+
+    for i = 1, #pontosMovimentacao do
+        if i ~= 3 then
+            --configura como vermelho de novo
+            hexAtivos[i] = 1
+            estadoTransformacao[i] = false
+            rodadasPorPonto[i] = 0
+        else
+            --A base começa limpa
+            hexAtivos[i] = nil
+        end
+    end
+
+    --Refazer os objetivos aleatórios (bandeiras)
+    definirObjetivos()
+
+    --Resetar cartas na mão
+    cartas.selecionarCartasRodada()
+
 end
 
 local button_states = {
@@ -641,6 +688,7 @@ function love.update(dt)
 
     if game.state["running"] then
         verificarEstadoJogo()
+        atualizarContagemVerdes()
     end
 end 
 
