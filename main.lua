@@ -263,7 +263,10 @@ local function atualizarContagemVerdes()
     end
     totalAreasVerdes = contagem
 end
-
+-- Função para ler a quantidade de água atual
+local function getAgua()
+    return agua
+end
 local function getContagemVerdes()
     return totalAreasVerdes
 end
@@ -418,6 +421,7 @@ local function proxRodada()
         guardaBloqueado = false
         movimentosRestantes = 3
         cartas.selecionarCartasRodada()
+        cartas.prepararConflitoDaRodada(rodada)
 
         --Trava o jogo, o jogador é obrigado a escolher
         esperandoEscolhaCarta = true
@@ -617,7 +621,6 @@ function love.mousepressed(x, y, button, isTouch, presses)
             
             if cartaFoiEscolhida then
                 esperandoEscolhaCarta = false
-                cartas.prepararConflitoDaRodada(rodada)
             end
             return
         end
@@ -735,7 +738,7 @@ function love.load()
     cartas.construirBaralho()
 
 -- carregar cartas aleatórias
-    cartas.setCallbacks(alterarAgua, alterarMovimento, getContagemVerdes, bloquearGuardaPorRodada, corromperAreas)
+    cartas.setCallbacks(alterarAgua, alterarMovimento, getContagemVerdes, bloquearGuardaPorRodada, corromperAreas, getAgua)
     cartas.selecionarCartasRodada()
     
 

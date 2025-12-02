@@ -5,6 +5,8 @@ local getContagemVerdes= nil
 local sabotagemProximaRodada = nil
 local bloquearMovimentoDoGuarda = nil
 local corromperAreas = nil
+local conflitoAtual = nil
+local getAgua = nil
 -- Tabela que guarda os poderes ativos
 local efeitosAtivos = {
     garrafaTermica = false,
@@ -20,12 +22,13 @@ function resetarEfeitosRodada()
     efeitosAtivos.sabotagem = false 
 end
 
-function setCallbacks(funcAgua, funcMov, funcver, funcBloquearGuarda, funcCorromper)
+function setCallbacks(funcAgua, funcMov, funcver, funcBloquearGuarda, funcCorromper, funcGetAgua)
     alterarAgua = funcAgua
     alterarMovimento = funcMov
     getContagemVerdes = funcver
     bloquearMovimentoDoGuarda = funcBloquearGuarda
     corromperAreas = funcCorromper
+    getAgua = funcGetAgua
 end
 
 
@@ -363,26 +366,55 @@ function mousepressed(mx, my, btn, moveAtual)
     if escolhaBloqueada then return false end
 
     for i, carta in ipairs(cartasRodada) do
-    for i, carta in ipairs(cartasRodada) do
-    local x, y = getPosicaoCarta(i)
+        local x, y = getPosicaoCarta(i)
 
-    if mx > x and mx < x + CARD_WIDTH and my > y and my < y + CARD_HEIGHT then
+        if mx > x and mx < x + CARD_WIDTH and my > y and my < y + CARD_HEIGHT then
 
-        -- Se for carta sabotada, IGNORA o clique (não consome a escolha)
-        if carta.sabotada then
-            efeitoDaCarta = "Carta sabotada — sem efeito." -- opcional mensagem
-            return false -- não marca escolha, hover continua funcionando
+            if carta.sabotada then
+                efeitoDaCarta = "Carta sabotada — sem efeito."
+                return false
+            end
+
+            -- === LÓGICA ESPECIAL: DISSOLVENDO PROBLEMAS ===
+            local vaiAnularConflito = false
+
+            if carta.id == "Dissolvendo problemas" then
+                -- 1. Verifica se tem água suficiente usando o callback getAgua
+                if getAgua and getAgua() < 2 then
+                    mensagemErro = "Água insuficiente! Custo: 2"
+                    tempoErro = 2
+                    return false -- CANCELA O CLIQUE, jogador precisa escolher outra ou conseguir água
+                end
+
+                -- 2. Se tem água, paga o custo
+                if alterarAgua then 
+                    alterarAgua(-2) 
+                end
+                
+                -- 3. Marca para anular o conflito abaixo
+                vaiAnularConflito = true
+                efeitoDaCarta = "Conflito Anulado!" -- Feedback visual
+            end
+
+            -- === APLICAÇÃO DO CONFLITO (Se não foi anulado) ===
+            
+            if conflitoAtual and conflitoAtual.efeito then
+                if vaiAnularConflito then
+                    -- NÃO faz nada, o conflito foi ignorado.
+                else
+                    conflitoAtual.efeito() -- Aplica o dano do conflito
+                end
+            end
+
+            -- === APLICAÇÃO DA CARTA ALIADA ===
+            
+            cartaSelecionada = carta
+            aplicarEfeito(carta, moveAtual)
+            escolhaBloqueada = true
+
+            return true
         end
-
-        -- comportamento normal
-        cartaSelecionada = carta
-        aplicarEfeito(carta, moveAtual)
-        escolhaBloqueada = true
-
-        return true
     end
-end
-end
 end
 -- keypressed: escolhe 1,2 ou 3 se estiver em troca
 function keypressed(key)
@@ -523,7 +555,7 @@ local conflitos1 = {
     {
         id = "Incendio criminoso",
         img = love.graphics.newImage("sprites/conflitos/incendio criminoso.png"),
-        descricao = "Uma área recuperada volta a ser tóxica (Vermelha).", -- Descrição ajustada
+        descricao = "Perca uma área segura ou em tratamento aleatória, exceto a que o guarda estiver.", -- Descrição ajustada
         eraMinima = 1,
         -- BLOCO NOVO ABAIXO:
         efeito = function()
@@ -570,7 +602,7 @@ local conflitos2={
     {
         id = "A carta cinza",
         img = love.graphics.newImage("sprites/conflitos/A carta cinza.png"),
-        descricao = "Duas áreas recuperadas voltam a ser tóxicas.", -- Descrição ajustada
+        descricao = "Perca duas áreas seguras", -- Descrição ajustada
         eraMinima = 2,
         -- BLOCO NOVO ABAIXO:
         efeito = function()
@@ -595,7 +627,6 @@ local conflitos2={
 
 local baralhoConflitos = {}
 local descarteConflitos = {}
-local conflitoAtual = nil
 
 local function embaralhar(t)
     for i = #t, 2, -1 do
@@ -644,9 +675,9 @@ end
 
 local function sortearConflitoRodada()
     conflitoAtual = puxarConflito()
-    if conflitoAtual and conflitoAtual.efeito then 
-        conflitoAtual.efeito() 
-    end
+    --if conflitoAtual and conflitoAtual.efeito then 
+    --    conflitoAtual.efeito() 
+    --end
 end
 
 local function prepararConflitoDaRodada(numeroDaRodada)
