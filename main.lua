@@ -5,6 +5,8 @@ local hitbox = require "hitbox"
 local ost = require "OST"
 local cartas = require ("cartas")
 cartas.selecionarCartasRodada()
+
+
 -- função que gerencia a quantidade de água
 local agua = 5
 local movimentosRestantes = 3
@@ -15,6 +17,11 @@ end
 
 function alterarMovimento(qtd)
     movimentosRestantes = movimentosRestantes + qtd
+end
+
+local guardasBloqueados = false
+function setBloqueioGuardas(ativo)
+    guardasBloqueados = ativo or false
 end
 
 
@@ -145,6 +152,16 @@ local movGuarda = {
     frameAtual = 1,
     quadros = {}
 }
+-- Flag que indica que o guarda está bloqueado por uma rodada
+local guardaBloqueado = false
+
+-- Função que bloqueia o guarda por esta rodada (será passada como callback para cartas.lua)
+local function bloquearGuardaPorRodada()
+    guardaBloqueado = true
+    -- se já estiver indo para algum destino, cancela o movimento imediatamente
+    movGuarda.destino = nil
+end
+
 local function cancelarMovimento()
     confirmacao.ativa = false
     confirmacao.indiceDestino = nil
@@ -152,12 +169,20 @@ end
 local function confirmarMovimento()
     local destIndex = confirmacao.indiceDestino
     
+    -- Se o guarda está bloqueado por conflito, não permita confirmar movimento
+    if guardaBloqueado then
+        -- cancela a confirmação e sai (mantém a UI de confirmação fechada)
+        cancelarMovimento()
+        -- opcional: avisar o jogador (se quiser, use cartas.limparMensagens() / ou outra UI)
+        return
+    end
+
     --Recupera a posição do destino baseada no índice salvo
     local pontoDestino = pontosMovimentacao[destIndex]
     --Executa a movimentação
     movGuarda.destino = {x = pontoDestino.x, y = pontoDestino.y}
     movimentosRestantes = movimentosRestantes - 1
-    
+
     if destIndex ~= 3 and not pontosBloqueados[destIndex] then
         if not hexAtivos[destIndex] then
             hexAtivos[destIndex] = 1
@@ -339,6 +364,7 @@ local buttons = {
 local function proxRodada()
     if esperandoEscolhaCarta then return end
         rodada = rodada + 1
+        guardaBloqueado = false
         movimentosRestantes = 3
         cartas.selecionarCartasRodada()
 
@@ -422,7 +448,7 @@ local function startNewGame()
     movGuarda.x = pontosMovimentacao[3].x
     movGuarda.y = pontosMovimentacao[3].y
     movGuarda.destino = nil
-
+    guardaBloqueado = false
     --Resetar o mapa
     hexAtivos = {}
     estadoTransformacao = {}
@@ -659,7 +685,7 @@ function love.load()
     cartas.construirBaralho()
 
 -- carregar cartas aleatórias
-    cartas.setCallbacks(alterarAgua, alterarMovimento,getContagemVerdes)
+    cartas.setCallbacks(alterarAgua, alterarMovimento, getContagemVerdes, bloquearGuardaPorRodada)
     cartas.selecionarCartasRodada()
     
 
