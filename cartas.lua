@@ -2,7 +2,7 @@ local love = require ("love")
 local alterarAgua = nil
 local alterarMovimento = nil
 local getContagemVerdes= nil
-
+local sabotagemProximaRodada = nil
 -- Tabela que guarda os poderes ativos
 local efeitosAtivos = {
     garrafaTermica = false,
@@ -248,12 +248,13 @@ local cartasRodada = {}
 local hoverIndex = nil
 
 local function selecionarCartasRodada()
+    -- Limpa a seleção anterior
     cartasRodada = {}
     cartaSelecionada = nil
     escolhaBloqueada = false
     efeitoDaCarta = nil
-    
-    -- Garante que temos cartas suficientes
+
+    -- Garante que temos cartas suficientes no baralho
     if #primeirasAliadas < 2 then
         for i = 1, #descarte do
             table.insert(primeirasAliadas, descarte[i])
@@ -261,14 +262,26 @@ local function selecionarCartasRodada()
         descarte = {}
         construirBaralho()
     end
-    
-    -- Puxa as duas cartas
-    cartasRodada[1] = puxarCartaGarantido()
-    cartasRodada[2] = puxarCartaGarantido()
-    
-    -- Atualiza o contador final
+
+    -- Define quantas cartas puxar: 1 se sabotagem estiver ativa, senão 2
+    local qtdCartas = efeitosAtivos.sabotagem and 1 or 2
+
+    -- Puxa as cartas
+    for i = 1, qtdCartas do
+        cartasRodada[i] = puxarCartaGarantido()
+    end
+
+    -- Desativa o efeito de sabotagem após aplicar
+    efeitosAtivos.sabotagem = false
+
+    -- Atualiza o contador de cartas restantes no baralho
     contadorBaralho = #primeirasAliadas
+    -- Aplica sabotagem se estava marcada para a próxima rodada
+    efeitosAtivos.sabotagem = sabotagemProximaRodada
+    sabotagemProximaRodada = false
+
 end
+
 -----------------------------------------------------------------------------------------
 -- HOVER E DESENHO
 -----------------------------------------------------------------------------------------
@@ -328,18 +341,24 @@ function mousepressed(mx, my, btn, moveAtual)
     if escolhaBloqueada then return false end
 
     for i, carta in ipairs(cartasRodada) do
-        local x, y = getPosicaoCarta(i)
+    local x, y = getPosicaoCarta(i)
 
-        if mx > x and mx < x + CARD_WIDTH and my > y and my < y + CARD_HEIGHT then
-            
-            cartaSelecionada = carta
-            aplicarEfeito(carta, moveAtual)
-            escolhaBloqueada = true
-            
+    if mx > x and mx < x + CARD_WIDTH and my > y and my < y + CARD_HEIGHT then
+        
+        -- BLOQUEIO SABOTAGEM: se for a segunda carta e sabotagem ativa
+        if efeitosAtivos.sabotagem and i == 2 then
+            mensagemErro = "Esta carta foi sabotada!"
+            tempoErro = 2
             return true
         end
+
+        cartaSelecionada = carta
+        aplicarEfeito(carta, moveAtual)
+        escolhaBloqueada = true
+        
+        return true
     end
-    return false
+end
 end
 
 -- keypressed: escolhe 1,2 ou 3 se estiver em troca
@@ -380,15 +399,18 @@ function notificarErro(dt)
     end
 end
 
+-- Carregar a imagem da sabotagem
+local sabotagemImg = love.graphics.newImage("sprites/conflitos/sabotagem.png")
+
 local function desenharCartasRodada()
     local screenWidth = love.graphics.getWidth()
     local screenHeight = love.graphics.getHeight()
 
-    local totalWidth = (CARD_WIDTH * 2) + 30
+    local totalWidth = (#cartasRodada * CARD_WIDTH) + ((#cartasRodada - 1) * 30)
     local startX = (screenWidth - totalWidth) / 2
     local posY = screenHeight * 0.90
 
-    for i = 1, 2 do
+    for i = 1, #cartasRodada do
         local card = cartasRodada[i]
         if not card then goto continue end
 
@@ -397,18 +419,21 @@ local function desenharCartasRodada()
             goto continue
         end
 
-        local x, y = getPosicaoCarta(i)
-
+        local x, y = startX + (i - 1) * (CARD_WIDTH + 30), posY
         local offset = (hoverIndex == i) and -HOVER_OFFSET or 0
 
-        love.graphics.draw(card.img, x, y + offset)
+        -- SE FOR A CARTA "SABOTADA", desenha a imagem da sabotagem
+        local imgParaDesenhar = card.img
+        if efeitosAtivos.sabotagem and i == 2 then
+            imgParaDesenhar = sabotagemImg
+        end
 
+        love.graphics.draw(imgParaDesenhar, x, y + offset)
+
+        -- Hover / descrição
         if hoverIndex == i then
-
             local textoX = (i==1) and (x - 220) or (x + CARD_WIDTH + 20)
-
-            local larguraCaixa = 200
-            local alturaCaixa = 150
+            local larguraCaixa, alturaCaixa = 200, 150
 
             love.graphics.setColor(0.2,0.2,0.2,0.75)
             love.graphics.rectangle("fill", textoX - 10, y + offset + 10, larguraCaixa + 20, alturaCaixa)
@@ -420,14 +445,15 @@ local function desenharCartasRodada()
             love.graphics.printf(card.descricao, textoX, y + offset + 45, larguraCaixa)
 
             love.graphics.setColor(1, 0.6, 0)
-            local direcao = (i == 1) and "CLIQUE NA CARTA" or "CLIQUE NA CARTA"
-            love.graphics.printf(direcao, textoX, y + offset + 120, larguraCaixa, "center")
+            love.graphics.printf("CLIQUE NA CARTA", textoX, y + offset + 120, larguraCaixa, "center")
             love.graphics.setColor(1,1,1)
         end
 
         ::continue::
     end
 end
+
+
 
 -----------------------------------------------------------------------------------------
 -- RESULTADO DA ESCOLHA
@@ -490,16 +516,16 @@ local conflitos1 = {
         -- DICA: marque guarda.inoperante = true e ignore ações dele no turno
     },
 
-    {
-        id = "Sabotagem",
-        img = love.graphics.newImage("sprites/conflitos/sabotagem.png"),
-        descricao = "Sua próxima carta de Aliados será anulada",
-        eraMinima = 1
-        -- DICA: no cartas.lua → antes de aplicar uma carta:
-        -- if sabotagemAtiva then ignorar efeito
+   {
+    id = "Sabotagem",
+    img = love.graphics.newImage("sprites/conflitos/sabotagem.png"),
+    descricao = "na proxima rodada só tera uma carta",
+    eraMinima = 1,
+    efeito = function()
+        sabotagemProximaRodada = true
+    end
     },
 
-    
     {
         id = "Terreno difícil",
         img = love.graphics.newImage("sprites/conflitos/Terreno dificil.png"),
