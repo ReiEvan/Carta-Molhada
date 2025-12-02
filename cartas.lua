@@ -269,6 +269,27 @@ local function atualizarInteracaoCartas()
     end
 end
 
+local function desenharInventarioCartas()
+    if not escolhendoTroca then
+        local startX = 50
+        local startY = 140
+        local spacing = 180  -- distância entre as cartas
+
+        for i, c in ipairs(primeirasAliadas) do
+            local x = startX + (i-1) * spacing
+            local y = startY
+        
+            -- GARANTIR QUE NADA É NIL
+            if x and y and CARD_WIDTH and CARD_HEIGHT then
+                love.graphics.rectangle("line", x, y, CARD_WIDTH, CARD_HEIGHT)
+                love.graphics.draw(c.img, x, y)
+                love.graphics.printf(c.id, x, y + CARD_HEIGHT + 5, CARD_WIDTH, "center")
+            else
+                love.graphics.print("ERRO: posição da carta é NIL", 50, 50)
+            end
+        end
+    end
+end
 
 function mousepressed(mx, my, btn, moveAtual)
     if btn ~= 1 then return end
@@ -288,7 +309,6 @@ function mousepressed(mx, my, btn, moveAtual)
         end
     end
 end
-
 
 -- keypressed: escolhe 1,2 ou 3 se estiver em troca
 function keypressed(key)
@@ -321,52 +341,12 @@ function keypressed(key)
     escolhendoTroca = false
 end
 
-
 function notificarErro(dt)
     if tempoErro > 0 then
         tempoErro = tempoErro - dt
         if tempoErro <= 0 then mensagemErro = "" end
     end
 end
-
-
-    -- MODO SELEÇÃO DE CARTA (sem troca de movimento)
-    if not escolhendoTroca then
-        
-        local startX = 50
-        local startY = 140
-        local spacing = 180  -- distância entre as cartas
-
-        for i, c in ipairs(primeirasAliadas) do
-            local x = startX + (i-1) * spacing
-            local y = startY
-        
-            -- GARANTIR QUE NADA É NIL
-            if x and y and CARD_WIDTH and CARD_HEIGHT then
-                love.graphics.rectangle("line", x, y, CARD_WIDTH, CARD_HEIGHT)
-                love.graphics.draw(c.img, x, y)
-                love.graphics.printf(c.id, x, y + CARD_HEIGHT + 5, CARD_WIDTH, "center")
-            else
-                love.graphics.print("ERRO: posição da carta é NIL", 50, 50)
-            end
-        end
-    end
-
-    -- MODO TROCA DE MOVIMENTO
-    if escolhendoTroca then
-        love.graphics.print("Quantos movimentos deseja trocar? (1/2/3)", 50, 240)
-        love.graphics.print("1) Trocar 1", 50, 270)
-        love.graphics.print("2) Trocar 2", 50, 300)
-        love.graphics.print("3) Trocar 3", 50, 330)
-    end
-
-    -- MENSAGEM DE ERRO
-    if mensagemErro ~= "" then
-        love.graphics.setColor(1, 0, 0)
-        love.graphics.print(mensagemErro, 50, 380)
-        love.graphics.setColor(1,1,1)
-    end
-
 
 local function desenharCartasRodada()
     local screenWidth = love.graphics.getWidth()
@@ -386,7 +366,6 @@ local function desenharCartasRodada()
         end
 
         local x, y = getPosicaoCarta(i)
-
 
         local offset = (hoverIndex == i) and -HOVER_OFFSET or 0
 
@@ -514,10 +493,8 @@ local conflitos2={
         -- DICA: no gasto de água do guarda → gasto = 2
         -- DICA: reduzir movimento: movimento = movimento - 1
     },
-
-
-
 }
+
 -----------------------------------------------------------------------------------------
 -- BARALHO DE CONFLITOS
 -----------------------------------------------------------------------------------------
@@ -552,7 +529,6 @@ end
 
 inicializarConflitos()
 
-
 local function puxarConflito()
     if #baralhoConflitos == 0 then
         for i = 1,#descarteConflitos do
@@ -574,7 +550,9 @@ end
 
 local function sortearConflitoRodada()
     conflitoAtual = puxarConflito()
-    if conflitoAtual.efeito and conflitoAtual then conflitoAtual.efeito() end
+    if conflitoAtual and conflitoAtual.efeito then 
+        conflitoAtual.efeito() 
+    end
 end
 
 local function prepararConflitoDaRodada(numeroDaRodada)
@@ -602,6 +580,7 @@ local function desenharConflito()
     love.graphics.setColor(1,1,1)
     love.graphics.print(conflitoAtual.descricao, conflitoX+140, conflitoY + CONFLITO_HEIGHT - 130)
 end
+
 ---------------------------------------------------------
 -- DESENHAR MENU DE TROCA NO CANTO DIREITO DA TELA
 ---------------------------------------------------------
@@ -640,56 +619,21 @@ local function desenharTroca()
 
     love.graphics.setColor(1,1,1)
 end
+
 function limparMensagens()
-        mensagemErro = ""
-        tempoErro = 0
-        escolhendoTroca = false
+    mensagemErro = ""
+    tempoErro = 0
+    escolhendoTroca = false
 end
 
 --Função para o main.lua chamar quando trocar de Era
 local function setEra(novaEra)
     if novaEra ~= eraAtual then
         eraAtual = novaEra
-        -- Inicializa conflitos da nova era
+        --Reconstroi o baralho para incluir as cartas novas Imediatamente
         inicializarConflitos()
     end
-
-    -- Adiciona cartas aliadas sem repetir
-    for i = 1, #segundasAliadas do
-        local existe = false
-        for j = 1, #primeirasAliadas do
-            if primeirasAliadas[j].id == segundasAliadas[i].id then
-                existe = true
-                break
-            end
-        end
-        if not existe then
-            table.insert(primeirasAliadas, segundasAliadas[i])
-        end
-    end
-
-    -- Adiciona conflitos sem repetir
-    for i = 1, #conflitos2 do
-        local existe = false
-        for j = 1, #conflitos1 do
-            if conflitos1[j].id == conflitos2[i].id then
-                existe = true
-                break
-            end
-        end
-        if not existe then
-            table.insert(conflitos1, conflitos2[i])
-        end
-    end
-    embaralhar(primeirasAliadas)
-    embaralhar(conflitos1)
-
-    -- Reconstroi o baralho visual
-    construirBaralho()
 end
-
-
-
 
 -----------------------------------------------------------------------------------------
 -- EXPORTAÇÃO
@@ -704,6 +648,7 @@ return {
     atualizarInteracaoCartas = atualizarInteracaoCartas,
     desenharCartasRodada = desenharCartasRodada,
     desenharResultadoEscolha = desenharResultadoEscolha,
+    desenharInventarioCartas = desenharInventarioCartas,
     
     setCallbacks=setCallbacks,
     aplicarEfeito=aplicarEfeito,
@@ -712,7 +657,6 @@ return {
     desenharTroca = desenharTroca,
     notificarErro=notificarErro,
     limparMensagens = limparMensagens,
-
 
     prepararConflitoDaRodada = prepararConflitoDaRodada,
     desenharFundoConflito = desenharFundoConflito,
