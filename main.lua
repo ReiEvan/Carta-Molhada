@@ -21,6 +21,8 @@ local movimento={
         my=220
 }
 
+local esperandoEscolhaCarta = true --Começa true para obrigar a escolha no dia 1
+
 local bg_escalax = 0.8
 local bg_escalay = 0.8
 local escala = 0.5
@@ -189,6 +191,10 @@ local function atualizarContagemVerdes()
     totalAreasVerdes = contagem
 end
 
+local function getContagemVerdes()
+    return totalAreasVerdes
+end
+
 
 local function ehAdjascente(origem, destino)
     return pontosAdjascentes[origem] and findInTable(pontosAdjascentes[origem], destino) ~= nil 
@@ -329,11 +335,15 @@ local buttons = {
 }
 
 local function proxRodada()
+    if esperandoEscolhaCarta then return end
         rodada = rodada + 1
         movimentosRestantes = 3
         cartas.selecionarCartasRodada()
+
+        --Trava o jogo, o jogador é obrigado a escolher
+        esperandoEscolhaCarta = true
+
         alterarAgua(-1)
-        cartas.prepararConflitoDaRodada(rodada)
         cartas.limparMensagens()
 
 
@@ -396,6 +406,7 @@ local function startNewGame()
     rodada = 1
     agua = 5
     numGuardas = 1
+    movimentosRestantes = 3
     fimDeJogo.ativo = false
 
     --Resetar recompensas e eras 
@@ -431,9 +442,10 @@ local function startNewGame()
     --Refazer os objetivos aleatórios (bandeiras)
     definirObjetivos()
 
-    --Resetar cartas na mão
+    --Inicio do ciclo de jogo: Escolher carta -> conflito -> ação
+    cartas.resetarEfeitosRodada()
     cartas.selecionarCartasRodada()
-
+    esperandoEscolhaCarta = true --Força a escolha no turno 1
 end
 
 local button_states = {
@@ -512,20 +524,38 @@ end
 
 --função para o mouse no menu e in game
 function love.mousepressed(x, y, button, isTouch, presses)
-    if button == 1 and not game.state["paused"] then
-        if game.state["running"] then
+    if button ~= 1 then return end
+        
+    if game.state["menu"] then
+        handle_button_click(x, y, player.radius)
+        return
+    end
+    
+    if game.state["running"] then
+        --Se estiver esperando a escolha de carta, bloqueia o resto
+        if esperandoEscolhaCarta then
+            local cartaFoiEscolhida = cartas.mousepressed(x, y, button, movimentosRestantes)
             
+            if cartaFoiEscolhida then
+                esperandoEscolhaCarta = false
+                cartas.prepararConflitoDaRodada(rodada)
+            end
+            return
+        end
+
+
         if confirmacao.ativa then
             confirmacao.botoes.sim:checkPressed(x, y, player.radius)
             confirmacao.botoes.nao:checkPressed(x, y, player.radius)
             return
         end
 
-        --Garante que o guarda não está em movimento
-        if movGuarda.destino ~= nil then
-            return
-        end
+        handle_button_click(x, y, player.radius)
 
+        cartas.mousepressed(x, y, button, movimentosRestantes)
+
+        --Garante que o guarda não está em movimento
+        if movGuarda.destino == nil then
         local origem = movGuarda.indiceAtual
         --verfica colisão com cada ponto de movimentação
         for i, ponto in ipairs(pontosMovimentacao) do
@@ -549,14 +579,12 @@ function love.mousepressed(x, y, button, isTouch, presses)
                     confirmacao.botoes.nao.x = ponto.x + offset
                     confirmacao.botoes.nao.y = yBase
 
-                        return
                     end
+                    break
                 end
             end
         end
     end
-    handle_button_click(x, y, player.radius)
-    cartas.mousepressed(x, y, button, movimentosRestantes)
 end
 
 
@@ -823,7 +851,7 @@ function love.draw()
         end
         --Botão de sair por cima de tudo
         buttons.running_state.exit_in_game:draw(love.graphics.getWidth() - 100, 10, 10, 10)
-        
+
         --DESENHAR TELA DE TRANSIÇÃO DE ERA
         if telaEra.ativa then
             local w, h = love.graphics.getDimensions()

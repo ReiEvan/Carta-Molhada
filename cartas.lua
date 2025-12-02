@@ -2,6 +2,22 @@ local love = require ("love")
 local alterarAgua = nil
 local alterarMovimento = nil
 
+-- Tabela que guarda os poderes ativos
+local efeitosAtivos = {
+    garrafaTermica = false,
+    protecaoVerde = false,
+    anularConflito = false,
+    sabotagem = false
+}
+
+-- Função para limpar os poderes quando o dia vira
+function resetarEfeitosRodada()
+    efeitosAtivos.garrafaTermica = false
+    efeitosAtivos.protecaoVerde = false
+    efeitosAtivos.anularConflito = false
+    efeitosAtivos.sabotagem = false 
+end
+
 function setCallbacks(funcAgua, funcMov)
     alterarAgua = funcAgua
     alterarMovimento = funcMov
@@ -292,9 +308,9 @@ local function desenharInventarioCartas()
 end
 
 function mousepressed(mx, my, btn, moveAtual)
-    if btn ~= 1 then return end
-    if escolhendoTroca then return end
-    if escolhaBloqueada then return end
+    if btn ~= 1 then return false end
+    if escolhendoTroca then return false end
+    if escolhaBloqueada then return false end
 
     for i, carta in ipairs(cartasRodada) do
         local x, y = getPosicaoCarta(i)
@@ -305,9 +321,10 @@ function mousepressed(mx, my, btn, moveAtual)
             aplicarEfeito(carta, moveAtual)
             escolhaBloqueada = true
             
-            return
+            return true
         end
     end
+    return false
 end
 
 -- keypressed: escolhe 1,2 ou 3 se estiver em troca
@@ -635,6 +652,13 @@ local function setEra(novaEra)
     end
 end
 
+function resetarEfeitosRodada()
+    efeitosAtivos.garrafaTermica = false
+    efeitosAtivos.protecaoVerde = false
+    efeitosAtivos.anularConflito = false
+    efeitosAtivos.sabotagem = false
+end
+
 -----------------------------------------------------------------------------------------
 -- EXPORTAÇÃO
 -----------------------------------------------------------------------------------------
@@ -662,5 +686,10 @@ return {
     desenharFundoConflito = desenharFundoConflito,
     desenharConflito = desenharConflito,
 
-    setEra = setEra
+    setEra = setEra,
+
+    resetarEfeitosRodada = resetarEfeitosRodada,
+
+    efeitosAtivos = efeitosAtivos,
+    getConflitoAtual = function () return conflitoAtual end
 }
