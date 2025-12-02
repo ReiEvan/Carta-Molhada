@@ -659,7 +659,7 @@ function love.load()
     cartas.construirBaralho()
 
 -- carregar cartas aleatórias
-    cartas.setCallbacks(alterarAgua, alterarMovimento)
+    cartas.setCallbacks(alterarAgua, alterarMovimento,getContagemVerdes)
     cartas.selecionarCartasRodada()
     
 
@@ -736,6 +736,10 @@ function love.draw()
         --love.graphics.draw(movImg, movimento.mx, movimento.my, 0, 1, 1)
         love.graphics.print("movimentos: " .. movimentosRestantes, movimento.mx, movimento.my, 0)
         love.graphics.setFont(fonte.normal)
+        -- Contador de Áreas Verdes, retirar no fim do jogo
+        love.graphics.setColor(0, 1, 0)  -- verde
+        love.graphics.print("Áreas verdes: " .. getContagemVerdes(),imagemAgua.fx, imagemAgua.fy-40, 0)
+        love.graphics.setColor(1, 1, 1)  -- volta ao normal
         --Feddback visual da quantidade de agua
         love.graphics.draw(imagemAgua.ficha, imagemAgua.fx, imagemAgua.fy, 0, escala, escala)
         love.graphics.setColor(255, 255, 255)
@@ -746,7 +750,11 @@ function love.draw()
         --Numeração da rodada atual
         love.graphics.draw(diaImg, love.graphics.getWidth()/2 - 100, love.graphics.getHeight()/2 - 410, 0, 0.3, 0.3)
         love.graphics.print(rodada .. "/20", love.graphics.getWidth()/2 + 30, 10, 0)
-         love.graphics.setFont(fonte.normal)
+        love.graphics.setFont(fonte.normal)
+
+       
+
+
         -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo
         --desenhar o mapa
         love.graphics.draw(mapa, love.graphics.getWidth()/2 - 400, love.graphics.getHeight()/2 - 370, 0, .35, .35)
@@ -782,9 +790,9 @@ function love.draw()
             if hexAtivos[indice] == nil then
                 imagemParaDesenhar = imgBandeiraConquistada --Bandeira branca
 
-                escalaAtual = 0.04
-                ajusteX = 15
-                ajusteY = 30
+                escalaAtual = 0.08
+                ajusteX = 50
+                ajusteY = 80
             end
             
             --Desenha a bandeira um pouco acima do centro do hex

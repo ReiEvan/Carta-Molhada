@@ -1,6 +1,7 @@
 local love = require ("love")
 local alterarAgua = nil
 local alterarMovimento = nil
+local getContagemVerdes= nil
 
 -- Tabela que guarda os poderes ativos
 local efeitosAtivos = {
@@ -18,9 +19,10 @@ function resetarEfeitosRodada()
     efeitosAtivos.sabotagem = false 
 end
 
-function setCallbacks(funcAgua, funcMov)
+function setCallbacks(funcAgua, funcMov,funcver)
     alterarAgua = funcAgua
     alterarMovimento = funcMov
+    getContagemVerdes=funcver
 end
 
 --Variavel para controlar a dificuldade
@@ -30,7 +32,8 @@ local eraAtual = 1
 --                                   CARTAS ALIADAS
 --//////////////////////////////////////////////////////////////////////////////////////////
 
-local primeirasAliadas = {  
+local primeirasAliadas = {
+      
     {
         id = "Carta da Nascente",
         img = love.graphics.newImage("sprites/carta nascente.png"),
@@ -68,7 +71,6 @@ local segundasAliadas={
         descricao=
             'Se tiver 3 áreas verdes\n'..
             'ganhe 3 fichas de água.'
-        -- DICA: no main, conte áreas verdes e adicione água se >= 3
     },
     {
         id = "Dissolvendo problemas",
@@ -123,6 +125,12 @@ local tempoErro = 0
         movimentosDisponiveis = tonumber(valorMove) or 0
         mensagemErro = ""
         return
+    end
+    if carta.id== "Esforço recompensado" and getContagemVerdes and alterarAgua then
+        local verdes=getContagemVerdes()
+        if verdes >= 3 then
+            alterarAgua(3)
+        end
     end
 end
 
