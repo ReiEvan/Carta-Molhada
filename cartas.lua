@@ -30,9 +30,7 @@ local eraAtual = 1
 --                                   CARTAS ALIADAS
 --//////////////////////////////////////////////////////////////////////////////////////////
 
-local primeirasAliadas = {
-
-    
+local primeirasAliadas = {  
     {
         id = "Carta da Nascente",
         img = love.graphics.newImage("sprites/carta nascente.png"),
@@ -60,10 +58,11 @@ local primeirasAliadas = {
             'Troque 1 ação por\n'..
             '1 ficha de água\n'..
             '(até o limite de 3)'
-    }
+    },
+    
 }
 local segundasAliadas={
-{
+    {
         id = "Esforço recompensado",
         img = love.graphics.newImage('sprites/carta Esforco recompensado.png'),
         descricao=
@@ -127,17 +126,13 @@ local tempoErro = 0
     end
 end
 
---local function setAdicionarAgua(func) adicionarAgua = func end
---local function setalterarmovimento(func) alterarMovimento = func end
-
 -----------------------------------------------------------------------------------------
 -- VISUAL DAS CARTAS
 -----------------------------------------------------------------------------------------
 local CARD_WIDTH = 140
 local CARD_HEIGHT = 185
 local OFFSET_BETWEEN_CARDS = 3  
-local CARDS_IN_BARALHO = #primeirasAliadas
-local contadorBaralho = CARDS_IN_BARALHO  
+local contadorBaralho = #primeirasAliadas
 local HOVER_OFFSET = 120
 
 local descarte = {}
@@ -228,7 +223,7 @@ local function puxarCartaGarantido()
             break
         end
     end
-
+    contadorBaralho = #primeirasAliadas
     if #baralho > 0 then
         table.remove(baralho, 1)
         contadorBaralho = math.max(0, contadorBaralho - 1)
@@ -249,11 +244,23 @@ local function selecionarCartasRodada()
     cartaSelecionada = nil
     escolhaBloqueada = false
     efeitoDaCarta = nil
-
+    
+    -- Garante que temos cartas suficientes
+    if #primeirasAliadas < 2 then
+        for i = 1, #descarte do
+            table.insert(primeirasAliadas, descarte[i])
+        end
+        descarte = {}
+        construirBaralho()
+    end
+    
+    -- Puxa as duas cartas
     cartasRodada[1] = puxarCartaGarantido()
     cartasRodada[2] = puxarCartaGarantido()
+    
+    -- Atualiza o contador final
+    contadorBaralho = #primeirasAliadas
 end
-
 -----------------------------------------------------------------------------------------
 -- HOVER E DESENHO
 -----------------------------------------------------------------------------------------
@@ -647,10 +654,35 @@ end
 local function setEra(novaEra)
     if novaEra ~= eraAtual then
         eraAtual = novaEra
-        --Reconstroi o baralho para incluir as cartas novas Imediatamente
-        inicializarConflitos()
+
+        ----------------------------------------------------
+        -- 1. MOVER AS CARTAS DA ERA 2 PARA A ERA 1
+        ----------------------------------------------------
+        if segundasAliadas and #segundasAliadas > 0 then
+            for _, carta in ipairs(segundasAliadas) do
+                table.insert(primeirasAliadas, carta)
+            end
+            segundasAliadas = {} -- esvazia lista antiga
+        end
+
+        ----------------------------------------------------
+        -- 2. MOVER CONFLITOS2 PARA CONFLITOS1
+        ----------------------------------------------------
+        if conflitos2 and #conflitos2 > 0 then
+            for _, c in ipairs(conflitos2) do
+                table.insert(conflitos1, c)
+            end
+            conflitos2 = {} -- limpa a lista antiga
+        end
+
+        ----------------------------------------------------
+        -- 3. RECONSTRUIR O BARALHO E OS CONFLITOS
+        ----------------------------------------------------
+        construirBaralho()      -- usa primeirasAliadas, agora atualizada
+        inicializarConflitos()  -- usa conflitos1, agora com tudo dentro
     end
 end
+
 
 function resetarEfeitosRodada()
     efeitosAtivos.garrafaTermica = false

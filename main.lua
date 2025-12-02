@@ -1,8 +1,10 @@
 local love = require "love"
+
 local button = require "Button"
 local hitbox = require "hitbox"
 local ost = require "OST"
 local cartas = require ("cartas")
+cartas.selecionarCartasRodada()
 -- função que gerencia a quantidade de água
 local agua = 5
 local movimentosRestantes = 3
