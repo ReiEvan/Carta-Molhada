@@ -47,6 +47,8 @@ local escalaHex = 0.1111
 local rodadasPorPonto = {}
 local estadoTransformacao = {}
 local pontosBloqueados = {}
+
+
 --Variaveis de Vitória/Derrota
 local imgBandeira = love.graphics.newImage("sprites/bandeira vermelha.png")
 local imgBandeiraConquistada = love.graphics.newImage("sprites/Bandeira_branca.png")
@@ -152,6 +154,49 @@ local movGuarda = {
     frameAtual = 1,
     quadros = {}
 }
+
+-- Função para transformar áreas limpas de volta em Vermelhas (Tóxicas)
+local function corromperAreas(qtd)
+    local candidatos = {}
+
+    for i = 1, #pontosMovimentacao do
+        -- CRITÉRIOS DE SELEÇÃO:
+        -- 1. Ignora onde o guarda está (segurança).
+        -- 2. Ignora o que já é vermelho (hexAtivos[i] ~= 1).
+        -- 3. Ignora a Base (índice 3).
+        if i ~= movGuarda.indiceAtual and hexAtivos[i] ~= 1 and i ~= 3 then
+            table.insert(candidatos, i)
+        end
+    end
+
+    -- Se não houver ninguém para corromper, sai da função
+    if #candidatos == 0 then return end
+
+    -- Embaralha a lista de candidatos (Sorteio)
+    for i = #candidatos, 2, -1 do
+        local j = love.math.random(i)
+        candidatos[i], candidatos[j] = candidatos[j], candidatos[i]
+    end
+
+    -- Aplica a mudança apenas na quantidade pedida
+    local limite = math.min(qtd, #candidatos)
+    
+    for k = 1, limite do
+        local idx = candidatos[k]
+        
+        -- AQUI A MÁGICA ACONTECE:
+        hexAtivos[idx] = 1              -- 1. Volta visualmente para Vermelho
+        
+        pontosBloqueados[idx] = nil     -- 2. CRUCIAL: Desbloqueia o ponto. 
+                                        -- (Se estava verde, estava bloqueado. Agora precisa ser jogável de novo)
+        
+        rodadasPorPonto[idx] = 0        -- 3. Zera contagem de dias acumulados
+        estadoTransformacao[idx] = false -- 4. Reseta estado de transformação
+        
+        print("Área corrompida (voltou a ser vermelha): " .. idx)
+    end
+end
+
 -- Flag que indica que o guarda está bloqueado por uma rodada
 local guardaBloqueado = false
 
@@ -197,6 +242,7 @@ local function confirmarMovimento()
         end
     cancelarMovimento()
 end
+
 -- Funcao auxiliar para encontrar um valor em uma lista (substitui table.find)
 local function findInTable(t, value)
     for i, v in ipairs(t) do
@@ -273,6 +319,11 @@ local function atualizarEstadosHexagonos(indice)
         return true
     end  
 end
+
+
+
+
+
 
 local function definirObjetivos()
     objetivosExternos = {}
@@ -615,7 +666,6 @@ function love.mousepressed(x, y, button, isTouch, presses)
     end
 end
 
-
 function love.load()
     ------------IMAGENS DO JOGO--------------------
     movGuarda.imagem = love.graphics.newImage("sprites/Guardinha.png")
@@ -685,7 +735,7 @@ function love.load()
     cartas.construirBaralho()
 
 -- carregar cartas aleatórias
-    cartas.setCallbacks(alterarAgua, alterarMovimento, getContagemVerdes, bloquearGuardaPorRodada)
+    cartas.setCallbacks(alterarAgua, alterarMovimento, getContagemVerdes, bloquearGuardaPorRodada, corromperAreas)
     cartas.selecionarCartasRodada()
     
 

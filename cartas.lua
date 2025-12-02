@@ -4,6 +4,7 @@ local alterarMovimento = nil
 local getContagemVerdes= nil
 local sabotagemProximaRodada = nil
 local bloquearMovimentoDoGuarda = nil
+local corromperAreas = nil
 -- Tabela que guarda os poderes ativos
 local efeitosAtivos = {
     garrafaTermica = false,
@@ -19,11 +20,12 @@ function resetarEfeitosRodada()
     efeitosAtivos.sabotagem = false 
 end
 
-function setCallbacks(funcAgua, funcMov, funcver, funcBloquearGuarda)
+function setCallbacks(funcAgua, funcMov, funcver, funcBloquearGuarda, funcCorromper)
     alterarAgua = funcAgua
     alterarMovimento = funcMov
     getContagemVerdes = funcver
     bloquearMovimentoDoGuarda = funcBloquearGuarda
+    corromperAreas = funcCorromper
 end
 
 
@@ -521,10 +523,14 @@ local conflitos1 = {
     {
         id = "Incendio criminoso",
         img = love.graphics.newImage("sprites/conflitos/incendio criminoso.png"),
-        descricao = "Perca uma área verde que não tenha um guarda",
-        eraMinima = 1
-        -- DICA: no main:
-        -- encontre áreas sem guarda e remova 1 aleatória
+        descricao = "Uma área recuperada volta a ser tóxica (Vermelha).", -- Descrição ajustada
+        eraMinima = 1,
+        -- BLOCO NOVO ABAIXO:
+        efeito = function()
+            if corromperAreas then
+                corromperAreas(1) -- Transforma 1 hex
+            end
+        end
     },
 
     {
@@ -564,9 +570,14 @@ local conflitos2={
     {
         id = "A carta cinza",
         img = love.graphics.newImage("sprites/conflitos/A carta cinza.png"),
-        descricao = "Perca 2 áreas verdes",
-        eraMinima = 2
-        -- DICA: remova 2 áreas verdes aleatórias (ignorando as protegidas)
+        descricao = "Duas áreas recuperadas voltam a ser tóxicas.", -- Descrição ajustada
+        eraMinima = 2,
+        -- BLOCO NOVO ABAIXO:
+        efeito = function()
+            if corromperAreas then
+                corromperAreas(2) -- Transforma 2 hexs
+            end
+        end
     },
     {
         id = "Dia quente de trabalho",
