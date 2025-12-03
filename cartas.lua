@@ -7,6 +7,7 @@ local bloquearMovimentoDoGuarda = nil
 local corromperAreas = nil
 local conflitoAtual = nil
 local getAgua = nil
+local terrenoDificil = nil -- Callback opcional
 local cartasEscolhaConflito = nil
 local escolhaConflito = false
 
@@ -16,6 +17,7 @@ local efeitosAtivos = {
     protecaoVerde = false,
     anularConflito = false,
     sabotagem = false,
+    terrenoDificil = false, -- ADICIONADO: Controla se o terreno está difícil nesta rodada
 }
 -- Função para limpar os poderes quando o dia vira
 function resetarEfeitosRodada()
@@ -23,6 +25,7 @@ function resetarEfeitosRodada()
     efeitosAtivos.protecaoVerde = false
     efeitosAtivos.anularConflito = false
     efeitosAtivos.sabotagem = false 
+    efeitosAtivos.terrenoDificil = false -- Reseta o terreno difícil para o normal (2 dias)
 end
 
 function setCallbacks(funcAgua, funcMov, funcVer, funcBloquearGuarda, funcCorromper, funcGetAgua, funcTerrenoDificil)
@@ -32,7 +35,7 @@ function setCallbacks(funcAgua, funcMov, funcVer, funcBloquearGuarda, funcCorrom
     bloquearMovimentoDoGuarda = funcBloquearGuarda
     corromperAreas = funcCorromper
     getAgua = funcGetAgua
-    terrenoDificil = funcTerrenoDificil
+    terrenoDificil = funcTerrenoDificil -- Associa o callback recebido à variável local
 end
 
 
@@ -553,12 +556,7 @@ end
 -----------------------------------------------------------------------------------------
 
 local function desenharResultadoEscolha()
-    -- !!! CORREÇÃO AQUI: Removemos o desenho duplicado da escolha de conflitos
-    -- que causava o texto duplo/negrito. Agora essa função só lida com o texto de resultado.
-
     if escolhaConflito then
-        -- Não desenha nada aqui se estiver na tela de escolha, 
-        -- pois desenharCartasRodada já cuida disso.
         return
     end
 
@@ -644,7 +642,13 @@ local conflitos1 = {
     descricao = "Retarde o tratamento de todas as áreas desse turno",
     eraMinima = 1,
     efeito = function()
-        tratamentoDasAreasPausado = true
+        -- Agora ativa o estado na tabela, que é resetado automaticamente
+        efeitosAtivos.terrenoDificil = true
+        
+        -- Mantemos o callback se ainda for necessário para outros fins
+        if terrenoDificil then
+            terrenoDificil()
+        end
     end
     }
 
@@ -730,9 +734,13 @@ end
 
 local function sortearConflitoRodada()
     conflitoAtual = puxarConflito()
-    --if conflitoAtual and conflitoAtual.efeito then 
-    --    conflitoAtual.efeito() 
-    --end
+    
+    -- CORREÇÃO: Se o conflito for Terreno Difícil, ativa o efeito passivo imediatamente
+    if conflitoAtual and conflitoAtual.id == "Terreno difícil" then
+        if conflitoAtual.efeito then
+            conflitoAtual.efeito()
+        end
+    end
 end
 
 local function prepararConflitoDaRodada(numeroDaRodada)
@@ -749,8 +757,6 @@ end
 
 local function desenharConflito()
     if escolhaConflito and cartasEscolhaConflito then
-        -- A lógica de desenho da ESCOLHA agora está toda em desenharCartasRodada
-        -- para evitar conflitos de renderização.
         return
     elseif conflitoAtual then
         -- comportamento normal
@@ -816,8 +822,6 @@ end
 function mousepressed(mx, my, btn, moveAtual)
     if btn ~= 1 then return false end
     
-    -- Se já escolheu a carta, bloqueia cliques,
-    -- EXCETO se estivermos escolhendo o conflito da Clarividência
     if escolhaBloqueada and not escolhaConflito then return false end
 
     --=== SE ESTAMOS ESCOLHENDO CONFLITO COM CLARIVIDÊNCIA ===
@@ -893,7 +897,6 @@ function mousepressed(mx, my, btn, moveAtual)
                     cartasEscolhaConflito = { conflitoAtual, proximoConflito }
                     escolhaConflito = true
                     
-                    -- CORREÇÃO AQUI: Marcamos a carta como usada e bloqueamos seleção
                     cartaSelecionada = carta
                     escolhaBloqueada = true
                     efeitoDaCarta = "Futuro alterado!"
@@ -956,6 +959,7 @@ function resetarEfeitosRodada()
     efeitosAtivos.protecaoVerde = false
     efeitosAtivos.anularConflito = false
     efeitosAtivos.sabotagem = false
+    efeitosAtivos.terrenoDificil = false -- ADICIONADO: Reseta o estado
 end
 
 -----------------------------------------------------------------------------------------

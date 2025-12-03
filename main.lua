@@ -4,11 +4,7 @@ local button = require "Button"
 local hitbox = require "hitbox"
 local ost = require "OST"
 local cartas = require ("cartas")
-cartas.selecionarCartasRodada()
-
-local tratamentoDasAreasPausado = false
-
-
+-- REMOVIDO: cartas.selecionarCartasRodada() aqui fora, pois startNewGame já faz isso
 
 -- função que gerencia a quantidade de água
 local agua = 5
@@ -416,23 +412,23 @@ local buttons = {
 }
 
 
--- Modifique a função proxRodada() para incluir:
 function proxRodada()
     if esperandoEscolhaCarta then return end
-    rodada = rodada + 1
-    guardaBloqueado = false
-    movimentosRestantes = 3
-    cartas.selecionarCartasRodada()
-    cartas.prepararConflitoDaRodada(rodada)
-    esperandoEscolhaCarta = true
+    
     alterarAgua(-1)
     cartas.limparMensagens()
-    
-    -- Atualiza rodadasPorPonto e transforma áreas
+
+    -- === 1. PROCESSAR ÁREAS (Usando os efeitos da rodada que ACABOU) ===
+    local diasNecessarios = 2
+    if cartas.efeitosAtivos.terrenoDificil then
+        diasNecessarios = 3
+    end
+
     for i = 1, #pontosMovimentacao do
         if rodadasPorPonto[i] then
             rodadasPorPonto[i] = rodadasPorPonto[i] + 1
-            if estadoTransformacao[i] and rodadasPorPonto[i] >= 3 then
+            
+            if estadoTransformacao[i] and rodadasPorPonto[i] >= diasNecessarios then
                 hexAtivos[i] = nil
                 estadoTransformacao[i] = nil
                 rodadasPorPonto[i] = nil
@@ -448,8 +444,19 @@ function proxRodada()
         end
     end
     
-    -- Resetar a flag após a rodada
-    tratamentoDasAreasPausado = false
+    -- === 2. RESETAR EFEITOS (Prepara terreno limpo para a próxima rodada) ===
+    cartas.resetarEfeitosRodada()
+    guardaBloqueado = false
+    
+    -- === 3. PREPARAR NOVA RODADA (Sorteia novos conflitos e efeitos) ===
+    rodada = rodada + 1
+    movimentosRestantes = 3
+    
+    -- Sorteia cartas novas (pode ativar Terreno Difícil para a PRÓXIMA rodada)
+    cartas.selecionarCartasRodada()
+    cartas.prepararConflitoDaRodada(rodada)
+    
+    esperandoEscolhaCarta = true
 
     -- Lógica de mudança de era
     local contagemBandeiras = 0
@@ -669,10 +676,7 @@ function love.mousepressed(x, y, button, isTouch, presses)
         end
     end
 end
-local function ativarTerrenoDificil()
-    tratamentoDasAreasPausado = true
-    print("Terreno Difícil ativado! Tratamento de áreas pausado por uma rodada.")
-end
+
 function love.load()
     ------------IMAGENS DO JOGO--------------------
     movGuarda.imagem = love.graphics.newImage("sprites/Guardinha.png")
@@ -767,7 +771,7 @@ function love.load()
     bloquearGuardaPorRodada,
     corromperAreas,
     getAgua,
-    ativarTerrenoDificil
+    nil
 )
 end
 
@@ -843,7 +847,7 @@ function love.draw()
         love.graphics.print(rodada .. "/20", love.graphics.getWidth()/2 + 30, 10, 0)
         love.graphics.setFont(fonte.normal)
 
-       
+        
 
 
         -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo
@@ -892,12 +896,12 @@ function love.draw()
         end
         cartas.desenharTroca()
         cartas.desenharFundoConflito()   
-        cartas.desenharConflito()      
+        cartas.desenharConflito()       
         cartas.desenharBaralho()
         cartas.desenharCartasRodada()
         cartas.desenharResultadoEscolha()
     
-       
+        
 
         --Desenhar a hitbox enquanto o jogo ta rodando
         hitbox.desenhar(love.graphics.getWidth()/2 + 15, love.graphics.getHeight()/2 - 245, 45)
