@@ -854,7 +854,7 @@ function love.draw()
         --Numeração da rodada atual
         love.graphics.draw(diaImg, love.graphics.getWidth()/2 - 100, 10, 0, 0.2, 0.2)
         love.graphics.setColor(0,0,0)
-        love.graphics.print(rodada .. "/20", love.graphics.getWidth()/2 + 30, 50, 0)
+        love.graphics.print(rodada .. "/20", love.graphics.getWidth()/2 + 30, 10, 0)
         love.graphics.setFont(fonte.normal)
         love.graphics.setColor(1,1,1)
 
@@ -988,8 +988,9 @@ function love.draw()
             love.graphics.setColor(1, 1, 1, 1)
 
         end
-        
+        love.graphics.setColor(0, 0, 1)
         love.graphics.circle("fill", player.x, player.y, player.radius)
+        love.graphics.setColor(1, 1, 1)
         
     elseif game.state["menu"] then
         --love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
