@@ -854,7 +854,7 @@ function love.draw()
         --Numeração da rodada atual
         love.graphics.draw(diaImg, love.graphics.getWidth()/2 - 100, 10, 0, 0.2, 0.2)
         love.graphics.setColor(0,0,0)
-        love.graphics.print(rodada .. "/20", love.graphics.getWidth()/2 + 30, 10, 0)
+        love.graphics.print(rodada .. "/20", love.graphics.getWidth()/2- 10, 22, 0)
         love.graphics.setFont(fonte.normal)
         love.graphics.setColor(1,1,1)
 
