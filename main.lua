@@ -584,13 +584,6 @@ local function verificarEstadoJogo()
         fimDeJogo.cor = {57, 255, 20}
         return
     end
---Ficar sem guardas
-    if numGuardas <= 0 then
-        fimDeJogo.ativo = true
-        fimDeJogo.mensagem = "DERROTA\nSem guardas!"
-        fimDeJogo.cor = {0.5, 0, 0}
-        return
-    end
  --Ficar sem água
     if agua < 0 then
         fimDeJogo.ativo = true

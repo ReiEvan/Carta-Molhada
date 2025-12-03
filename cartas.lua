@@ -7,7 +7,9 @@ local bloquearMovimentoDoGuarda = nil
 local corromperAreas = nil
 local conflitoAtual = nil
 local getAgua = nil
-local terrenoDificil=nil
+local cartasEscolhaConflito = nil
+local escolhaConflito = false
+
 -- Tabela que guarda os poderes ativos
 local efeitosAtivos = {
     garrafaTermica = false,
@@ -89,7 +91,7 @@ local segundasAliadas={
             'ganhe 3 fichas de água.'
     },
     {
-        id = "Dissolvendo problemas",
+        id = "Brigada de incendio",
         img = love.graphics.newImage("sprites/carta Dissolvendo problemas.png"),
         descricao=
             'Gaste 2 águas e anule\n'..
@@ -115,18 +117,22 @@ local movimentosDisponiveis = 0
 -- erro
 local mensagemErro = ""
 local tempoErro = 0
+
+
 -----------------------------------------------------------------------------------------
 -- efeitos aliados
 ----------------------------------------------------------------------------------------- 
 
- function aplicarEfeito(carta,valorMove)
+function aplicarEfeito(carta, valorMove)
     if carta.id == "Carta da Nascente" and alterarAgua and alterarMovimento then
         alterarAgua(2) 
         alterarMovimento(1)
     end
+
     if carta.id == "Garrafa termica" and alterarAgua then
         alterarAgua(1)
     end
+
     if carta.id == "Movimento Livre" and alterarMovimento then
         alterarMovimento(1)
     end
@@ -137,13 +143,34 @@ local tempoErro = 0
         mensagemErro = ""
         return
     end
-    if carta.id== "Esforço recompensado" and getContagemVerdes and alterarAgua then
-        local verdes=getContagemVerdes()
+
+    if carta.id == "Esforço recompensado" and getContagemVerdes and alterarAgua then
+        local verdes = getContagemVerdes()
         if verdes > 5 then -->5 pois a área do centro não conta
             alterarAgua(3)
         end
     end
+
+   if carta.id == "Clarividência" and baralhoConflitos then
+    -- Pega o conflito atual e o próximo
+    local proximoConflito = baralhoConflitos[1]  -- próximo conflito
+    local conflitoAtualAntesDaEscolha = conflitoAtual  -- conflito atual antes da escolha
+
+    -- Coloca ambos disponíveis para escolha
+    cartasEscolhaConflito = { conflitoAtualAntesDaEscolha, proximoConflito }
+
+    -- Aviso visual
+    efeitoDaCarta = "Escolha o conflito desta rodada (1 ou 2)"
+
+    -- Bloqueia seleção normal de cartas até escolher o conflito
+    escolhendoTroca = true
+    escolhaConflito = true
+    return
 end
+
+end
+
+
 
 -----------------------------------------------------------------------------------------
 -- VISUAL DAS CARTAS
@@ -364,92 +391,53 @@ local function desenharInventarioCartas()
     end
 end
 
-function mousepressed(mx, my, btn, moveAtual)
-    if btn ~= 1 then return false end
-    if escolhendoTroca then return false end
-    if escolhaBloqueada then return false end
 
-    for i, carta in ipairs(cartasRodada) do
-        local x, y = getPosicaoCarta(i)
 
-        if mx > x and mx < x + CARD_WIDTH and my > y and my < y + CARD_HEIGHT then
 
-            if carta.sabotada then
-                efeitoDaCarta = "Carta sabotada — sem efeito."
-                return false
-            end
 
-            -- === LÓGICA ESPECIAL: DISSOLVENDO PROBLEMAS ===
-            local vaiAnularConflito = false
-
-            if carta.id == "Dissolvendo problemas" then
-                -- 1. Verifica se tem água suficiente usando o callback getAgua
-                if getAgua and getAgua() < 2 then
-                    mensagemErro = "Água insuficiente! Custo: 2"
-                    tempoErro = 2
-                    return false -- CANCELA O CLIQUE, jogador precisa escolher outra ou conseguir água
-                end
-
-                -- 2. Se tem água, paga o custo
-                if alterarAgua then 
-                    alterarAgua(-2) 
-                end
-                
-                -- 3. Marca para anular o conflito abaixo
-                vaiAnularConflito = true
-                efeitoDaCarta = "Conflito Anulado!" -- Feedback visual
-            end
-
-            -- === APLICAÇÃO DO CONFLITO (Se não foi anulado) ===
-            
-            if conflitoAtual and conflitoAtual.efeito then
-                if vaiAnularConflito then
-                    -- NÃO faz nada, o conflito foi ignorado.
-                else
-                    conflitoAtual.efeito() -- Aplica o dano do conflito
-                end
-            end
-
-            -- === APLICAÇÃO DA CARTA ALIADA ===
-            
-            cartaSelecionada = carta
-            aplicarEfeito(carta, moveAtual)
-            escolhaBloqueada = true
-
-            return true
-        end
-    end
-end
--- keypressed: escolhe 1,2 ou 3 se estiver em troca
 function keypressed(key)
-    -- se NÃO estamos na troca, apenas ignoramos teclas
-    if not escolhendoTroca then
-        return
-    end
+    -- Se não estamos na troca, apenas ignoramos teclas
+    if not escolhendoTroca then return end
 
-    -- estamos em fase de troca -> só aceita 1,2,3
+    -- Aceita apenas 1,2 ou 3
     local qtd = tonumber(key)
     if not qtd then return end
     if qtd < 1 or qtd > 3 then return end
 
-    -- checa se tem movimentos suficientes
+    -- Checa se tem movimentos suficientes
     if qtd > movimentosDisponiveis then
         mensagemErro = "Você não tem movimentos suficientes!"
         tempoErro = 2
         return
     end
 
-    -- aplica troca (movimento negativo)
+    -- Aplica troca (movimento negativo)
     if alterarMovimento then
         alterarMovimento(-qtd)
     end
-
     if alterarAgua then
         alterarAgua(qtd)
     end
 
+    -- Sai do modo troca
     escolhendoTroca = false
+
+    -- Marca a carta como selecionada
+    for i, carta in ipairs(cartasRodada) do
+        if carta.id == "Procurando água" then
+            cartaSelecionada = carta
+            efeitoDaCarta = "Troca concluída: + água!"
+            escolhaBloqueada = true
+            break
+        end
+    end
+
+    -- Agora aplica o conflito da rodada
+    if conflitoAtual and conflitoAtual.efeito then
+        conflitoAtual.efeito()
+    end
 end
+
 
 function notificarErro(dt)
     if tempoErro > 0 then
@@ -458,8 +446,58 @@ function notificarErro(dt)
     end
 end
 
+local fonte = {}
+fonte.media = love.graphics.newFont(20)
+fonte.normal = love.graphics.newFont(15)
+
+local ESCURECER_ALPHA = 0.75  -- opacidade do fundo escuro durante a escolha
 
 local function desenharCartasRodada()
+    --=== SE ESTÁ ESCOLHENDO CLARIVIDÊNCIA ===
+    if escolhaConflito and cartasEscolhaConflito then
+        local sw, sh = love.graphics.getWidth(), love.graphics.getHeight()
+        local largura, altura = 200, 250
+        local espaco = 50
+        local startX = (sw - (2 * largura + espaco)) / 2
+        local startY = sh * 0.3
+
+        -- Fundo escurecido
+        love.graphics.setColor(0, 0, 0, ESCURECER_ALPHA)
+        love.graphics.rectangle("fill", 0, 0, sw, sh)
+        love.graphics.setColor(1,1,1)
+
+        -- Título
+        love.graphics.setFont(fonte.media)
+        love.graphics.printf("Escolha o conflito para esta rodada", 0, sh*0.15, sw, "center")
+
+        -- Desenha os dois conflitos
+        for i, c in ipairs(cartasEscolhaConflito) do
+            local x = startX + (i-1) * (largura + espaco)
+            local y = startY
+
+            -- Carta/fundo
+            love.graphics.setColor(0.2,0.2,0.2,1)
+            love.graphics.rectangle("fill", x, y, largura, altura, 12, 12)
+            love.graphics.setColor(1,1,1)
+
+            -- Imagem do conflito
+            if c.img then
+                local imgW, imgH = c.img:getWidth(), c.img:getHeight()
+                local scale = math.min(largura/imgW, (altura-80)/imgH)
+                love.graphics.draw(c.img, x + (largura-imgW*scale)/2, y + 10, 0, scale, scale)
+            end
+
+            -- Título e descrição
+            love.graphics.setFont(fonte.media)
+            love.graphics.printf(c.id, x, y + altura - 65, largura, "center")
+            love.graphics.setFont(fonte.normal)
+            love.graphics.printf(c.descricao, x + 5, y + altura - 50, largura-10, "center")
+        end
+
+        return
+    end
+
+    --=== DESENHO NORMAL DAS CARTAS DE RODADA ===
     local screenWidth = love.graphics.getWidth()
     local screenHeight = love.graphics.getHeight()
 
@@ -476,13 +514,11 @@ local function desenharCartasRodada()
         local y = posY
         local offset = (hoverIndex == i) and -HOVER_OFFSET or 0
 
-        -- AQUI está a mágica:
-        -- Apenas desenhar card.img.
         if card.img then
             love.graphics.draw(card.img, x, y + offset)
         end
 
-        -- Hover…
+        -- Hover visual
         if hoverIndex == i then
             local textoX = (i == 1) and (x - 220) or (x + CARD_WIDTH + 20)
             local larguraCaixa, alturaCaixa = 200, 150
@@ -510,11 +546,40 @@ end
 
 
 
+
 -----------------------------------------------------------------------------------------
 -- RESULTADO DA ESCOLHA
 -----------------------------------------------------------------------------------------
 
 local function desenharResultadoEscolha()
+    if escolhaConflito and cartasEscolhaConflito then
+        local sw = love.graphics.getWidth()
+        local sh = love.graphics.getHeight()
+
+        local largura = 150
+        local altura = 200
+        local espaco = 50
+        local startX = (sw - (2 * largura + espaco)) / 2
+        local startY = sh * 0.3
+
+        love.graphics.setColor(0,0,0,0.7)
+        love.graphics.rectangle("fill", startX-10, startY-10, 2*largura + espaco + 20, altura + 20)
+        love.graphics.setColor(1,1,1)
+
+        love.graphics.print("Escolha o conflito da rodada:", startX, startY-30)
+
+        for i, c in ipairs(cartasEscolhaConflito) do
+            local x = startX + (i-1) * (largura + espaco)
+            love.graphics.draw(c.img, x, startY)
+            love.graphics.printf(i, x, startY + altura + 5, largura, "center")
+            love.graphics.printf(c.id, x, startY + altura + 25, largura, "center")
+            love.graphics.printf(c.descricao, x, startY + altura + 45, largura, "center")
+        end
+
+        return
+    end
+
+    -- Caso normal: desenha o efeitoDaCarta
     if efeitoDaCarta then
         love.graphics.setColor(1,1,0)
         love.graphics.print(efeitoDaCarta, 50, 100)
@@ -700,18 +765,47 @@ local function desenharFundoConflito()
 end
 
 local function desenharConflito()
-    if not conflitoAtual then return end
+    if escolhaConflito and cartasEscolhaConflito then
+        -- MOSTRA OS DOIS CONFLITOS LADO A LADO
+        local screenWidth = love.graphics.getWidth()
+        local screenHeight = love.graphics.getHeight()
+        
+        local totalWidth = (#cartasEscolhaConflito * CONFLITO_WIDTH) + 30
+        local startX = (screenWidth - totalWidth) / 2
+        local posY = screenHeight * 0.2
 
-    love.graphics.draw(conflitoAtual.img, conflitoX, conflitoY)
+        for i, c in ipairs(cartasEscolhaConflito) do
+            love.graphics.draw(fundoConflitoSprite, startX + (i-1)*(CONFLITO_WIDTH + 30), posY)
+            love.graphics.draw(c.img, startX + (i-1)*(CONFLITO_WIDTH + 30), posY)
 
-    love.graphics.setColor(1,0,0)
-    love.graphics.setFont(fonte.media)
-    love.graphics.print(conflitoAtual.id, conflitoX+140, conflitoY+5)
+            love.graphics.setColor(1,0,0)
+            love.graphics.setFont(fonte.media)
+            love.graphics.print(c.id, startX + (i-1)*(CONFLITO_WIDTH + 30) + 140, posY + 5)
 
-    love.graphics.setFont(fonte.normal)
-    love.graphics.setColor(1,1,1)
-    love.graphics.print(conflitoAtual.descricao, conflitoX+140, conflitoY + CONFLITO_HEIGHT - 130)
+            love.graphics.setFont(fonte.normal)
+            love.graphics.setColor(1,1,1)
+            love.graphics.print(c.descricao, startX + (i-1)*(CONFLITO_WIDTH + 30) + 140, posY + CONFLITO_HEIGHT - 130)
+
+            -- número da escolha
+            love.graphics.setColor(1,1,0)
+            love.graphics.print("Pressione "..i, startX + (i-1)*(CONFLITO_WIDTH + 30) + 50, posY + CONFLITO_HEIGHT + 10)
+            love.graphics.setColor(1,1,1)
+        end
+
+    elseif conflitoAtual then
+        -- comportamento normal
+        love.graphics.draw(conflitoAtual.img, conflitoX, conflitoY)
+
+        love.graphics.setColor(1,0,0)
+        love.graphics.setFont(fonte.media)
+        love.graphics.print(conflitoAtual.id, conflitoX+140, conflitoY+5)
+
+        love.graphics.setFont(fonte.normal)
+        love.graphics.setColor(1,1,1)
+        love.graphics.print(conflitoAtual.descricao, conflitoX+140, conflitoY + CONFLITO_HEIGHT - 130)
+    end
 end
+
 
 ---------------------------------------------------------
 -- DESENHAR MENU DE TROCA NO CANTO DIREITO DA TELA
@@ -756,6 +850,102 @@ function limparMensagens()
     mensagemErro = ""
     tempoErro = 0
     escolhendoTroca = false
+end
+
+
+function mousepressed(mx, my, btn, moveAtual)
+    if btn ~= 1 then return false end
+    if escolhaBloqueada then return false end
+
+    --=== SE ESTAMOS ESCOLHENDO CONFLITO COM CLARIVIDÊNCIA ===
+    if escolhaConflito and cartasEscolhaConflito then
+        for i, c in ipairs(cartasEscolhaConflito) do
+            local sw, sh = love.graphics.getWidth(), love.graphics.getHeight()
+            local largura, altura = 200, 250
+            local espaco = 50
+            local startX = (sw - (2 * largura + espaco)) / 2
+            local x = startX + (i-1) * (largura + espaco)
+            local y = sh * 0.3
+
+            if mx > x and mx < x + largura and my > y and my < y + altura then
+                -- Carta escolhida se torna conflito da rodada
+                conflitoAtual = c
+
+                -- Retorna o outro conflito para o baralho e embaralha
+                for j, outra in ipairs(cartasEscolhaConflito) do
+                    if outra ~= c then
+                        table.insert(baralhoConflitos, outra)
+                        embaralhar(baralhoConflitos)
+                    end
+                end
+
+                -- Aplica efeito do conflito agora
+                if conflitoAtual.efeito then
+                    conflitoAtual.efeito()
+                end
+
+                -- Limpa estado de escolha
+                escolhaConflito = false
+                cartasEscolhaConflito = nil
+                return true
+            end
+        end
+        return false
+    end
+
+    --=== SELEÇÃO NORMAL DE CARTAS ===
+    for i, carta in ipairs(cartasRodada) do
+        local x, y = getPosicaoCarta(i)
+        if mx > x and mx < x + CARD_WIDTH and my > y and my < y + CARD_HEIGHT then
+
+            if carta.sabotada then
+                efeitoDaCarta = "Carta sabotada — sem efeito."
+                return false
+            end
+
+            -- Procurando água ativa troca
+            if carta.id == "Procurando água" and alterarMovimento and alterarAgua then
+                escolhendoTroca = true
+                movimentosDisponiveis = tonumber(moveAtual) or 0
+                mensagemErro = ""
+                return true  -- não aplica conflito nem marca cartaSelecionada
+            end
+
+            local vaiAnularConflito = false
+            if carta.id == "Brigada de incendio" then
+                if getAgua and getAgua() < 2 then
+                    mensagemErro = "Água insuficiente! Custo: 2"
+                    tempoErro = 2
+                    return false
+                end
+                if alterarAgua then alterarAgua(-2) end
+                vaiAnularConflito = true
+                efeitoDaCarta = "Conflito Anulado!"
+            end
+
+            -- Clarividência ativa escolha de conflitos
+            if carta.id == "Clarividência" then
+                local proximoConflito = puxarConflito()
+                if proximoConflito then
+                    cartasEscolhaConflito = { conflitoAtual, proximoConflito }
+                    escolhaConflito = true
+                    return true
+                end
+            end
+
+            -- Aplica efeito da carta
+            aplicarEfeito(carta, moveAtual)
+
+            -- Aplica conflito somente se não anula
+            if conflitoAtual and conflitoAtual.efeito and not vaiAnularConflito then
+                conflitoAtual.efeito()
+            end
+
+            cartaSelecionada = carta
+            escolhaBloqueada = true
+            return true
+        end
+    end
 end
 
 --Função para o main.lua chamar quando trocar de Era
