@@ -41,7 +41,7 @@ end
 local eraAtual = 1
 
 --//////////////////////////////////////////////////////////////////////////////////////////
---                                   CARTAS ALIADAS
+--                                  CARTAS ALIADAS
 --//////////////////////////////////////////////////////////////////////////////////////////
 
 local primeirasAliadas = {
@@ -105,7 +105,7 @@ local segundasAliadas={
 --id = "Carta Dourada",
        -- img = love.graphics.newImage("sprites/carta dourada.png"),
         --descricao =
-         --   "Escolha uma área verde\n".. 
+          --   "Escolha uma área verde\n".. 
         --    "(exceto o ponto de origem).\n" ..
         --    "Ela não pode ser perdida \n".. 
         --    "por cartas de conflito"
@@ -395,6 +395,7 @@ end
 
 
 
+
 function keypressed(key)
     -- Se não estamos na troca, apenas ignoramos teclas
     if not escolhendoTroca then return end
@@ -552,30 +553,12 @@ end
 -----------------------------------------------------------------------------------------
 
 local function desenharResultadoEscolha()
-    if escolhaConflito and cartasEscolhaConflito then
-        local sw = love.graphics.getWidth()
-        local sh = love.graphics.getHeight()
+    -- !!! CORREÇÃO AQUI: Removemos o desenho duplicado da escolha de conflitos
+    -- que causava o texto duplo/negrito. Agora essa função só lida com o texto de resultado.
 
-        local largura = 150
-        local altura = 200
-        local espaco = 50
-        local startX = (sw - (2 * largura + espaco)) / 2
-        local startY = sh * 0.3
-
-        love.graphics.setColor(0,0,0,0.7)
-        love.graphics.rectangle("fill", startX-10, startY-10, 2*largura + espaco + 20, altura + 20)
-        love.graphics.setColor(1,1,1)
-
-        love.graphics.print("Escolha o conflito da rodada:", startX, startY-30)
-
-        for i, c in ipairs(cartasEscolhaConflito) do
-            local x = startX + (i-1) * (largura + espaco)
-            love.graphics.draw(c.img, x, startY)
-            love.graphics.printf(i, x, startY + altura + 5, largura, "center")
-            love.graphics.printf(c.id, x, startY + altura + 25, largura, "center")
-            love.graphics.printf(c.descricao, x, startY + altura + 45, largura, "center")
-        end
-
+    if escolhaConflito then
+        -- Não desenha nada aqui se estiver na tela de escolha, 
+        -- pois desenharCartasRodada já cuida disso.
         return
     end
 
@@ -588,7 +571,7 @@ local function desenharResultadoEscolha()
 end
 
 --///////////////////////////////////////////////////////////////////////////////////////////////
---                                         CONFLITOS
+--                                              CONFLITOS
 --//////////////////////////////////////////////////////////////////////////////////////////////
 
 local fonte= {}
@@ -766,32 +749,9 @@ end
 
 local function desenharConflito()
     if escolhaConflito and cartasEscolhaConflito then
-        -- MOSTRA OS DOIS CONFLITOS LADO A LADO
-        local screenWidth = love.graphics.getWidth()
-        local screenHeight = love.graphics.getHeight()
-        
-        local totalWidth = (#cartasEscolhaConflito * CONFLITO_WIDTH) + 30
-        local startX = (screenWidth - totalWidth) / 2
-        local posY = screenHeight * 0.2
-
-        for i, c in ipairs(cartasEscolhaConflito) do
-            love.graphics.draw(fundoConflitoSprite, startX + (i-1)*(CONFLITO_WIDTH + 30), posY)
-            love.graphics.draw(c.img, startX + (i-1)*(CONFLITO_WIDTH + 30), posY)
-
-            love.graphics.setColor(1,0,0)
-            love.graphics.setFont(fonte.media)
-            love.graphics.print(c.id, startX + (i-1)*(CONFLITO_WIDTH + 30) + 140, posY + 5)
-
-            love.graphics.setFont(fonte.normal)
-            love.graphics.setColor(1,1,1)
-            love.graphics.print(c.descricao, startX + (i-1)*(CONFLITO_WIDTH + 30) + 140, posY + CONFLITO_HEIGHT - 130)
-
-            -- número da escolha
-            love.graphics.setColor(1,1,0)
-            love.graphics.print("Pressione "..i, startX + (i-1)*(CONFLITO_WIDTH + 30) + 50, posY + CONFLITO_HEIGHT + 10)
-            love.graphics.setColor(1,1,1)
-        end
-
+        -- A lógica de desenho da ESCOLHA agora está toda em desenharCartasRodada
+        -- para evitar conflitos de renderização.
+        return
     elseif conflitoAtual then
         -- comportamento normal
         love.graphics.draw(conflitoAtual.img, conflitoX, conflitoY)
@@ -855,7 +815,10 @@ end
 
 function mousepressed(mx, my, btn, moveAtual)
     if btn ~= 1 then return false end
-    if escolhaBloqueada then return false end
+    
+    -- Se já escolheu a carta, bloqueia cliques,
+    -- EXCETO se estivermos escolhendo o conflito da Clarividência
+    if escolhaBloqueada and not escolhaConflito then return false end
 
     --=== SE ESTAMOS ESCOLHENDO CONFLITO COM CLARIVIDÊNCIA ===
     if escolhaConflito and cartasEscolhaConflito then
@@ -929,6 +892,12 @@ function mousepressed(mx, my, btn, moveAtual)
                 if proximoConflito then
                     cartasEscolhaConflito = { conflitoAtual, proximoConflito }
                     escolhaConflito = true
+                    
+                    -- CORREÇÃO AQUI: Marcamos a carta como usada e bloqueamos seleção
+                    cartaSelecionada = carta
+                    escolhaBloqueada = true
+                    efeitoDaCarta = "Futuro alterado!"
+                    
                     return true
                 end
             end
