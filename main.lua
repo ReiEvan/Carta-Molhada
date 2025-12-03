@@ -56,7 +56,7 @@ local pontosBloqueados = {}
 
 --Variaveis de Vitória/Derrota
 local imgBandeira = love.graphics.newImage("sprites/bandeira vermelha.png")
-local imgBandeiraConquistada = love.graphics.newImage("sprites/Bandeira_branca.png")
+local imgBandeiraConquistada = love.graphics.newImage("sprites/Bandeira_Branca.png")
 local objetivosExternos =  {}
 local objetivosRecompensados = {}
 local totalAreasVerdes = 0
