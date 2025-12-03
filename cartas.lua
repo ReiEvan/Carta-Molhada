@@ -7,6 +7,7 @@ local bloquearMovimentoDoGuarda = nil
 local corromperAreas = nil
 local conflitoAtual = nil
 local getAgua = nil
+local terrenoDificil=nil
 -- Tabela que guarda os poderes ativos
 local efeitosAtivos = {
     garrafaTermica = false,
@@ -22,14 +23,16 @@ function resetarEfeitosRodada()
     efeitosAtivos.sabotagem = false 
 end
 
-function setCallbacks(funcAgua, funcMov, funcver, funcBloquearGuarda, funcCorromper, funcGetAgua)
+function setCallbacks(funcAgua, funcMov, funcVer, funcBloquearGuarda, funcCorromper, funcGetAgua, funcTerrenoDificil)
     alterarAgua = funcAgua
     alterarMovimento = funcMov
-    getContagemVerdes = funcver
+    getContagemVerdes = funcVer
     bloquearMovimentoDoGuarda = funcBloquearGuarda
     corromperAreas = funcCorromper
     getAgua = funcGetAgua
+    terrenoDificil = funcTerrenoDificil
 end
+
 
 
 --Variavel para controlar a dificuldade
@@ -40,12 +43,12 @@ local eraAtual = 1
 --//////////////////////////////////////////////////////////////////////////////////////////
 
 local primeirasAliadas = {
-      
-    {
-        id = "Carta da Nascente",
-        img = love.graphics.newImage("sprites/carta nascente.png"),
-        descricao = "Ganhe 2 águas."
-    },
+    {   
+        id = "Garrafa termica",
+        img = love.graphics.newImage("sprites/carta garrafa termica.png"),
+        descricao = "ganhe 1 água."
+    },  
+    
 
     {
         id = "Clarividência",
@@ -59,7 +62,7 @@ local primeirasAliadas = {
         id = "Movimento Livre",
         img = love.graphics.newImage("sprites/carta mov livre.png"),
         descricao =
-            'Começe a rodada com um movimento a mais'
+            'Comece a rodada com um movimento a mais'
     },
     {
         id = "Procurando água",
@@ -73,10 +76,16 @@ local primeirasAliadas = {
 }
 local segundasAliadas={
     {
+        id = "Carta da Nascente",
+        img = love.graphics.newImage("sprites/carta nascente.png"),
+        descricao = "Ganhe 2 águas e um movimento."
+    },
+    {
         id = "Esforço recompensado",
         img = love.graphics.newImage('sprites/carta Esforco recompensado.png'),
         descricao=
-            'Se tiver 3 áreas verdes\n'..
+            'Se tiver no mínimo 5 áreas verdes\n'..
+            '(sem contar o centro)\n'..
             'ganhe 3 fichas de água.'
     },
     {
@@ -85,28 +94,20 @@ local segundasAliadas={
         descricao=
             'Gaste 2 águas e anule\n'..
             'o conflitos da rodada'
-        -- DICA: no main, antes de aplicar conflito:
-        -- if dissolvendoAtivo then conflitoAtual = nil
-    },
-    {   
-        id = "Garrafa termica",
-        img = love.graphics.newImage("sprites/carta garrafa termica.png"),
-        descricao = "Seu guarda não vai gastar água nessa rodada."
-        -- DICA: no main, antes de gastar água do guarda, coloque:
-        -- if garrafaTermicaAtiva then não gastar água
-    },
-    {
-        id = "Carta Dourada",
-        img = love.graphics.newImage("sprites/carta dourada.png"),
-        descricao =
-            "Escolha uma área verde\n".. 
-            "(exceto o ponto de origem).\n" ..
-            "Ela não pode ser perdida \n".. 
-            "por cartas de conflito"
-        -- DICA: marque area.protegida = true e ao aplicar conflito pule áreas protegidas
-    },
 
-}
+    },
+    
+      
+
+}  
+--id = "Carta Dourada",
+       -- img = love.graphics.newImage("sprites/carta dourada.png"),
+        --descricao =
+         --   "Escolha uma área verde\n".. 
+        --    "(exceto o ponto de origem).\n" ..
+        --    "Ela não pode ser perdida \n".. 
+        --    "por cartas de conflito"
+
 -- estado de troca
 local escolhendoTroca = false
 local movimentosDisponiveis = 0
@@ -119,10 +120,13 @@ local tempoErro = 0
 ----------------------------------------------------------------------------------------- 
 
  function aplicarEfeito(carta,valorMove)
-    if carta.id == "Carta da Nascente" and alterarAgua then
-       alterarAgua(2)
+    if carta.id == "Carta da Nascente" and alterarAgua and alterarMovimento then
+        alterarAgua(2) 
+        alterarMovimento(1)
     end
-
+    if carta.id == "Garrafa termica" and alterarAgua then
+        alterarAgua(1)
+    end
     if carta.id == "Movimento Livre" and alterarMovimento then
         alterarMovimento(1)
     end
@@ -135,7 +139,7 @@ local tempoErro = 0
     end
     if carta.id== "Esforço recompensado" and getContagemVerdes and alterarAgua then
         local verdes=getContagemVerdes()
-        if verdes >= 3 then
+        if verdes > 5 then -->5 pois a área do centro não conta
             alterarAgua(3)
         end
     end
@@ -454,8 +458,6 @@ function notificarErro(dt)
     end
 end
 
--- Carregar a imagem da sabotagem
-local sabotagemImg = love.graphics.newImage("sprites/conflitos/sabotagem.png")
 
 local function desenharCartasRodada()
     local screenWidth = love.graphics.getWidth()
@@ -568,7 +570,7 @@ local conflitos1 = {
     {
     id = "Guarda inoperante",
     img = love.graphics.newImage("sprites/conflitos/Guarda inoperante.png"),
-    descricao = "Um dos guardas fica inoperante até o fim da rodada",
+    descricao = "O guarda ficará inoperante até o fim da rodada",
     eraMinima = 1,
     efeito = function()
         -- usa o callback para bloquear o guarda por esta rodada
@@ -588,15 +590,16 @@ local conflitos1 = {
         sabotagemProximaRodada = true
     end
     },
-
     {
-        id = "Terreno difícil",
-        img = love.graphics.newImage("sprites/conflitos/Terreno dificil.png"),
-        descricao = "retarde o tratamento de todas as áreas desse turno",
-        eraMinima = 1
-        -- DICA: no main:
-        -- tratamentoDasAreasPausado = true
+    id = "Terreno difícil",
+    img = love.graphics.newImage("sprites/conflitos/Terreno dificil.png"),
+    descricao = "Retarde o tratamento de todas as áreas desse turno",
+    eraMinima = 1,
+    efeito = function()
+        tratamentoDasAreasPausado = true
+    end
     }
+
 }
 local conflitos2={
     {
@@ -614,10 +617,14 @@ local conflitos2={
     {
         id = "Dia quente de trabalho",
         img = love.graphics.newImage("sprites/conflitos/dia quente de trabalho.png"),
-        descricao = "Os guardas gastam 2 águas ao invés de 1 e o movimento cai em 1",
-        eraMinima = 2
-        -- DICA: no gasto de água do guarda → gasto = 2
-        -- DICA: reduzir movimento: movimento = movimento - 1
+        descricao = "O guarda gasta 3 águas ao invés de 1 e o movimento cai em 2",
+        eraMinima = 2,
+        efeito = function ()
+            if alterarAgua and alterarMovimento then 
+                alterarAgua(-2)
+                alterarMovimento(-2)
+            end
+        end
     },
 }
 

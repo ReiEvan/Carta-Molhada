@@ -6,6 +6,9 @@ local ost = require "OST"
 local cartas = require ("cartas")
 cartas.selecionarCartasRodada()
 
+local tratamentoDasAreasPausado = false
+
+
 
 -- função que gerencia a quantidade de água
 local agua = 5
@@ -263,10 +266,7 @@ local function atualizarContagemVerdes()
     end
     totalAreasVerdes = contagem
 end
--- Função para ler a quantidade de água atual
-local function getAgua()
-    return agua
-end
+
 local function getContagemVerdes()
     return totalAreasVerdes
 end
@@ -415,50 +415,58 @@ local buttons = {
     
 }
 
-local function proxRodada()
+
+-- Modifique a função proxRodada() para incluir:
+function proxRodada()
     if esperandoEscolhaCarta then return end
-        rodada = rodada + 1
-        guardaBloqueado = false
-        movimentosRestantes = 3
-        cartas.selecionarCartasRodada()
-        cartas.prepararConflitoDaRodada(rodada)
-
-        --Trava o jogo, o jogador é obrigado a escolher
-        esperandoEscolhaCarta = true
-
-        alterarAgua(-1)
-        cartas.limparMensagens()
-
-
-
---verifica e remove as imagens q foram transformadas depois de duas rodadas
+    rodada = rodada + 1
+    guardaBloqueado = false
+    movimentosRestantes = 3
+    cartas.selecionarCartasRodada()
+    cartas.prepararConflitoDaRodada(rodada)
+    esperandoEscolhaCarta = true
+    alterarAgua(-1)
+    cartas.limparMensagens()
+    
+    -- Atualiza rodadasPorPonto e transforma áreas
     for i = 1, #pontosMovimentacao do
         if rodadasPorPonto[i] then
             rodadasPorPonto[i] = rodadasPorPonto[i] + 1
-
-            --só remove se a imagem foi transformada e completou duas rodadas
-            if estadoTransformacao[i] and rodadasPorPonto[i] >= 2 then
+            if estadoTransformacao[i] and rodadasPorPonto[i] >= 3 then
                 hexAtivos[i] = nil
                 estadoTransformacao[i] = nil
                 rodadasPorPonto[i] = nil
                 pontosBloqueados[i] = true
-
-                --Lógica da recompensa da bandeira
-                --Verifica se indice "i" atual é um dos objetivos
+                -- Lógica da recompensa da bandeira
                 for _, objIndex in ipairs(objetivosExternos) do
-                    if i == objIndex then
-                        --Se for um objetivo e ainda não foi recompensado
-                        if not objetivosRecompensados[i] then
-                            objetivosRecompensados[i] = true --Marca como recompensado
-                            alterarAgua(4)
-                        end
-                        break
+                    if i == objIndex and not objetivosRecompensados[i] then
+                        objetivosRecompensados[i] = true
+                        alterarAgua(1)
                     end
                 end
             end
         end
-        
     end
+    
+    -- Resetar a flag após a rodada
+    tratamentoDasAreasPausado = false
+
+    -- Lógica de mudança de era
+    local contagemBandeiras = 0
+    for _, idx in ipairs(objetivosExternos) do
+        if hexAtivos[idx] == nil then
+            contagemBandeiras = contagemBandeiras + 1
+        end
+    end
+
+    if contagemBandeiras >= 2 and eraAtual == 1 then
+        eraAtual = 2
+        telaEra.ativa = true
+        telaEra.timer = telaEra.tempoTotal
+        cartas.setEra(eraAtual)
+    end
+end
+
 
 --Lógica de mudança de era
 local contagemBandeiras = 0
@@ -477,7 +485,6 @@ if contagemBandeiras >= 2 and eraAtual == 1 then
 
     --Avisa o módulo de cartas que a era mudou
     cartas.setEra(eraAtual)
-    end
 end
 
 local function startNewGame()
@@ -557,7 +564,7 @@ local function verificarEstadoJogo()
     if fimDeJogo.ativo then return end
 -----------------------Condições de Derrota: -----------------------
 --Passar da rodada 20
-    if rodada > 20 then
+    if rodada >20 then
         fimDeJogo.ativo = true
         fimDeJogo.mensagem = "DERROTA\nO tempo acabou!"
         fimDeJogo.cor = {1, 0, 0}
@@ -600,7 +607,7 @@ local function verificarEstadoJogo()
 --Checa se cumpriu os dois requisitos (4 bandeiras)
     if objetivosConquistados >= 4 then
         fimDeJogo.ativo = true
-        fimDeJogo.mensagem =string.format("TRIUNFO!\nVocê salvou a ilha\n em %s dias",rodada)
+        fimDeJogo.mensagem =string.format("TRIUNFO!\nVocê salvou a ilha\n em %s dias com\n %s águas restantes",rodada,agua)
         fimDeJogo.cor = {0.18, 0.44, 0.25}
     end
 end
@@ -621,6 +628,7 @@ function love.mousepressed(x, y, button, isTouch, presses)
             
             if cartaFoiEscolhida then
                 esperandoEscolhaCarta = false
+                
             end
             return
         end
@@ -668,7 +676,10 @@ function love.mousepressed(x, y, button, isTouch, presses)
         end
     end
 end
-
+local function ativarTerrenoDificil()
+    tratamentoDasAreasPausado = true
+    print("Terreno Difícil ativado! Tratamento de áreas pausado por uma rodada.")
+end
 function love.load()
     ------------IMAGENS DO JOGO--------------------
     movGuarda.imagem = love.graphics.newImage("sprites/Guardinha.png")
@@ -738,7 +749,6 @@ function love.load()
     cartas.construirBaralho()
 
 -- carregar cartas aleatórias
-    cartas.setCallbacks(alterarAgua, alterarMovimento, getContagemVerdes, bloquearGuardaPorRodada, corromperAreas, getAgua)
     cartas.selecionarCartasRodada()
     
 
@@ -757,6 +767,15 @@ function love.load()
             movGuarda.imagem:getDimensions()
         ))   
     end
+    cartas.setCallbacks(
+    alterarAgua,
+    alterarMovimento,
+    getContagemVerdes,
+    bloquearGuardaPorRodada,
+    corromperAreas,
+    getAgua,
+    ativarTerrenoDificil
+)
 end
 
 function love.update(dt)
