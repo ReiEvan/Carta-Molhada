@@ -836,11 +836,10 @@ function love.draw()
         love.graphics.draw(game_bg, 0, 0, 0, 1, 1, 1, 1)
         --Movimentos Restantes
         love.graphics.setFont(fonte.grande)
-        love.graphics.draw(movImg, movimento.mx, movimento.my, 0, 0.3, 0.3)
+        love.graphics.draw(movImg, movimento.mx, movimento.my, 0, 0.2, 0.2)
         love.graphics.setColor(0,0,0)
-        love.graphics.print(" : " .. movimentosRestantes, movimento.mx + 300, movimento.my + 25, 0)
+        love.graphics.print(" : " .. movimentosRestantes, movimento.mx + 200, movimento.my + 8, 0)
         love.graphics.setFont(fonte.normal)
-        -- Contador de Áreas Verdes, retirar no fim do jogo
         --love.graphics.setColor(0, 100, 0)  -- verde
         love.graphics.print("converter bandeiras te dá 1 ficha de água ",imagemAgua.fx, imagemAgua.fy-40, 0)
         love.graphics.setColor(1, 1, 1)  -- volta ao normal
@@ -853,7 +852,7 @@ function love.draw()
         love.graphics.setColor(1, 1, 1)
 
         --Numeração da rodada atual
-        love.graphics.draw(diaImg, love.graphics.getWidth()/2 - 100, 10, 0, 0.3, 0.3)
+        love.graphics.draw(diaImg, love.graphics.getWidth()/2 - 100, 10, 0, 0.2, 0.2)
         love.graphics.setColor(0,0,0)
         love.graphics.print(rodada .. "/20", love.graphics.getWidth()/2 + 30, 50, 0)
         love.graphics.setFont(fonte.normal)
