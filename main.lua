@@ -726,7 +726,7 @@ function love.load()
     
     
     --Botões no jogo rodando
-    buttons.running_state.pass_rodada = button(prxmDiaNormal, proxRodada, nil, nil, 40, prxmDiaClicado)
+    buttons.running_state.pass_rodada = button(prxmDiaNormal, proxRodada, nil, 150, 60, prxmDiaClicado)
     buttons.running_state.exit_in_game = button(sairNormal, love.event.quit, nil, nil, 60, sairClicado)
     
     
@@ -824,33 +824,40 @@ end
 -- Carregamento do mapa
 local mapa = love.graphics.newImage("sprites/mapagradeado.png")
 local background= love.graphics.newImage("sprites/FUNDO TELA INICIAL (20251130094623).png")
+local game_bg = love.graphics.newImage("sprites/FUNDO_Gameplay.png")
+local pause_bg = love.graphics.newImage("sprites/FUNDO_Pause.png")
+local regras = love.graphics.newImage("sprites/RegrasDoJogo.jpeg")
 local movImg = love.graphics.newImage("sprites/Movimentos_Arte.png")
 local diaImg = love.graphics.newImage("sprites/Dia_Arte.png")
 function love.draw()
      if game.state["running"] then
+        --Arte do Fundo da gameplay
+        --love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
+        love.graphics.draw(game_bg, 0, 0, 0, 1, 1, 1, 1)
         --Movimentos Restantes
-        love.graphics.setFont(fonte.media)
-        --love.graphics.draw(movImg, movimento.mx, movimento.my, 0, 1, 1)
-        love.graphics.print("movimentos: " .. movimentosRestantes, movimento.mx, movimento.my, 0)
+        love.graphics.setFont(fonte.grande)
+        love.graphics.draw(movImg, movimento.mx, movimento.my, 0, 0.3, 0.3)
+        love.graphics.setColor(0,0,0)
+        love.graphics.print(" : " .. movimentosRestantes, movimento.mx + 300, movimento.my + 25, 0)
         love.graphics.setFont(fonte.normal)
         -- Contador de Áreas Verdes, retirar no fim do jogo
-        love.graphics.setColor(0, 1, 0)  -- verde
+        --love.graphics.setColor(0, 100, 0)  -- verde
         love.graphics.print("converter bandeiras te dá 1 ficha de água ",imagemAgua.fx, imagemAgua.fy-40, 0)
         love.graphics.setColor(1, 1, 1)  -- volta ao normal
+        love.graphics.setColor(1,1,1)
         --Feddback visual da quantidade de agua
-        love.graphics.draw(imagemAgua.ficha, imagemAgua.fx, imagemAgua.fy, 0, escala, escala)
-        love.graphics.setColor(255, 255, 255)
+        love.graphics.draw(imagemAgua.ficha, imagemAgua.fx, imagemAgua.fy + 100, 0, escala, escala)
+        love.graphics.setColor(0, 0, 0)
         love.graphics.setFont(fonte.grande)  
-        love.graphics.print(tostring(agua), imagemAgua.fx+40, imagemAgua.fy+8)
+        love.graphics.print(tostring(agua), imagemAgua.fx+40, imagemAgua.fy+108)
         love.graphics.setColor(1, 1, 1)
 
         --Numeração da rodada atual
-        love.graphics.draw(diaImg, love.graphics.getWidth()/2 - 100, love.graphics.getHeight()/2 - 410, 0, 0.3, 0.3)
-        love.graphics.print(rodada .. "/20", love.graphics.getWidth()/2 + 30, 10, 0)
+        love.graphics.draw(diaImg, love.graphics.getWidth()/2 - 100, 10, 0, 0.3, 0.3)
+        love.graphics.setColor(0,0,0)
+        love.graphics.print(rodada .. "/20", love.graphics.getWidth()/2 + 30, 50, 0)
         love.graphics.setFont(fonte.normal)
-
-        
-
+        love.graphics.setColor(1,1,1)
 
         -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo
         --desenhar o mapa
@@ -933,7 +940,7 @@ function love.draw()
             love.graphics.draw(movGuarda.imagem, movGuarda.x-20, movGuarda.y-20)
         end
         --Desenhar os botões enquato o jogo ta rodando
-        buttons.running_state.pass_rodada:draw(love.graphics.getWidth() - 125, love.graphics.getHeight() - 250, 10, 10)
+        buttons.running_state.pass_rodada:draw(love.graphics.getWidth() - 155, love.graphics.getHeight() - 250, 10, 10)
         
         if confirmacao.ativa then
             --Fundinho preto transparente
@@ -948,7 +955,7 @@ function love.draw()
         end
         
         if fimDeJogo.ativo then
-            --Fundo preto transparente
+            --Fundo preto
             love.graphics.setColor(0, 0, 0)
             love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
             --Texto
@@ -999,10 +1006,12 @@ function love.draw()
     end
 
     if game.state["paused"] then
-        love.graphics.setColor(0,0,0.1)
-        love.graphics.rectangle("fill",0 ,0, love.graphics.getWidth(), love.graphics.getHeight())
-        love.graphics.setColor(0,1,1)
-        love.graphics.print("Pausado\nPressione ESC para continuar!", love.graphics.getWidth()/2 - 100, love.graphics.getHeight()/2)
+        love.graphics.draw(pause_bg, 0, 0, 0, 1.5, 1.5, 1, 1)
+        
+        love.graphics.draw(regras, love.graphics.getWidth()/2 - 300, 100, 0, 0.5, 0.5)
+        
+        love.graphics.setFont(fonte.grande)
+        love.graphics.print("Pausado\nPressione ESC para continuar!", love.graphics.getWidth()/2 - 300, 10)
     end
 
 end

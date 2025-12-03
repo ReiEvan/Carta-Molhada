@@ -58,7 +58,7 @@ local primeirasAliadas = {
     {
         id = "Clarividência",
         img = love.graphics.newImage("sprites/carta 8 clarividencia.png"),
-        descricao = "Descubra qual será o conflito do próximo turno.\nNão funcionará no 1° turno"
+        descricao = "troque o conflito atual por um outro"
         -- DICA: no main, ao final da rodada:
         -- mostre na tela conflitos[1] ou conflito que será puxado no próximo turno
     },
@@ -669,7 +669,7 @@ local conflitos2={
     {
         id = "Dia quente de trabalho",
         img = love.graphics.newImage("sprites/conflitos/dia quente de trabalho.png"),
-        descricao = "O guarda gasta 3 águas ao invés de 1 e o movimento cai em 2",
+        descricao = "O guarda gasta 3 águas ao invés de 1\n e o movimento cai em 2",
         eraMinima = 2,
         efeito = function ()
             if alterarAgua and alterarMovimento then 
@@ -767,8 +767,9 @@ local function desenharConflito()
         love.graphics.print(conflitoAtual.id, conflitoX+140, conflitoY+5)
 
         love.graphics.setFont(fonte.normal)
-        love.graphics.setColor(1,1,1)
+        love.graphics.setColor(0,0,0)
         love.graphics.print(conflitoAtual.descricao, conflitoX+140, conflitoY + CONFLITO_HEIGHT - 130)
+        love.graphics.setColor(1,1,1)
     end
 end
 
