@@ -58,7 +58,7 @@ local primeirasAliadas = {
     {
         id = "Clarividência",
         img = love.graphics.newImage("sprites/carta 8 clarividencia.png"),
-        descricao = "Descubra qual será o conflito do próximo turno."
+        descricao = "Descubra qual será o conflito do próximo turno.\nNão funcionará no 1° turno"
         -- DICA: no main, ao final da rodada:
         -- mostre na tela conflitos[1] ou conflito que será puxado no próximo turno
     },

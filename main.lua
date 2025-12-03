@@ -13,7 +13,9 @@ function alterarAgua(qtd)
     agua = agua + qtd
     if agua < 0 then agua = -1 end
 end
-
+local function getAgua()
+    return agua
+end
 function alterarMovimento(qtd)
     movimentosRestantes = movimentosRestantes + qtd
 end
@@ -21,6 +23,10 @@ end
 local guardasBloqueados = false
 function setBloqueioGuardas(ativo)
     guardasBloqueados = ativo or false
+end
+local terrenoDificil = false
+local function setTerrenoDificil(ativo)
+    terrenoDificil = ativo or false
 end
 
 
@@ -411,7 +417,6 @@ local buttons = {
     
 }
 
-
 function proxRodada()
     if esperandoEscolhaCarta then return end
     
@@ -419,6 +424,10 @@ function proxRodada()
     cartas.limparMensagens()
 
     -- === 1. PROCESSAR ÁREAS (Usando os efeitos da rodada que ACABOU) ===
+
+
+
+
     local diasNecessarios = 2
     if cartas.efeitosAtivos.terrenoDificil then
         diasNecessarios = 3
@@ -691,7 +700,7 @@ function love.load()
 
 -------------------------------------------------------------------
     love.mouse.setVisible(false)
-    love.window.setTitle("Última Gota") --isso tá funcionando? // É o titulo que aparece na Janela do game
+    love.window.setTitle("Última Gota") 
     fonte.grande = love.graphics.newFont(40)
     fonte.media = love.graphics.newFont(30)
     fonte.normal = love.graphics.newFont(13)
@@ -765,14 +774,7 @@ function love.load()
         ))   
     end
     cartas.setCallbacks(
-    alterarAgua,
-    alterarMovimento,
-    getContagemVerdes,
-    bloquearGuardaPorRodada,
-    corromperAreas,
-    getAgua,
-    nil
-)
+    alterarAgua,alterarMovimento,getContagemVerdes,bloquearGuardaPorRodada, corromperAreas, getAgua, setterrenoDificil)
 end
 
 function love.update(dt)
@@ -833,7 +835,7 @@ function love.draw()
         love.graphics.setFont(fonte.normal)
         -- Contador de Áreas Verdes, retirar no fim do jogo
         love.graphics.setColor(0, 1, 0)  -- verde
-        love.graphics.print("Áreas verdes: " .. getContagemVerdes(),imagemAgua.fx, imagemAgua.fy-40, 0)
+        love.graphics.print("converter bandeiras te dá 1 ficha de água ",imagemAgua.fx, imagemAgua.fy-40, 0)
         love.graphics.setColor(1, 1, 1)  -- volta ao normal
         --Feddback visual da quantidade de agua
         love.graphics.draw(imagemAgua.ficha, imagemAgua.fx, imagemAgua.fy, 0, escala, escala)
