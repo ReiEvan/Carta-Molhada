@@ -160,7 +160,7 @@ local movGuarda = {
     quadros = {}
 }
 
--- Função para transformar áreas limpas de volta em Vermelhas (Tóxicas)
+-- Função para transformar áreas limpas de volta em Vermelhas
 local function corromperAreas(qtd)
     local candidatos = {}
 
@@ -631,6 +631,16 @@ function love.mousepressed(x, y, button, isTouch, presses)
     end
     
     if game.state["running"] then
+
+        --Verificar se existe algum botão fixo da UI tipo: Sair, Opções...
+        handle_button_click(x, y, player.radius)
+        
+        if confirmacao.ativa then
+            confirmacao.botoes.sim:checkPressed(x, y, player.radius)
+            confirmacao.botoes.nao:checkPressed(x, y, player.radius)
+            return
+        end
+        
         --Se estiver esperando a escolha de carta, bloqueia o resto
         if esperandoEscolhaCarta then
             local cartaFoiEscolhida = cartas.mousepressed(x, y, button, movimentosRestantes)
@@ -643,11 +653,6 @@ function love.mousepressed(x, y, button, isTouch, presses)
         end
 
 
-        if confirmacao.ativa then
-            confirmacao.botoes.sim:checkPressed(x, y, player.radius)
-            confirmacao.botoes.nao:checkPressed(x, y, player.radius)
-            return
-        end
 
         handle_button_click(x, y, player.radius)
 
