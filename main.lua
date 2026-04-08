@@ -902,6 +902,12 @@ function love.draw()
             --Ajuste o offset (x, y) e a escala (0.5) conforme o tamanho da imagem
             love.graphics.draw(imagemParaDesenhar, p.x - ajusteX, p.y - ajusteY, 0, escalaAtual, escalaAtual)
         end
+        -- Guardinha florestal
+        if  movGuarda.quadros[movGuarda.frameAtual] then
+        love.graphics.draw(movGuarda.imagem, movGuarda.quadros[movGuarda.frameAtual], movGuarda.x-90, movGuarda.y-50, 0, 0.09, 0.09)
+        else
+            love.graphics.draw(movGuarda.imagem, movGuarda.x-20, movGuarda.y-20)
+        end
         cartas.desenharTroca()
         cartas.desenharFundoConflito()   
         cartas.desenharConflito()       
@@ -932,12 +938,6 @@ function love.draw()
         hitbox.desenhar(love.graphics.getWidth()/2 - 75, love.graphics.getHeight()/2 + 5, 45)
         hitbox.desenhar(love.graphics.getWidth()/2 - 75, love.graphics.getHeight()/2 + 105, 45)
         
-        -- Guardinha florestal
-        if  movGuarda.quadros[movGuarda.frameAtual] then
-        love.graphics.draw(movGuarda.imagem, movGuarda.quadros[movGuarda.frameAtual], movGuarda.x-90, movGuarda.y-50, 0, 0.09, 0.09)
-        else
-            love.graphics.draw(movGuarda.imagem, movGuarda.x-20, movGuarda.y-20)
-        end
         --Desenhar os botões enquato o jogo ta rodando
         buttons.running_state.pass_rodada:draw(love.graphics.getWidth() - 155, love.graphics.getHeight() - 250, 10, 10)
         
