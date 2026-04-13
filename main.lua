@@ -651,6 +651,11 @@ function love.mousepressed(x, y, button, isTouch, presses)
             end
             return
         end
+        --bloqueio pela troca
+        if cartas.getEscolhendoTroca() then
+            cartas.mousepressed(x, y, button, movimentosRestantes)
+            return
+        end
 
 
 
@@ -779,7 +784,7 @@ function love.load()
         ))   
     end
     cartas.setCallbacks(
-    alterarAgua,alterarMovimento,getContagemVerdes,bloquearGuardaPorRodada, corromperAreas, getAgua, setterrenoDificil)
+    alterarAgua,alterarMovimento,getContagemVerdes,bloquearGuardaPorRodada, corromperAreas, getAgua, setTerrenoDificil)
 end
 
 function love.update(dt)
