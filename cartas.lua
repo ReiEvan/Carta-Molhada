@@ -59,8 +59,6 @@ local primeirasAliadas = {
         id = "Clarividência",
         img = love.graphics.newImage("sprites/carta 8 clarividencia.png"),
         descricao = "troque o conflito atual por um outro"
-        -- DICA: no main, ao final da rodada:
-        -- mostre na tela conflitos[1] ou conflito que será puxado no próximo turno
     },
 
     {
@@ -142,7 +140,6 @@ function aplicarEfeito(carta, valorMove)
 
     if carta.id == "Procurando água" and alterarMovimento and alterarAgua then
         escolhendoTroca = true
-        movimentosDisponiveis = tonumber(valorMove) or 0
         mensagemErro = ""
         return
     end
@@ -409,7 +406,7 @@ function keypressed(key)
     if qtd < 1 or qtd > 3 then return end
 
     -- Checa se tem movimentos suficientes
-    if qtd > movimentosDisponiveis then
+    if qtd > (movimentosDisponiveis or 0) then
         mensagemErro = "Você não tem movimentos suficientes!"
         tempoErro = 2
         return
@@ -950,7 +947,7 @@ local function setEra(novaEra)
         -- 3. RECONSTRUIR O BARALHO E OS CONFLITOS
         ----------------------------------------------------
         construirBaralho()      -- usa primeirasAliadas, agora atualizada
-        inicializarConflitos()  -- usa conflitos1, agora com tudo dentro
+        inicializarConflitos()  -- usa conflitos1, agora com tudo dentro (láele)
     end
 end
 
@@ -977,7 +974,9 @@ return {
     desenharCartasRodada = desenharCartasRodada,
     desenharResultadoEscolha = desenharResultadoEscolha,
     desenharInventarioCartas = desenharInventarioCartas,
-    
+    getEscolhendoTroca = function()
+    return escolhendoTroca
+    end,
     setCallbacks=setCallbacks,
     aplicarEfeito=aplicarEfeito,
     mousepressed=mousepressed,
