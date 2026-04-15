@@ -43,9 +43,8 @@ end
 --Variavel para controlar a dificuldade
 local eraAtual = 1
 
---//////////////////////////////////////////////////////////////////////////////////////////
+
 --                                  CARTAS ALIADAS
---//////////////////////////////////////////////////////////////////////////////////////////
 
 local primeirasAliadas = {
     {   
@@ -77,12 +76,19 @@ local primeirasAliadas = {
     },
     
 }
+
+
 local segundasAliadas={
     {
         id = "Carta da Nascente",
         img = love.graphics.newImage("sprites/carta nascente.png"),
         descricao = "Ganhe 2 águas e um movimento."
     },
+    {
+        id = "Clarividência",
+        img = love.graphics.newImage("sprites/carta 8 clarividencia.png"),
+        descricao = "troque o conflito atual por um outro"
+        },
     {
         id = "Esforço recompensado",
         img = love.graphics.newImage('sprites/carta Esforco recompensado.png'),
@@ -151,7 +157,7 @@ function aplicarEfeito(carta, valorMove)
         end
     end
 
-   if carta.id == "Clarividência" and baralhoConflitos then
+   if carta.id == "Clarividência" and baralhoConflitos  then
     -- Pega o conflito atual e o próximo
     local proximoConflito = baralhoConflitos[1]  -- próximo conflito
     local conflitoAtualAntesDaEscolha = conflitoAtual  -- conflito atual antes da escolha
@@ -174,7 +180,7 @@ end
 
 -----------------------------------------------------------------------------------------
 -- VISUAL DAS CARTAS
------------------------------------------------------------------------------------------
+
 local CARD_WIDTH = 140
 local CARD_HEIGHT = 185
 local OFFSET_BETWEEN_CARDS = 3  
@@ -284,13 +290,12 @@ end
 local cartasRodada = {}
 local hoverIndex = nil
 
-local function selecionarCartasRodada()
+local function selecionarCartasRodada(rodadaAtual)
     -- Limpa a seleção anterior
     cartasRodada = {}
     cartaSelecionada = nil
     escolhaBloqueada = false
     efeitoDaCarta = nil
-
     -- Garante baralho funcional
     if #primeirasAliadas < 2 then
         for i = 1, #descarte do
@@ -299,7 +304,6 @@ local function selecionarCartasRodada()
         descarte = {}
         construirBaralho()
     end
-
     -- Se a sabotagem foi ativada na rodada anterior
     local rodadaSabotada = sabotagemProximaRodada == true
 
@@ -334,6 +338,15 @@ local function selecionarCartasRodada()
     sabotagemProximaRodada = false
 
     contadorBaralho = #primeirasAliadas
+
+    if rodadaAtual ==1 then
+        for i,carta in ipairs(cartasRodada) do
+            if carta.id == "Clarividência" then
+                cartasRodada[i] = puxarCartaGarantido()
+            end
+        end
+    end
+    
 end
 
 
@@ -565,9 +578,8 @@ local function desenharResultadoEscolha()
     end
 end
 
---///////////////////////////////////////////////////////////////////////////////////////////////
+
 --                                              CONFLITOS
---//////////////////////////////////////////////////////////////////////////////////////////////
 
 local fonte= {}
 fonte.media = love.graphics.newFont(20)
@@ -771,9 +783,9 @@ local function desenharConflito()
 end
 
 
----------------------------------------------------------
--- DESENHAR MENU DE TROCA NO CANTO DIREITO DA TELA
----------------------------------------------------------
+----------------------------------
+-- DESENHAR MENU DE TROCA NO CANTO
+----------------------------------
 
 local function desenharTroca()
     if not escolhendoTroca then

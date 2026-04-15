@@ -4,7 +4,19 @@ local button = require "Button"
 local hitbox = require "hitbox"
 local ost = require "OST"
 local cartas = require ("cartas")
--- REMOVIDO: cartas.selecionarCartasRodada() aqui fora, pois startNewGame já faz isso
+local volumeMaster = 0.5 -- 50% do volume
+
+
+
+local volumeSlider = {
+    x = love.graphics.getWidth() / 2 - 100, --Posição inicial de X
+    y = love.graphics.getHeight() / 2, --Posição Y
+    largura = 200, --Tamanho da barra
+    altura = 10, --Grossura da barra
+    raioBola = 12, --Tamanho do circulo de arrastar
+    valor = 0.5, --O volume vai de 0.0 a 1.0
+    arrastando = false --Controla se o mouse está clicando/arrastando
+}
 
 -- função que gerencia a quantidade de água
 local agua = 5
@@ -27,6 +39,11 @@ end
 local terrenoDificil = false
 local function setTerrenoDificil(ativo)
     terrenoDificil = ativo or false
+end
+
+function voltarMenu()
+        game.state["config"] = false
+        game.state["menu"] = true
 end
 
 
@@ -159,6 +176,56 @@ local movGuarda = {
     frameAtual = 1,
     quadros = {}
 }
+
+function updateSlider(dt)
+    local mx, my = love.mouse.getPosition()
+    local mousePressionado = love.mouse.isDown(1)
+
+    --Se o jogador clicar perto da bolinha, começa a arrastar
+    if mousePressionado and not volumeSlider.arrastando then
+        local bolinhaX = volumeSlider.x + (volumeSlider.largura * volumeSlider.valor)
+        local dist = math.sqrt((mx - bolinhaX)^2 + (my - volumeSlider.y)^2)
+        if dist < volumeSlider.raioBola + 10 then
+            volumeSlider.arrastando = true
+        end
+    end
+
+    --Se soltar o mouse, para de arrastar
+    if not mousePressionado then
+        volumeSlider.arrastando = false
+    end
+
+    -- Enquanto arrasta, calcula o novo valor baseado na posição X do mouse
+    if volumeSlider.arrastando then
+        local novoValor = (mx - volumeSlider.x) / volumeSlider.largura
+        --Trava o valor entre 0 e 1
+        volumeSlider.valor = math.max(0, math.min(1, novoValor))
+        --Aplica o volume no jogo
+        love.audio.setVolume(volumeSlider.valor)
+    end
+end
+
+function desenharSlider()
+    --Desenha a barra (fundo)
+    love.graphics.setColor(0.2, 0.2, 0.2) --Cinza escuro
+    love.graphics.rectangle("fill", volumeSlider.x, volumeSlider.y - volumeSlider.altura/2, volumeSlider.largura, volumeSlider.altura, 5)
+    
+    --Desenha a parte preechida
+    love.graphics.setColor(0, 0.7, 1) --Azul brilhante
+    love.graphics.rectangle("fill", volumeSlider.x, volumeSlider.y - volumeSlider.altura/2, volumeSlider.largura * volumeSlider.valor, volumeSlider.altura, 5)
+
+    --desenha a bolinha
+    local bolinhaX = volumeSlider.x + (volumeSlider.largura * volumeSlider.valor)
+    love.graphics.setColor(1, 1, 1) -- Branco
+    love.graphics.circle("fill", bolinhaX, volumeSlider.y, volumeSlider.raioBola)
+
+    --Texto da porcentagem
+    love.graphics.setFont(fonte.normal)
+    love.graphics.print(math.floor(volumeSlider.valor * 100) .. "%", volumeSlider.x + volumeSlider.largura + 20, volumeSlider.y - 10)
+
+    love.graphics.setColor(1, 1, 1) --Resetar cor
+end
+
 
 -- Função para transformar áreas limpas de volta em Vermelhas
 local function corromperAreas(qtd)
@@ -464,7 +531,7 @@ function proxRodada()
     movimentosRestantes = 3
     
     -- Sorteia cartas novas (pode ativar Terreno Difícil para a PRÓXIMA rodada)
-    cartas.selecionarCartasRodada()
+    cartas.selecionarCartasRodada(rodada)
     cartas.prepararConflitoDaRodada(rodada)
     
     esperandoEscolhaCarta = true
@@ -562,7 +629,7 @@ local function startNewGame()
 
     --Inicio do ciclo de jogo: Escolher carta -> conflito -> ação
     cartas.resetarEfeitosRodada()
-    cartas.selecionarCartasRodada()
+    cartas.selecionarCartasRodada(rodada)
     esperandoEscolhaCarta = true --Força a escolha no turno 1
 end
 
@@ -746,6 +813,11 @@ function love.load()
     buttons.menu_state.exit_game.y = centroY + 250
 
     --Botões nas configurações do jogo
+    local cx = love.graphics.getWidth() / 2
+    local cy = love.graphics.getHeight() / 2
+
+    -- Botão Voltar (Nas configurações)
+    buttons.config_state.back = button("Voltar", voltarMenu, nil, 150, 50)
 
     --Botões no jogo rodando
     buttons.running_state.pass_rodada = button(prxmDiaNormal, proxRodada, nil, 150, 60, prxmDiaClicado)
@@ -777,7 +849,7 @@ function love.load()
     cartas.construirBaralho()
 
 -- carregar cartas aleatórias
-    cartas.selecionarCartasRodada()
+    cartas.selecionarCartasRodada(rodada)
     
 
 --Configura a posição inicial do guarda
@@ -811,6 +883,10 @@ function love.update(dt)
         if telaEra.timer <= 0 then
             telaEra.ativa = false
         end
+    end
+
+    if game.state["config"] then
+        updateSlider(dt)
     end
 
     if movGuarda.destino then
@@ -1040,6 +1116,17 @@ function love.draw()
 
     if game.state["config"] then
         love.graphics.draw(pause_bg, 0, 0, 0, 1.5, 1, 1)
+
+        love.graphics.setFont(fonte.grande)
+        love.graphics.printf("CONFIGURAÇÕES", 0 , 100, love.graphics.getWidth(), "center")
+
+        desenharSlider()
+
+        buttons.config_state.back:draw(love.graphics.getWidth()/2, love.graphics.getHeight()/2 + 150)
+
+        love.graphics.setColor(0,1,0)
+        love.graphics.circle("fill", player.x, player.y, player.radius)
+        love.graphics.setColor(1,1,1)
     end
 
 end
