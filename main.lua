@@ -413,7 +413,9 @@ local player ={
 
 local buttons = {
     menu_state = {},
-    running_state = {}
+    config_state = {},
+    running_state = {},
+    paused_state = {}
     
 }
 
@@ -503,8 +505,18 @@ if contagemBandeiras >= 2 and eraAtual == 1 then
     cartas.setEra(eraAtual)
 end
 
+local function configuracoes()
+    game.state["menu"] = false
+    game.state["config"] = true
+    game.state["paused"] = false
+    game.state["running"] = false
+    
+end
+
 local function startNewGame()
     game.state["menu"] = false
+    game.state["config"] = false
+    game.state["paused"] = false
     game.state["running"] = true 
     definirObjetivos()
 
@@ -556,13 +568,15 @@ end
 
 local button_states = {
     menu = buttons.menu_state,
-    running = buttons.running_state
+    running = buttons.running_state,
+    config = buttons.config_state,
+    paused = buttons.config_state
 }
 
 function handle_button_click(x, y, radius)
     if game.state.paused then return end
 
-    local current_state = game.state.menu and "menu" or game.state.running and "running"
+    local current_state = game.state.menu and "menu" or game.state.running and "running" or game.state.config and "config" or game.state.paused and "paused"
 
     if current_state and button_states[current_state] then
         for _, button in pairs(button_states[current_state]) do
@@ -635,7 +649,7 @@ function love.mousepressed(x, y, button, isTouch, presses)
         --Verificar se existe algum botão fixo da UI tipo: Sair, Opções...
         handle_button_click(x, y, player.radius)
         
-        if confirmacao.ativa then
+        if  confirmacao.ativa then
             confirmacao.botoes.sim:checkPressed(x, y, player.radius)
             confirmacao.botoes.nao:checkPressed(x, y, player.radius)
             return
@@ -652,9 +666,6 @@ function love.mousepressed(x, y, button, isTouch, presses)
             return
         end
 
-
-
-        handle_button_click(x, y, player.radius)
 
         cartas.mousepressed(x, y, button, movimentosRestantes)
 
@@ -721,15 +732,16 @@ function love.load()
     buttons.menu_state.play_game.x = centroX - 30
     buttons.menu_state.play_game.y = centroY - 50
 
-    buttons.menu_state.settings = button(opcoesNormal, nil, nil, 250, nil, opcoesClicado)
+    buttons.menu_state.settings = button(opcoesNormal, configuracoes, nil, 250, nil, opcoesClicado)
     buttons.menu_state.settings.x = centroX - 50
     buttons.menu_state.settings.y = centroY + 3000
 
     buttons.menu_state.exit_game = button(sairNormal, love.event.quit, nil, 150, 90, sairClicado)
     buttons.menu_state.exit_game.x = centroX - 30 
     buttons.menu_state.exit_game.y = centroY + 250
-    
-    
+
+    --Botões nas configurações do jogo
+
     --Botões no jogo rodando
     buttons.running_state.pass_rodada = button(prxmDiaNormal, proxRodada, nil, 150, 60, prxmDiaClicado)
     buttons.running_state.exit_in_game = button(sairNormal, love.event.quit, nil, nil, 60, sairClicado)
@@ -947,6 +959,8 @@ function love.draw()
         buttons.running_state.pass_rodada:draw(love.graphics.getWidth() - 155, love.graphics.getHeight() - 250, 10, 10)
         
         if confirmacao.ativa then
+
+            love.graphics.print("O menu de confirmacao DEVERIA estar aparecendo em:" .. confirmacao.posicaoX .. "," .. confirmacao.posicaoY)
             --Fundinho preto transparente
             love.graphics.setColor(0, 0, 0, 0.7)
             love.graphics.rectangle("fill", confirmacao.posicaoX - 40, confirmacao.posicaoY - 30, 80, 80, 10, 10)
@@ -1017,6 +1031,10 @@ function love.draw()
         
         love.graphics.setFont(fonte.grande)
         love.graphics.print("Pausado\nPressione ESC para continuar!", love.graphics.getWidth()/2 - 300, 10)
+    end
+
+    if game.state["config"] then
+        love.graphics.draw(pause_bg, 0, 0, 0, 1.5, 1, 1)
     end
 
 end
