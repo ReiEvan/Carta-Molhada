@@ -418,7 +418,15 @@ local buttons = {
 }
 
 function proxRodada()
-    if esperandoEscolhaCarta then return end
+    --Mensagem de escolha a carta
+    if esperandoEscolhaCarta then
+        love.graphics.setColor(1,0,0)
+        love.graphics.setFont(fonte.grande)
+        love.graphics.print("Escolha uma das carta primeiro.", love.graphics.getWidth()/2, love.graphics.getHeight()/2)
+        love.graphics.setFont(fonte.normal)
+        love.graphics.setColor(0,0,0)
+        return
+    end
     
     alterarAgua(-1)
     cartas.limparMensagens()
@@ -907,6 +915,7 @@ function love.draw()
             --Ajuste o offset (x, y) e a escala (0.5) conforme o tamanho da imagem
             love.graphics.draw(imagemParaDesenhar, p.x - ajusteX, p.y - ajusteY, 0, escalaAtual, escalaAtual)
         end
+
         -- Guardinha florestal
         if  movGuarda.quadros[movGuarda.frameAtual] then
         love.graphics.draw(movGuarda.imagem, movGuarda.quadros[movGuarda.frameAtual], movGuarda.x-90, movGuarda.y-50, 0, 0.09, 0.09)
