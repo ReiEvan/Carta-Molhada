@@ -6,6 +6,17 @@ local ost = require "OST"
 local cartas = require ("cartas")
 local volumeMaster = 0.5 -- 50% do volume
 
+local game = {
+    state = {
+        menu = true,
+        config = false,
+        paused = false,
+        running = false,
+        ended = false
+         
+    },
+    points = 0,
+}
 
 
 local volumeSlider = {
@@ -42,8 +53,8 @@ local function setTerrenoDificil(ativo)
 end
 
 function voltarMenu()
-        game.state["config"] = false
-        game.state["menu"] = true
+    game.state["config"] = false
+    game.state["menu"] = true
 end
 
 
@@ -460,17 +471,6 @@ local menuAgua = {
     botoes = {}
 }
 
-local game = {
-    state = {
-        menu = true,
-        config = false,
-        paused = false,
-        running = false,
-        ended = false
-         
-    },
-    points = 0,
-}
 
 local player ={
     radius = 13,
@@ -637,7 +637,7 @@ local button_states = {
     menu = buttons.menu_state,
     running = buttons.running_state,
     config = buttons.config_state,
-    paused = buttons.config_state
+    paused = buttons.paused_state
 }
 
 function handle_button_click(x, y, radius)
@@ -707,6 +707,11 @@ function love.mousepressed(x, y, button, isTouch, presses)
     if button ~= 1 then return end
         
     if game.state["menu"] then
+        handle_button_click(x, y, player.radius)
+        return
+    end
+
+    if game.state["config"] then
         handle_button_click(x, y, player.radius)
         return
     end
@@ -806,7 +811,7 @@ function love.load()
 
     buttons.menu_state.settings = button(opcoesNormal, configuracoes, nil, 250, nil, opcoesClicado)
     buttons.menu_state.settings.x = centroX - 50
-    buttons.menu_state.settings.y = centroY + 3000
+    buttons.menu_state.settings.y = centroY + 100
 
     buttons.menu_state.exit_game = button(sairNormal, love.event.quit, nil, 150, 90, sairClicado)
     buttons.menu_state.exit_game.x = centroX - 30 
@@ -818,6 +823,8 @@ function love.load()
 
     -- Botão Voltar (Nas configurações)
     buttons.config_state.back = button("Voltar", voltarMenu, nil, 150, 50)
+    buttons.config_state.back.x = cx - 75
+    buttons.config_state.back.y = cy + 150
 
     --Botões no jogo rodando
     buttons.running_state.pass_rodada = button(prxmDiaNormal, proxRodada, nil, 150, 60, prxmDiaClicado)
@@ -1122,7 +1129,8 @@ function love.draw()
 
         desenharSlider()
 
-        buttons.config_state.back:draw(love.graphics.getWidth()/2, love.graphics.getHeight()/2 + 150)
+        local b = buttons.config_state.back
+        b:draw(b.x, b.y)
 
         love.graphics.setColor(0,1,0)
         love.graphics.circle("fill", player.x, player.y, player.radius)
