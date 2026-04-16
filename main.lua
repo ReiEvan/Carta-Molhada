@@ -65,8 +65,8 @@ local movimento={
 
 local esperandoEscolhaCarta = true --Começa true para obrigar a escolha no dia 1
 
-local bg_escalax = 0.8
-local bg_escalay = 0.8
+local bg_escalax = 1
+local bg_escalay = 1
 local escala = 0.5
 local rodada = 1
 local numGuardas = 1
@@ -1101,7 +1101,7 @@ function love.draw()
         
     elseif game.state["menu"] then
         --love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
-        love.graphics.draw(background, 0, 0, 0, bg_escalax, bg_escalay)
+        love.graphics.draw(background, love.graphics.getWidth()/2, love.graphics.getHeight()/2, 0, bg_escalax, bg_escalay, love.graphics.getWidth()/2, love.graphics.getHeight()/2)
         
         buttons.menu_state.play_game:draw(love.graphics.getWidth()/2 - 100, love.graphics.getHeight()/2 - 25, 20, 8, 10)
         buttons.menu_state.settings:draw(love.graphics.getWidth()/2 - 20, love.graphics.getHeight()/2 + 60, 10, 10)
