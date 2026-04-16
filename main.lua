@@ -4,7 +4,30 @@ local button = require "Button"
 local hitbox = require "hitbox"
 local ost = require "OST"
 local cartas = require ("cartas")
--- REMOVIDO: cartas.selecionarCartasRodada() aqui fora, pois startNewGame já faz isso
+local volumeMaster = 0.5 -- 50% do volume
+
+local game = {
+    state = {
+        menu = true,
+        config = false,
+        paused = false,
+        running = false,
+        ended = false
+         
+    },
+    points = 0,
+}
+
+
+local volumeSlider = {
+    x = love.graphics.getWidth() / 2 - 100, --Posição inicial de X
+    y = love.graphics.getHeight() / 2, --Posição Y
+    largura = 200, --Tamanho da barra
+    altura = 10, --Grossura da barra
+    raioBola = 12, --Tamanho do circulo de arrastar
+    valor = 0.5, --O volume vai de 0.0 a 1.0
+    arrastando = false --Controla se o mouse está clicando/arrastando
+}
 
 -- função que gerencia a quantidade de água
 local agua = 5
@@ -29,6 +52,11 @@ local function setTerrenoDificil(ativo)
     terrenoDificil = ativo or false
 end
 
+function voltarMenu()
+    game.state["config"] = false
+    game.state["menu"] = true
+end
+
 
 local movimento={
         mx=10,
@@ -37,8 +65,8 @@ local movimento={
 
 local esperandoEscolhaCarta = true --Começa true para obrigar a escolha no dia 1
 
-local bg_escalax = 0.8
-local bg_escalay = 0.8
+local bg_escalax = 1
+local bg_escalay = 1
 local escala = 0.5
 local rodada = 1
 local numGuardas = 1
@@ -159,6 +187,56 @@ local movGuarda = {
     frameAtual = 1,
     quadros = {}
 }
+
+function updateSlider(dt)
+    local mx, my = love.mouse.getPosition()
+    local mousePressionado = love.mouse.isDown(1)
+
+    --Se o jogador clicar perto da bolinha, começa a arrastar
+    if mousePressionado and not volumeSlider.arrastando then
+        local bolinhaX = volumeSlider.x + (volumeSlider.largura * volumeSlider.valor)
+        local dist = math.sqrt((mx - bolinhaX)^2 + (my - volumeSlider.y)^2)
+        if dist < volumeSlider.raioBola + 10 then
+            volumeSlider.arrastando = true
+        end
+    end
+
+    --Se soltar o mouse, para de arrastar
+    if not mousePressionado then
+        volumeSlider.arrastando = false
+    end
+
+    -- Enquanto arrasta, calcula o novo valor baseado na posição X do mouse
+    if volumeSlider.arrastando then
+        local novoValor = (mx - volumeSlider.x) / volumeSlider.largura
+        --Trava o valor entre 0 e 1
+        volumeSlider.valor = math.max(0, math.min(1, novoValor))
+        --Aplica o volume no jogo
+        love.audio.setVolume(volumeSlider.valor)
+    end
+end
+
+function desenharSlider()
+    --Desenha a barra (fundo)
+    love.graphics.setColor(0.2, 0.2, 0.2) --Cinza escuro
+    love.graphics.rectangle("fill", volumeSlider.x, volumeSlider.y - volumeSlider.altura/2, volumeSlider.largura, volumeSlider.altura, 5)
+    
+    --Desenha a parte preechida
+    love.graphics.setColor(0, 0.7, 1) --Azul brilhante
+    love.graphics.rectangle("fill", volumeSlider.x, volumeSlider.y - volumeSlider.altura/2, volumeSlider.largura * volumeSlider.valor, volumeSlider.altura, 5)
+
+    --desenha a bolinha
+    local bolinhaX = volumeSlider.x + (volumeSlider.largura * volumeSlider.valor)
+    love.graphics.setColor(1, 1, 1) -- Branco
+    love.graphics.circle("fill", bolinhaX, volumeSlider.y, volumeSlider.raioBola)
+
+    --Texto da porcentagem
+    love.graphics.setFont(fonte.normal)
+    love.graphics.print(math.floor(volumeSlider.valor * 100) .. "%", volumeSlider.x + volumeSlider.largura + 20, volumeSlider.y - 10)
+
+    love.graphics.setColor(1, 1, 1) --Resetar cor
+end
+
 
 -- Função para transformar áreas limpas de volta em Vermelhas
 local function corromperAreas(qtd)
@@ -393,17 +471,6 @@ local menuAgua = {
     botoes = {}
 }
 
-local game = {
-    state = {
-        menu = true,
-        config = false,
-        paused = false,
-        running = false,
-        ended = false
-         
-    },
-    points = 0,
-}
 
 local player ={
     radius = 13,
@@ -413,7 +480,9 @@ local player ={
 
 local buttons = {
     menu_state = {},
-    running_state = {}
+    config_state = {},
+    running_state = {},
+    paused_state = {}
     
 }
 
@@ -470,7 +539,7 @@ function proxRodada()
     movimentosRestantes = 3
     
     -- Sorteia cartas novas (pode ativar Terreno Difícil para a PRÓXIMA rodada)
-    cartas.selecionarCartasRodada()
+    cartas.selecionarCartasRodada(rodada)
     cartas.prepararConflitoDaRodada(rodada)
     
     esperandoEscolhaCarta = true
@@ -511,8 +580,18 @@ if contagemBandeiras >= 2 and eraAtual == 1 then
     cartas.setEra(eraAtual)
 end
 
+local function configuracoes()
+    game.state["menu"] = false
+    game.state["config"] = true
+    game.state["paused"] = false
+    game.state["running"] = false
+    
+end
+
 local function startNewGame()
     game.state["menu"] = false
+    game.state["config"] = false
+    game.state["paused"] = false
     game.state["running"] = true 
     definirObjetivos()
 
@@ -558,19 +637,21 @@ local function startNewGame()
 
     --Inicio do ciclo de jogo: Escolher carta -> conflito -> ação
     cartas.resetarEfeitosRodada()
-    cartas.selecionarCartasRodada()
+    cartas.selecionarCartasRodada(rodada)
     esperandoEscolhaCarta = true --Força a escolha no turno 1
 end
 
 local button_states = {
     menu = buttons.menu_state,
-    running = buttons.running_state
+    running = buttons.running_state,
+    config = buttons.config_state,
+    paused = buttons.paused_state
 }
 
 function handle_button_click(x, y, radius)
     if game.state.paused then return end
 
-    local current_state = game.state.menu and "menu" or game.state.running and "running"
+    local current_state = game.state.menu and "menu" or game.state.running and "running" or game.state.config and "config" or game.state.paused and "paused"
 
     if current_state and button_states[current_state] then
         for _, button in pairs(button_states[current_state]) do
@@ -637,13 +718,18 @@ function love.mousepressed(x, y, button, isTouch, presses)
         handle_button_click(x, y, player.radius)
         return
     end
+
+    if game.state["config"] then
+        handle_button_click(x, y, player.radius)
+        return
+    end
     
     if game.state["running"] then
 
         --Verificar se existe algum botão fixo da UI tipo: Sair, Opções...
         handle_button_click(x, y, player.radius)
         
-        if confirmacao.ativa then
+        if  confirmacao.ativa then
             confirmacao.botoes.sim:checkPressed(x, y, player.radius)
             confirmacao.botoes.nao:checkPressed(x, y, player.radius)
             return
@@ -659,10 +745,12 @@ function love.mousepressed(x, y, button, isTouch, presses)
             end
             return
         end
+        --bloqueio pela troca
+        if cartas.getEscolhendoTroca() then
+            cartas.mousepressed(x, y, button, movimentosRestantes)
+            return
+        end
 
-
-
-        handle_button_click(x, y, player.radius)
 
         cartas.mousepressed(x, y, button, movimentosRestantes)
 
@@ -729,15 +817,23 @@ function love.load()
     buttons.menu_state.play_game.x = centroX - 30
     buttons.menu_state.play_game.y = centroY - 50
 
-    buttons.menu_state.settings = button(opcoesNormal, nil, nil, 250, nil, opcoesClicado)
+    buttons.menu_state.settings = button(opcoesNormal, configuracoes, nil, 250, nil, opcoesClicado)
     buttons.menu_state.settings.x = centroX - 50
-    buttons.menu_state.settings.y = centroY + 3000
+    buttons.menu_state.settings.y = centroY + 100
 
     buttons.menu_state.exit_game = button(sairNormal, love.event.quit, nil, 150, 90, sairClicado)
     buttons.menu_state.exit_game.x = centroX - 30 
     buttons.menu_state.exit_game.y = centroY + 250
-    
-    
+
+    --Botões nas configurações do jogo
+    local cx = love.graphics.getWidth() / 2
+    local cy = love.graphics.getHeight() / 2
+
+    -- Botão Voltar (Nas configurações)
+    buttons.config_state.back = button("Voltar", voltarMenu, nil, 150, 50)
+    buttons.config_state.back.x = cx - 75
+    buttons.config_state.back.y = cy + 150
+
     --Botões no jogo rodando
     buttons.running_state.pass_rodada = button(prxmDiaNormal, proxRodada, nil, 150, 60, prxmDiaClicado)
     buttons.running_state.exit_in_game = button(sairNormal, love.event.quit, nil, nil, 60, sairClicado)
@@ -768,7 +864,7 @@ function love.load()
     cartas.construirBaralho()
 
 -- carregar cartas aleatórias
-    cartas.selecionarCartasRodada()
+    cartas.selecionarCartasRodada(rodada)
     
 
 --Configura a posição inicial do guarda
@@ -787,7 +883,7 @@ function love.load()
         ))   
     end
     cartas.setCallbacks(
-    alterarAgua,alterarMovimento,getContagemVerdes,bloquearGuardaPorRodada, corromperAreas, getAgua, setterrenoDificil)
+    alterarAgua,alterarMovimento,getContagemVerdes,bloquearGuardaPorRodada, corromperAreas, getAgua, setTerrenoDificil)
 end
 
 function love.update(dt)
@@ -802,6 +898,10 @@ function love.update(dt)
         if telaEra.timer <= 0 then
             telaEra.ativa = false
         end
+    end
+
+    if game.state["config"] then
+        updateSlider(dt)
     end
 
     if movGuarda.destino then
@@ -956,6 +1056,8 @@ function love.draw()
         buttons.running_state.pass_rodada:draw(love.graphics.getWidth() - 155, love.graphics.getHeight() - 250, 10, 10)
         
         if confirmacao.ativa then
+
+            love.graphics.print("O menu de confirmacao DEVERIA estar aparecendo em:" .. confirmacao.posicaoX .. "," .. confirmacao.posicaoY)
             --Fundinho preto transparente
             love.graphics.setColor(0, 0, 0, 0.7)
             love.graphics.rectangle("fill", confirmacao.posicaoX - 40, confirmacao.posicaoY - 30, 80, 80, 10, 10)
@@ -1008,7 +1110,7 @@ function love.draw()
         
     elseif game.state["menu"] then
         --love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
-        love.graphics.draw(background, 0, 0, 0, bg_escalax, bg_escalay)
+        love.graphics.draw(background, love.graphics.getWidth()/2, love.graphics.getHeight()/2, 0, bg_escalax, bg_escalay, love.graphics.getWidth()/2, love.graphics.getHeight()/2)
         
         buttons.menu_state.play_game:draw(love.graphics.getWidth()/2 - 100, love.graphics.getHeight()/2 - 25, 20, 8, 10)
         buttons.menu_state.settings:draw(love.graphics.getWidth()/2 - 20, love.graphics.getHeight()/2 + 60, 10, 10)
@@ -1026,6 +1128,22 @@ function love.draw()
         
         love.graphics.setFont(fonte.grande)
         love.graphics.print("Pausado\nPressione ESC para continuar!", love.graphics.getWidth()/2 - 300, 10)
+    end
+
+    if game.state["config"] then
+        love.graphics.draw(pause_bg, 0, 0, 0, 1.5, 1, 1)
+
+        love.graphics.setFont(fonte.grande)
+        love.graphics.printf("CONFIGURAÇÕES", 0 , 100, love.graphics.getWidth(), "center")
+
+        desenharSlider()
+
+        local b = buttons.config_state.back
+        b:draw(b.x, b.y)
+
+        love.graphics.setColor(0,1,0)
+        love.graphics.circle("fill", player.x, player.y, player.radius)
+        love.graphics.setColor(1,1,1)
     end
 
 end
