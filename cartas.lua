@@ -43,9 +43,8 @@ end
 --Variavel para controlar a dificuldade
 local eraAtual = 1
 
---//////////////////////////////////////////////////////////////////////////////////////////
+
 --                                  CARTAS ALIADAS
---//////////////////////////////////////////////////////////////////////////////////////////
 
 local primeirasAliadas = {
     {   
@@ -58,9 +57,7 @@ local primeirasAliadas = {
     {
         id = "Clarividência",
         img = love.graphics.newImage("sprites/carta 8 clarividencia.png"),
-        descricao = "Descubra qual será o conflito do próximo turno."
-        -- DICA: no main, ao final da rodada:
-        -- mostre na tela conflitos[1] ou conflito que será puxado no próximo turno
+        descricao = "troque o conflito atual por um outro"
     },
 
     {
@@ -79,12 +76,19 @@ local primeirasAliadas = {
     },
     
 }
+
+
 local segundasAliadas={
     {
         id = "Carta da Nascente",
         img = love.graphics.newImage("sprites/carta nascente.png"),
         descricao = "Ganhe 2 águas e um movimento."
     },
+    {
+        id = "Clarividência",
+        img = love.graphics.newImage("sprites/carta 8 clarividencia.png"),
+        descricao = "troque o conflito atual por um outro"
+        },
     {
         id = "Esforço recompensado",
         img = love.graphics.newImage('sprites/carta Esforco recompensado.png'),
@@ -142,7 +146,6 @@ function aplicarEfeito(carta, valorMove)
 
     if carta.id == "Procurando água" and alterarMovimento and alterarAgua then
         escolhendoTroca = true
-        movimentosDisponiveis = tonumber(valorMove) or 0
         mensagemErro = ""
         return
     end
@@ -154,7 +157,7 @@ function aplicarEfeito(carta, valorMove)
         end
     end
 
-   if carta.id == "Clarividência" and baralhoConflitos then
+   if carta.id == "Clarividência" and baralhoConflitos  then
     -- Pega o conflito atual e o próximo
     local proximoConflito = baralhoConflitos[1]  -- próximo conflito
     local conflitoAtualAntesDaEscolha = conflitoAtual  -- conflito atual antes da escolha
@@ -177,7 +180,7 @@ end
 
 -----------------------------------------------------------------------------------------
 -- VISUAL DAS CARTAS
------------------------------------------------------------------------------------------
+
 local CARD_WIDTH = 140
 local CARD_HEIGHT = 185
 local OFFSET_BETWEEN_CARDS = 3  
@@ -287,13 +290,12 @@ end
 local cartasRodada = {}
 local hoverIndex = nil
 
-local function selecionarCartasRodada()
+local function selecionarCartasRodada(rodadaAtual)
     -- Limpa a seleção anterior
     cartasRodada = {}
     cartaSelecionada = nil
     escolhaBloqueada = false
     efeitoDaCarta = nil
-
     -- Garante baralho funcional
     if #primeirasAliadas < 2 then
         for i = 1, #descarte do
@@ -302,7 +304,6 @@ local function selecionarCartasRodada()
         descarte = {}
         construirBaralho()
     end
-
     -- Se a sabotagem foi ativada na rodada anterior
     local rodadaSabotada = sabotagemProximaRodada == true
 
@@ -337,6 +338,15 @@ local function selecionarCartasRodada()
     sabotagemProximaRodada = false
 
     contadorBaralho = #primeirasAliadas
+
+    if rodadaAtual ==1 then
+        for i,carta in ipairs(cartasRodada) do
+            if carta.id == "Clarividência" then
+                cartasRodada[i] = puxarCartaGarantido()
+            end
+        end
+    end
+    
 end
 
 
@@ -409,7 +419,7 @@ function keypressed(key)
     if qtd < 1 or qtd > 3 then return end
 
     -- Checa se tem movimentos suficientes
-    if qtd > movimentosDisponiveis then
+    if qtd > (movimentosDisponiveis or 0) then
         mensagemErro = "Você não tem movimentos suficientes!"
         tempoErro = 2
         return
@@ -568,9 +578,8 @@ local function desenharResultadoEscolha()
     end
 end
 
---///////////////////////////////////////////////////////////////////////////////////////////////
+
 --                                              CONFLITOS
---//////////////////////////////////////////////////////////////////////////////////////////////
 
 local fonte= {}
 fonte.media = love.graphics.newFont(20)
@@ -669,7 +678,7 @@ local conflitos2={
     {
         id = "Dia quente de trabalho",
         img = love.graphics.newImage("sprites/conflitos/dia quente de trabalho.png"),
-        descricao = "O guarda gasta 3 águas ao invés de 1 e o movimento cai em 2",
+        descricao = "O guarda gasta 3 águas ao invés de 1\n e o movimento cai em 2",
         eraMinima = 2,
         efeito = function ()
             if alterarAgua and alterarMovimento then 
@@ -767,15 +776,16 @@ local function desenharConflito()
         love.graphics.print(conflitoAtual.id, conflitoX+140, conflitoY+5)
 
         love.graphics.setFont(fonte.normal)
-        love.graphics.setColor(1,1,1)
+        love.graphics.setColor(0,0,0)
         love.graphics.print(conflitoAtual.descricao, conflitoX+140, conflitoY + CONFLITO_HEIGHT - 130)
+        love.graphics.setColor(1,1,1)
     end
 end
 
 
----------------------------------------------------------
--- DESENHAR MENU DE TROCA NO CANTO DIREITO DA TELA
----------------------------------------------------------
+----------------------------------
+-- DESENHAR MENU DE TROCA NO CANTO
+----------------------------------
 
 local function desenharTroca()
     if not escolhendoTroca then
@@ -949,7 +959,7 @@ local function setEra(novaEra)
         -- 3. RECONSTRUIR O BARALHO E OS CONFLITOS
         ----------------------------------------------------
         construirBaralho()      -- usa primeirasAliadas, agora atualizada
-        inicializarConflitos()  -- usa conflitos1, agora com tudo dentro
+        inicializarConflitos()  -- usa conflitos1, agora com tudo dentro (láele)
     end
 end
 
@@ -976,7 +986,9 @@ return {
     desenharCartasRodada = desenharCartasRodada,
     desenharResultadoEscolha = desenharResultadoEscolha,
     desenharInventarioCartas = desenharInventarioCartas,
-    
+    getEscolhendoTroca = function()
+    return escolhendoTroca
+    end,
     setCallbacks=setCallbacks,
     aplicarEfeito=aplicarEfeito,
     mousepressed=mousepressed,
