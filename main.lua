@@ -945,23 +945,22 @@ local diaImg = love.graphics.newImage("sprites/Dia_Arte.png")
 function love.draw()
      if game.state["running"] then
         --Arte do Fundo da gameplay
+        --love.graphics.print(text,x,y,r,sx,sy,ox,oy)
         --love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
         love.graphics.draw(game_bg, 0, 0, 0, 1, 1, 1, 1)
         --Movimentos Restantes
         love.graphics.setFont(fonte.grande)
-        love.graphics.draw(movImg, movimento.mx, movimento.my, 0, 0.2, 0.2)
+        love.graphics.draw(movImg, movimento.mx, movimento.my + 230, 0, 0.25, 0.25)
         love.graphics.setColor(0,0,0)
-        love.graphics.print(" : " .. movimentosRestantes, movimento.mx + 200, movimento.my + 8, 0)
+        love.graphics.print(" : " .. movimentosRestantes, movimento.mx + 250, movimento.my + 245, 0, escala + 0.7, escala + 0.7)
         love.graphics.setFont(fonte.normal)
         --love.graphics.setColor(0, 100, 0)  -- verde
-        love.graphics.print("converter bandeiras te dá 1 ficha de água ",imagemAgua.fx, imagemAgua.fy-40, 0)
-        love.graphics.setColor(1, 1, 1)  -- volta ao normal
         love.graphics.setColor(1,1,1)
         --Feddback visual da quantidade de agua
-        love.graphics.draw(imagemAgua.ficha, imagemAgua.fx, imagemAgua.fy + 100, 0, escala, escala)
+        love.graphics.draw(imagemAgua.ficha, imagemAgua.fx, imagemAgua.fy + 300, 0, escala + 0.5, escala + 0.5)
         love.graphics.setColor(0, 0, 0)
         love.graphics.setFont(fonte.grande)  
-        love.graphics.print(tostring(agua), imagemAgua.fx+40, imagemAgua.fy+108)
+        love.graphics.print(tostring(agua), imagemAgua.fx+80, imagemAgua.fy+328, 0, escala + 1, escala + 1)
         love.graphics.setColor(1, 1, 1)
 
         --Numeração da rodada atual
