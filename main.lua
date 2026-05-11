@@ -936,8 +936,8 @@ function love.update(dt)
         player.x, player.y = vx, vy
     end
 
+    cartas.atualizarInteracaoCartas(vx, vy)
     cartas.reposicionarBaralho()
-    cartas.atualizarInteracaoCartas()
     cartas.notificarErro(dt)
     
     --Atualiza o timer da tela de Era
@@ -1182,7 +1182,7 @@ function love.draw()
         love.graphics.draw(pause_bg, 0, 0, 0, 1.5, 1, 1)
 
         love.graphics.setFont(fonte.grande)
-        love.graphics.printf("CONFIGURAÇÕES", 0 , 100, virtual_Width(), "center")
+        love.graphics.printf("CONFIGURAÇÕES", 0 , 100, virtual_Width, "center")
 
         desenharSlider()
 

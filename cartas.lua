@@ -10,6 +10,10 @@ local getAgua = nil
 local terrenoDificil = nil -- Callback opcional
 local cartasEscolhaConflito = nil
 local escolhaConflito = false
+local virtual_Width = 1280
+local virtual_Height = 720
+local mx_virtual, my_virtual = 0, 0
+local hoverIndex = nil
 
 -- Tabela que guarda os poderes ativos
 local efeitosAtivos = {
@@ -206,10 +210,8 @@ local function criarFundo(x, y)
 end
 
 local function construirBaralho()
-    local screenWidth = love.graphics.getWidth()
-    local screenHeight = love.graphics.getHeight()
-    local startX = screenWidth - CARD_WIDTH
-    local startY = screenHeight - CARD_HEIGHT
+    local startX = virtual_Width - CARD_WIDTH
+    local startY = virtual_Height - CARD_HEIGHT
 
     baralho = {}
     contadorBaralho = #primeirasAliadas
@@ -233,15 +235,11 @@ local function desenharBaralho()
 end
 
 local function reposicionarBaralho()
-    if not love.window.hasFocus() then return end
-
-    local screenWidth = love.graphics.getWidth()
-    local screenHeight = love.graphics.getHeight()
 
     for i, card in ipairs(baralho) do
         local offsetY = (i - 1) * OFFSET_BETWEEN_CARDS
-        card.transform.x = screenWidth - CARD_WIDTH
-        card.transform.y = screenHeight - CARD_HEIGHT - offsetY
+        card.transform.x = virtual_Width - CARD_WIDTH
+        card.transform.y = virtual_Height - CARD_HEIGHT - offsetY
     end
 end
 
@@ -355,12 +353,13 @@ end
 -- HOVER E DESENHO
 -----------------------------------------------------------------------------------------
 local function getPosicaoCarta(i)
-    local screenWidth = love.graphics.getWidth()
-    local screenHeight = love.graphics.getHeight()
 
-    local totalWidth = (CARD_WIDTH * 2) + 30
-    local startX = (screenWidth - totalWidth) / 2
-    local posY = screenHeight * 0.90
+    local v_Width = 1280
+    local v_Height = 720
+
+    local totalWidth = (#cartasRodada * CARD_WIDTH) + ((#cartasRodada - 1) * 30)
+    local startX = (v_Width - totalWidth) / 2
+    local posY = v_Height * 0.90
 
     local x = startX + (i - 1) * (CARD_WIDTH + 30)
     local y = posY
@@ -371,12 +370,18 @@ end
 local function atualizarInteracaoCartas()
     hoverIndex = nil
 
-    local mx, my = love.mouse.getPosition()
+    if not vx or not vy then
+        mx_virtual, my_virtual = -1000, -1000
+        return
+    end
 
-    for i = 1, 2 do
+    mx_virtual, my_virtual = vx, vy
+
+    for i = 1, #cartasRodada do
         local x, y = getPosicaoCarta(i)
 
-        if mx > x and mx < x + CARD_WIDTH and my > y and my < y + CARD_HEIGHT then
+        if mx_virtual >= x and mx_virtual <= x + CARD_WIDTH and 
+           my_virtual >= y and my_virtual <= y + CARD_HEIGHT then
             hoverIndex = i
         end
     end
@@ -469,7 +474,7 @@ local ESCURECER_ALPHA = 0.75  -- opacidade do fundo escuro durante a escolha
 local function desenharCartasRodada()
     --=== SE ESTÁ ESCOLHENDO CLARIVIDÊNCIA ===
     if escolhaConflito and cartasEscolhaConflito then
-        local sw, sh = love.graphics.getWidth(), love.graphics.getHeight()
+        local sw, sh = virtual_Width, virtual_Height
         local largura, altura = 300, 450
         local espaco = 50
         local startX = (sw - (2 * largura + espaco)) / 2
@@ -507,25 +512,20 @@ local function desenharCartasRodada()
             love.graphics.setFont(fonte.normal)
             love.graphics.printf(c.descricao, x + 5, y + altura - 50, largura-10, "center")
         end
-
         return
     end
 
     --=== DESENHO NORMAL DAS CARTAS DE RODADA ===
-    local screenWidth = love.graphics.getWidth()
-    local screenHeight = love.graphics.getHeight()
-
     local totalWidth = (#cartasRodada * CARD_WIDTH) + ((#cartasRodada - 1) * 30)
-    local startX = (screenWidth - totalWidth) / 2
-    local posY = screenHeight * 0.90
+    local startX = (virtual_Width - totalWidth) / 2
+    local posY = virtual_Height * 0.90
 
     for i, card in ipairs(cartasRodada) do
         if escolhaBloqueada and card == cartaSelecionada then
             goto continue
         end
 
-        local x = startX + (i - 1) * (CARD_WIDTH + 30)
-        local y = posY
+        local x, y = getPosicaoCarta(i)
         local offset = (hoverIndex == i) and -HOVER_OFFSET or 0
 
         if card.img then
@@ -792,8 +792,8 @@ local function desenharTroca()
         return
     end
 
-    local sw = love.graphics.getWidth()
-    local sh = love.graphics.getHeight()
+    local sw = virtual_Width
+    local sh = virtual_Height
 
     local largura = 260
     local altura = 160
@@ -837,7 +837,7 @@ function mousepressed(mx, my, btn, moveAtual)
     --=== SE ESTAMOS ESCOLHENDO CONFLITO COM CLARIVIDÊNCIA ===
     if escolhaConflito and cartasEscolhaConflito then
         for i, c in ipairs(cartasEscolhaConflito) do
-            local sw, sh = love.graphics.getWidth(), love.graphics.getHeight()
+            local sw, sh = virtual_Width, virtual_Height
             local largura, altura = 200, 250
             local espaco = 50
             local startX = (sw - (2 * largura + espaco)) / 2
