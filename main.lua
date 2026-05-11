@@ -4,7 +4,13 @@ local button = require "Button"
 local hitbox = require "hitbox"
 local ost = require "OST"
 local cartas = require ("cartas")
+local push = require "push"
 local volumeMaster = 0.5 -- 50% do volume
+
+--------------ALTURA E LARGURA QUE IREMOS USAR AGORA-----------------
+local virtual_Width = 1280
+local virtual_Height = 720
+---------------------------------------------------------------------
 
 local game = {
     state = {
@@ -20,8 +26,8 @@ local game = {
 
 
 local volumeSlider = {
-    x = love.graphics.getWidth() / 2 - 100, --Posição inicial de X
-    y = love.graphics.getHeight() / 2, --Posição Y
+    x = virtual_Width / 2 - 100, --Posição inicial de X
+    y = virtual_Height / 2, --Posição Y
     largura = 200, --Tamanho da barra
     altura = 10, --Grossura da barra
     raioBola = 12, --Tamanho do circulo de arrastar
@@ -57,6 +63,9 @@ function voltarMenu()
     game.state["menu"] = true
 end
 
+function love.resize(width, height)
+    push:resize(width, height)
+end
 
 local movimento={
         mx=10,
@@ -128,25 +137,25 @@ local deck = {}
 --lista de pontos de movimentação
 local pontosMovimentacao = {
 
-    {x = love.graphics.getWidth()/2 + 15, y = love.graphics.getHeight()/2 - 245, raio = 45},
-    {x = love.graphics.getWidth()/2 + 15, y = love.graphics.getHeight()/2 - 145, raio = 45},
-    {x = love.graphics.getWidth()/2 + 15, y = love.graphics.getHeight()/2 - 45, raio = 45},
-    {x = love.graphics.getWidth()/2 + 15, y = love.graphics.getHeight()/2 + 55, raio = 45},
-    {x = love.graphics.getWidth()/2 + 15, y = love.graphics.getHeight()/2 + 155, raio = 45},--5
-    {x = love.graphics.getWidth()/2 + 190, y = love.graphics.getHeight()/2 - 145, raio = 45},
-    {x = love.graphics.getWidth()/2 + 190, y = love.graphics.getHeight()/2 - 45, raio = 45},--7
-    {x = love.graphics.getWidth()/2 + 190, y = love.graphics.getHeight()/2 + 55, raio = 45},
-    {x = love.graphics.getWidth()/2 - 160, y = love.graphics.getHeight()/2 - 145, raio = 45},
-    {x = love.graphics.getWidth()/2 - 160, y = love.graphics.getHeight()/2 - 45, raio = 45},--10
-    {x = love.graphics.getWidth()/2 - 160, y = love.graphics.getHeight()/2 + 55, raio = 45},
-    {x = love.graphics.getWidth()/2 + 100, y = love.graphics.getHeight()/2 - 195, raio = 45},--12
-    {x = love.graphics.getWidth()/2 + 100, y = love.graphics.getHeight()/2 - 95, raio = 45},
-    {x = love.graphics.getWidth()/2 + 100, y = love.graphics.getHeight()/2 + 5, raio = 45},
-    {x = love.graphics.getWidth()/2 + 100, y = love.graphics.getHeight()/2 + 105, raio = 45},
-    {x = love.graphics.getWidth()/2 - 75, y = love.graphics.getHeight()/2 - 195, raio = 45},
-    {x = love.graphics.getWidth()/2 - 75, y = love.graphics.getHeight()/2 - 95, raio = 45},
-    {x = love.graphics.getWidth()/2 - 75, y = love.graphics.getHeight()/2 + 5, raio = 45},
-    {x = love.graphics.getWidth()/2 - 75, y = love.graphics.getHeight()/2 + 105, raio = 45}
+    {x = virtual_Width/2 + 15, y = virtual_Height/2 - 245, raio = 45},
+    {x = virtual_Width/2 + 15, y = virtual_Height/2 - 145, raio = 45},
+    {x = virtual_Width/2 + 15, y = virtual_Height/2 - 45, raio = 45},
+    {x = virtual_Width/2 + 15, y = virtual_Height/2 + 55, raio = 45},
+    {x = virtual_Width/2 + 15, y = virtual_Height/2 + 155, raio = 45},--5
+    {x = virtual_Width/2 + 190, y = virtual_Height/2 - 145, raio = 45},
+    {x = virtual_Width/2 + 190, y = virtual_Height/2 - 45, raio = 45},--7
+    {x = virtual_Width/2 + 190, y = virtual_Height/2 + 55, raio = 45},
+    {x = virtual_Width/2 - 160, y = virtual_Height/2 - 145, raio = 45},
+    {x = virtual_Width/2 - 160, y = virtual_Height/2 - 45, raio = 45},--10
+    {x = virtual_Width/2 - 160, y = virtual_Height/2 + 55, raio = 45},
+    {x = virtual_Width/2 + 100, y = virtual_Height/2 - 195, raio = 45},--12
+    {x = virtual_Width/2 + 100, y = virtual_Height/2 - 95, raio = 45},
+    {x = virtual_Width/2 + 100, y = virtual_Height/2 + 5, raio = 45},
+    {x = virtual_Width/2 + 100, y = virtual_Height/2 + 105, raio = 45},
+    {x = virtual_Width/2 - 75, y = virtual_Height/2 - 195, raio = 45},
+    {x = virtual_Width/2 - 75, y = virtual_Height/2 - 95, raio = 45},
+    {x = virtual_Width/2 - 75, y = virtual_Height/2 + 5, raio = 45},
+    {x = virtual_Width/2 - 75, y = virtual_Height/2 + 105, raio = 45}
 
 }
 
@@ -491,7 +500,7 @@ function proxRodada()
     if esperandoEscolhaCarta then
         love.graphics.setColor(1,0,0)
         love.graphics.setFont(fonte.grande)
-        love.graphics.print("Escolha uma das carta primeiro.", love.graphics.getWidth()/2, love.graphics.getHeight()/2)
+        love.graphics.print("Escolha uma das carta primeiro.", virtual_Width/2, virtual_Height/2)
         love.graphics.setFont(fonte.normal)
         love.graphics.setColor(0,0,0)
         return
@@ -712,32 +721,40 @@ end
 
 --função para o mouse no menu e in game
 function love.mousepressed(x, y, button, isTouch, presses)
+    local gx, gy = push:toGame(x, y)
+
+    if not gx or not gy then
+        return
+    end
+
+    x, y = gx, gy
+
     if button ~= 1 then return end
         
     if game.state["menu"] then
-        handle_button_click(x, y, player.radius)
+        handle_button_click(gx, gy, player.radius)
         return
     end
 
     if game.state["config"] then
-        handle_button_click(x, y, player.radius)
+        handle_button_click(gx, gy, player.radius)
         return
     end
     
     if game.state["running"] then
 
         --Verificar se existe algum botão fixo da UI tipo: Sair, Opções...
-        handle_button_click(x, y, player.radius)
+        handle_button_click(gx, gy, player.radius)
         
         if  confirmacao.ativa then
-            confirmacao.botoes.sim:checkPressed(x, y, player.radius)
-            confirmacao.botoes.nao:checkPressed(x, y, player.radius)
+            confirmacao.botoes.sim:checkPressed(gx, gy, player.radius)
+            confirmacao.botoes.nao:checkPressed(gx, gy, player.radius)
             return
         end
         
         --Se estiver esperando a escolha de carta, bloqueia o resto
         if esperandoEscolhaCarta then
-            local cartaFoiEscolhida = cartas.mousepressed(x, y, button, movimentosRestantes)
+            local cartaFoiEscolhida = cartas.mousepressed(gx, gy, button, movimentosRestantes)
             
             if cartaFoiEscolhida then
                 esperandoEscolhaCarta = false
@@ -747,19 +764,19 @@ function love.mousepressed(x, y, button, isTouch, presses)
         end
         --bloqueio pela troca
         if cartas.getEscolhendoTroca() then
-            cartas.mousepressed(x, y, button, movimentosRestantes)
+            cartas.mousepressed(gx, gy, button, movimentosRestantes)
             return
         end
 
 
-        cartas.mousepressed(x, y, button, movimentosRestantes)
+        cartas.mousepressed(gx, gy, button, movimentosRestantes)
 
         --Garante que o guarda não está em movimento
         if movGuarda.destino == nil then
         local origem = movGuarda.indiceAtual
         --verfica colisão com cada ponto de movimentação
         for i, ponto in ipairs(pontosMovimentacao) do
-        local distancia = math.sqrt((ponto.x - x)^2 + (ponto.y - y)^2)
+        local distancia = math.sqrt((ponto.x - gx)^2 + (ponto.y - gy)^2)
             if distancia <= ponto.raio then
                 local indiceDestino = i
                 if movimentosRestantes > 0 and movimentoPermitido(origem, indiceDestino) then
@@ -787,7 +804,32 @@ function love.mousepressed(x, y, button, isTouch, presses)
     end
 end
 
+function love.touchpressed(id, x, y, dx, dy, pressure)
+    --O 1 simula o lado esquerdo do mouse
+    love.mousepressed(x, y, 1, false, 1)
+end
+
+function love.touchreleased(id, x, y, dx, dy, pressure)
+    volumeSlider.arrastando = false
+end
+
+
 function love.load()
+    -------------COISAS DO PUSH LUA------------------
+    local gameWidth, gameHeight = 1280, 720 --Resolução que o jogo vai fingir ter
+
+    local windowWidth, windowHeight = love.window.getDesktopDimensions()
+
+    push:setupScreen(gameWidth, gameHeight, windowWidth, windowHeight, {
+        fullscreen = false,
+        resizable = true,
+        pixelperfect = false,
+        canvas = true, --Isso permite que o LOVE trate o jogo como uma textura
+        stretched = false
+    })
+
+    love.resize(love.graphics.getWidth(), love.graphics.getHeight())
+
     ------------IMAGENS DO JOGO--------------------
     movGuarda.imagem = love.graphics.newImage("sprites/Guardinha.png")
     local startNormal = love.graphics.newImage("sprites/botão_iniciar.png")
@@ -810,10 +852,10 @@ function love.load()
     
     
     --Botões da tela do menu
-    local centroX = love.graphics.getWidth() / 2
-    local centroY = love.graphics.getHeight() / 2
+    local centroX = virtual_Width / 2
+    local centroY = virtual_Height / 2
     --Só pra lembrar button(ImagemNormal, Função, Parametro, Largura, Altura, ImagemPressionada)
-    buttons.menu_state.play_game = button(startNormal, startNewGame, nil, 250, nil, startClicado)
+    buttons.menu_state.play_game = button(startNormal, startNewGame, nil, 250, 100, startClicado)
     buttons.menu_state.play_game.x = centroX - 30
     buttons.menu_state.play_game.y = centroY - 50
 
@@ -826,8 +868,8 @@ function love.load()
     buttons.menu_state.exit_game.y = centroY + 250
 
     --Botões nas configurações do jogo
-    local cx = love.graphics.getWidth() / 2
-    local cy = love.graphics.getHeight() / 2
+    local cx = virtual_Width / 2
+    local cy = virtual_Height / 2
 
     -- Botão Voltar (Nas configurações)
     buttons.config_state.back = button("Voltar", voltarMenu, nil, 150, 50)
@@ -845,7 +887,7 @@ function love.load()
     
     
     --Botões do Menu de Água (Carta)
-    local cx, cy = love.graphics.getWidth()/2 - 70, love.graphics.getHeight()/2 - 50
+    local cx, cy = virtual_Width/2 - 70, virtual_Height/2 - 50
 
     
     --Iniciar o jogo com os Hex vermelhos
@@ -887,7 +929,13 @@ function love.load()
 end
 
 function love.update(dt)
-    player.x, player.y = love.mouse.getPosition()
+    local mx, my = love.mouse.getPosition()
+    local vx, vy = push:toGame(mx, my)
+
+    if vx and vy then
+        player.x, player.y = vx, vy
+    end
+
     cartas.reposicionarBaralho()
     cartas.atualizarInteracaoCartas()
     cartas.notificarErro(dt)
@@ -943,6 +991,7 @@ local regras = love.graphics.newImage("sprites/RegrasDoJogo.jpeg")
 local movImg = love.graphics.newImage("sprites/Movimentos_Arte.png")
 local diaImg = love.graphics.newImage("sprites/Dia_Arte.png")
 function love.draw()
+    push:start()--Inicia a renderização na resolução virtual
      if game.state["running"] then
         --Arte do Fundo da gameplay
         --love.graphics.print(text,x,y,r,sx,sy,ox,oy)
@@ -964,15 +1013,15 @@ function love.draw()
         love.graphics.setColor(1, 1, 1)
 
         --Numeração da rodada atual
-        love.graphics.draw(diaImg, love.graphics.getWidth()/2 - 100, 10, 0, 0.2, 0.2)
+        love.graphics.draw(diaImg, virtual_Width/2 - 100, 10, 0, 0.2, 0.2)
         love.graphics.setColor(0,0,0)
-        love.graphics.print(rodada .. "/20", love.graphics.getWidth()/2- 10, 22, 0)
+        love.graphics.print(rodada .. "/20", virtual_Width/2- 10, 22, 0)
         love.graphics.setFont(fonte.normal)
         love.graphics.setColor(1,1,1)
 
         -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo
         --desenhar o mapa
-        love.graphics.draw(mapa, love.graphics.getWidth()/2 - 400, love.graphics.getHeight()/2 - 370, 0, .35, .35)
+        love.graphics.draw(mapa, virtual_Width/2 - 400, virtual_Height/2 - 370, 0, .35, .35)
         --Desenhar os filtros vermelhos e marrons
         for i, ponto in ipairs(pontosMovimentacao) do
             if i ~= 3 then
@@ -1031,28 +1080,28 @@ function love.draw()
         
 
         --Desenhar a hitbox enquanto o jogo ta rodando
-        hitbox.desenhar(love.graphics.getWidth()/2 + 15, love.graphics.getHeight()/2 - 245, 45)
-        hitbox.desenhar(love.graphics.getWidth()/2 + 15, love.graphics.getHeight()/2 - 145, 45)
-        hitbox.desenhar(love.graphics.getWidth()/2 + 15, love.graphics.getHeight()/2 - 45, 45)
-        hitbox.desenhar(love.graphics.getWidth()/2 + 15, love.graphics.getHeight()/2 + 55, 45)
-        hitbox.desenhar(love.graphics.getWidth()/2 + 15, love.graphics.getHeight()/2 + 155, 45) --5
-        hitbox.desenhar(love.graphics.getWidth()/2 + 190, love.graphics.getHeight()/2 - 145, 45)
-        hitbox.desenhar(love.graphics.getWidth()/2 + 190, love.graphics.getHeight()/2 + 55, 45)
-        hitbox.desenhar(love.graphics.getWidth()/2 + 190, love.graphics.getHeight()/2 - 45, 45)
-        hitbox.desenhar(love.graphics.getWidth()/2 - 160, love.graphics.getHeight()/2 - 145, 45)
-        hitbox.desenhar(love.graphics.getWidth()/2 - 160, love.graphics.getHeight()/2 - 45, 45)
-        hitbox.desenhar(love.graphics.getWidth()/2 - 160, love.graphics.getHeight()/2 + 55, 45)
-        hitbox.desenhar(love.graphics.getWidth()/2 + 100, love.graphics.getHeight()/2 - 195, 45)
-        hitbox.desenhar(love.graphics.getWidth()/2 + 100, love.graphics.getHeight()/2 - 95, 45)
-        hitbox.desenhar(love.graphics.getWidth()/2 + 100, love.graphics.getHeight()/2 + 105, 45)
-        hitbox.desenhar(love.graphics.getWidth()/2 + 100, love.graphics.getHeight()/2 + 5, 45)
-        hitbox.desenhar(love.graphics.getWidth()/2 - 75, love.graphics.getHeight()/2 - 195, 45)
-        hitbox.desenhar(love.graphics.getWidth()/2 - 75, love.graphics.getHeight()/2 - 95, 45)
-        hitbox.desenhar(love.graphics.getWidth()/2 - 75, love.graphics.getHeight()/2 + 5, 45)
-        hitbox.desenhar(love.graphics.getWidth()/2 - 75, love.graphics.getHeight()/2 + 105, 45)
+        hitbox.desenhar(virtual_Width/2 + 15, virtual_Height/2 - 245, 45)
+        hitbox.desenhar(virtual_Width/2 + 15, virtual_Height/2 - 145, 45)
+        hitbox.desenhar(virtual_Width/2 + 15, virtual_Height/2 - 45, 45)
+        hitbox.desenhar(virtual_Width/2 + 15, virtual_Height/2 + 55, 45)
+        hitbox.desenhar(virtual_Width/2 + 15, virtual_Height/2 + 155, 45) --5
+        hitbox.desenhar(virtual_Width/2 + 190, virtual_Height/2 - 145, 45)
+        hitbox.desenhar(virtual_Width/2 + 190, virtual_Height/2 + 55, 45)
+        hitbox.desenhar(virtual_Width/2 + 190, virtual_Height/2 - 45, 45)
+        hitbox.desenhar(virtual_Width/2 - 160, virtual_Height/2 - 145, 45)
+        hitbox.desenhar(virtual_Width/2 - 160, virtual_Height/2 - 45, 45)
+        hitbox.desenhar(virtual_Width/2 - 160, virtual_Height/2 + 55, 45)
+        hitbox.desenhar(virtual_Width/2 + 100, virtual_Height/2 - 195, 45)
+        hitbox.desenhar(virtual_Width/2 + 100, virtual_Height/2 - 95, 45)
+        hitbox.desenhar(virtual_Width/2 + 100, virtual_Height/2 + 105, 45)
+        hitbox.desenhar(virtual_Width/2 + 100, virtual_Height/2 + 5, 45)
+        hitbox.desenhar(virtual_Width/2 - 75, virtual_Height/2 - 195, 45)
+        hitbox.desenhar(virtual_Width/2 - 75, virtual_Height/2 - 95, 45)
+        hitbox.desenhar(virtual_Width/2 - 75, virtual_Height/2 + 5, 45)
+        hitbox.desenhar(virtual_Width/2 - 75, virtual_Height/2 + 105, 45)
         
         --Desenhar os botões enquato o jogo ta rodando
-        buttons.running_state.pass_rodada:draw(love.graphics.getWidth() - 155, love.graphics.getHeight() - 250, 10, 10)
+        buttons.running_state.pass_rodada:draw(virtual_Width - 155, virtual_Height - 250, 10, 10)
         
         if confirmacao.ativa then
 
@@ -1071,14 +1120,14 @@ function love.draw()
         if fimDeJogo.ativo then
             --Fundo preto
             love.graphics.setColor(0, 0, 0)
-            love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
+            love.graphics.rectangle("fill", 0, 0, virtual_Width, virtual_Height)
             --Texto
             love.graphics.setFont(fonte.grande)
             love.graphics.setColor(unpack(fimDeJogo.cor))
-            love.graphics.printf(fimDeJogo.mensagem, 0, love.graphics.getHeight()/2 - 50, love.graphics.getWidth(), "center")
+            love.graphics.printf(fimDeJogo.mensagem, 0, virtual_Height/2 - 50, virtual_Width, "center")
         end
         --Botão de sair por cima de tudo
-        buttons.running_state.exit_in_game:draw(love.graphics.getWidth() - 100, 10, 10, 10)
+        buttons.running_state.exit_in_game:draw(virtual_Width - 100, 10, 10, 10)
 
         --DESENHAR TELA DE TRANSIÇÃO DE ERA
         if telaEra.ativa then
@@ -1109,11 +1158,11 @@ function love.draw()
         
     elseif game.state["menu"] then
         --love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
-        love.graphics.draw(background, love.graphics.getWidth()/2, love.graphics.getHeight()/2, 0, bg_escalax, bg_escalay, love.graphics.getWidth()/2, love.graphics.getHeight()/2)
+        love.graphics.draw(background, virtual_Width/2, virtual_Height/2, 0, bg_escalax, bg_escalay, virtual_Width/2, virtual_Height/2)
         
-        buttons.menu_state.play_game:draw(love.graphics.getWidth()/2 - 100, love.graphics.getHeight()/2 - 25, 20, 8, 10)
-        buttons.menu_state.settings:draw(love.graphics.getWidth()/2 - 20, love.graphics.getHeight()/2 + 60, 10, 10)
-        buttons.menu_state.exit_game:draw(love.graphics.getWidth()/2 + 100, love.graphics.getHeight()/2 + 150, 25, 8, 10)
+        buttons.menu_state.play_game:draw(virtual_Width/2 - 100, virtual_Height/2 - 25, 20, 8, 10)
+        buttons.menu_state.settings:draw(virtual_Width/2 - 20, virtual_Height/2 + 60, 10, 10)
+        buttons.menu_state.exit_game:draw(virtual_Width/2 + 100, virtual_Height/2 + 150, 25, 8, 10)
 
         love.graphics.setColor(0,1,0)
         love.graphics.circle("fill", player.x, player.y, player.radius)
@@ -1123,17 +1172,17 @@ function love.draw()
     if game.state["paused"] then
         love.graphics.draw(pause_bg, 0, 0, 0, 1.5, 1.5, 1, 1)
         
-        love.graphics.draw(regras, love.graphics.getWidth()/2 - 300, 100, 0, 0.5, 0.5)
+        love.graphics.draw(regras, virtual_Width/2 - 300, 100, 0, 0.5, 0.5)
         
         love.graphics.setFont(fonte.grande)
-        love.graphics.print("Pausado\nPressione ESC para continuar!", love.graphics.getWidth()/2 - 300, 10)
+        love.graphics.print("Pausado\nPressione ESC para continuar!", virtual_Width/2 - 300, 10)
     end
 
     if game.state["config"] then
         love.graphics.draw(pause_bg, 0, 0, 0, 1.5, 1, 1)
 
         love.graphics.setFont(fonte.grande)
-        love.graphics.printf("CONFIGURAÇÕES", 0 , 100, love.graphics.getWidth(), "center")
+        love.graphics.printf("CONFIGURAÇÕES", 0 , 100, virtual_Width(), "center")
 
         desenharSlider()
 
@@ -1145,6 +1194,7 @@ function love.draw()
         love.graphics.setColor(1,1,1)
     end
 
+    push:finish()--Finaliza e estica para a tela real do dispositivo
 end
 
 function love.keypressed(key)

@@ -183,7 +183,7 @@ end
 
 local CARD_WIDTH = 140
 local CARD_HEIGHT = 185
-local OFFSET_BETWEEN_CARDS = 3  
+local OFFSET_BETWEEN_CARDS = 5
 local contadorBaralho = #primeirasAliadas
 local HOVER_OFFSET = 120
 
@@ -470,7 +470,7 @@ local function desenharCartasRodada()
     --=== SE ESTÁ ESCOLHENDO CLARIVIDÊNCIA ===
     if escolhaConflito and cartasEscolhaConflito then
         local sw, sh = love.graphics.getWidth(), love.graphics.getHeight()
-        local largura, altura = 200, 250
+        local largura, altura = 300, 450
         local espaco = 50
         local startX = (sw - (2 * largura + espaco)) / 2
         local startY = sh * 0.3
