@@ -821,11 +821,12 @@ function love.load()
     local windowWidth, windowHeight = love.window.getDesktopDimensions()
 
     push:setupScreen(gameWidth, gameHeight, windowWidth, windowHeight, {
-        fullscreen = false,
+        fullscreen = true,
         resizable = true,
         pixelperfect = false,
         canvas = true, --Isso permite que o LOVE trate o jogo como uma textura
-        stretched = false
+        stretched = false,
+        highdpi = true
     })
 
     love.resize(love.graphics.getWidth(), love.graphics.getHeight())
