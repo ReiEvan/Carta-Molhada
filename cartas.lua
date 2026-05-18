@@ -466,7 +466,7 @@ function notificarErro(dt)
 end
 
 local fonte = {}
-fonte.media = love.graphics.newFont(20)
+fonte.media = love.graphics.newFont(409)
 fonte.normal = love.graphics.newFont(15)
 
 local ESCURECER_ALPHA = 0.75  -- opacidade do fundo escuro durante a escolha
@@ -582,8 +582,8 @@ end
 --                                              CONFLITOS
 
 local fonte= {}
-fonte.media = love.graphics.newFont(20)
-fonte.normal = love.graphics.newFont(15)
+fonte.media = love.graphics.newFont(30)
+fonte.normal = love.graphics.newFont(25)
 
 local CONFLITO_WIDTH = 134
 local CONFLITO_HEIGHT = 176
@@ -612,7 +612,7 @@ local conflitos1 = {
     {
         id = "Incendio criminoso",
         img = love.graphics.newImage("sprites/conflitos/incendio criminoso.png"),
-        descricao = "Perca uma área segura ou em tratamento aleatória, exceto a que o guarda estiver.", -- Descrição ajustada
+        descricao = "Perca uma área segura \nou em tratamento aleatória, \nexceto a que o guarda \nestiver.", -- Descrição ajustada
         eraMinima = 1,
         -- BLOCO NOVO ABAIXO:
         efeito = function()
@@ -625,7 +625,7 @@ local conflitos1 = {
     {
     id = "Guarda inoperante",
     img = love.graphics.newImage("sprites/conflitos/Guarda inoperante.png"),
-    descricao = "O guarda ficará inoperante até o fim da rodada",
+    descricao = "O guarda ficará inoperante \naté o fim da rodada",
     eraMinima = 1,
     efeito = function()
         -- usa o callback para bloquear o guarda por esta rodada
@@ -639,7 +639,7 @@ local conflitos1 = {
    {
     id = "Sabotagem",
     img = love.graphics.newImage("sprites/conflitos/sabotagem.png"),
-    descricao = "na proxima rodada só tera uma carta",
+    descricao = "na proxima rodada \nsó tera uma carta",
     eraMinima = 1,
     efeito = function()
         sabotagemProximaRodada = true
@@ -648,7 +648,7 @@ local conflitos1 = {
     {
     id = "Terreno difícil",
     img = love.graphics.newImage("sprites/conflitos/Terreno dificil.png"),
-    descricao = "Retarde o tratamento de todas as áreas desse turno",
+    descricao = "Retarde o tratamento de \ntodas as áreas desse turno",
     eraMinima = 1,
     efeito = function()
         -- Agora ativa o estado na tabela, que é resetado automaticamente
@@ -678,7 +678,7 @@ local conflitos2={
     {
         id = "Dia quente de trabalho",
         img = love.graphics.newImage("sprites/conflitos/dia quente de trabalho.png"),
-        descricao = "O guarda gasta 3 águas ao invés de 1\n e o movimento cai em 2",
+        descricao = "O guarda gasta 3 águas ao invés de 1\ne o movimento cai em 2",
         eraMinima = 2,
         efeito = function ()
             if alterarAgua and alterarMovimento then 
@@ -768,16 +768,18 @@ local function desenharConflito()
     if escolhaConflito and cartasEscolhaConflito then
         return
     elseif conflitoAtual then
+        --Tamanho da carta de conflito não tamanho do fundo da carta!!!!!
+        local escalaConflito = 1.5
         -- comportamento normal
-        love.graphics.draw(conflitoAtual.img, conflitoX, conflitoY)
+        love.graphics.draw(conflitoAtual.img, conflitoX, conflitoY, 0, escalaConflito, escalaConflito)
 
         love.graphics.setColor(1,0,0)
         love.graphics.setFont(fonte.media)
-        love.graphics.print(conflitoAtual.id, conflitoX+140, conflitoY+5)
+        love.graphics.print(conflitoAtual.id, conflitoX+202, conflitoY+5)
 
         love.graphics.setFont(fonte.normal)
         love.graphics.setColor(0,0,0)
-        love.graphics.print(conflitoAtual.descricao, conflitoX+140, conflitoY + CONFLITO_HEIGHT - 130)
+        love.graphics.print(conflitoAtual.descricao, conflitoX+205, conflitoY + CONFLITO_HEIGHT - 130)
         love.graphics.setColor(1,1,1)
     end
 end

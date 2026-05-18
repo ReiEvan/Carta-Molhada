@@ -1106,7 +1106,7 @@ function love.draw()
         
         if confirmacao.ativa then
 
-            love.graphics.print("O menu de confirmacao DEVERIA estar aparecendo em:" .. confirmacao.posicaoX .. "," .. confirmacao.posicaoY)
+            --love.graphics.print("O menu de confirmacao DEVERIA estar aparecendo em:" .. confirmacao.posicaoX .. "," .. confirmacao.posicaoY)
             --Fundinho preto transparente
             love.graphics.setColor(0, 0, 0, 0.7)
             love.graphics.rectangle("fill", confirmacao.posicaoX - 40, confirmacao.posicaoY - 30, 80, 80, 10, 10)
