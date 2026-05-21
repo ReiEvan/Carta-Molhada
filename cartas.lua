@@ -537,24 +537,24 @@ local function desenharCartasRodada()
         love.graphics.rectangle("fill", 0, 0, sw, sh)
         love.graphics.setColor(1, 1, 1)
 
-        love.graphics.printf("Escolha o conflito para esta rodada", 0, sh * 0.15, sw, "center")
+        love.graphics.printf("Escolha o conflito para esta rodada", 0, sh * 0.05, sw, "center")
 
         for i, c in ipairs(cartasEscolhaConflito) do
             local x = startX + (i - 1) * (largura + espaco)
             local y = startY
 
             love.graphics.setColor(0.2, 0.2, 0.2, 1)
-            love.graphics.rectangle("fill", x, y, largura, altura, 12, 12)
+            love.graphics.rectangle("fill", x , y - 100, largura, altura, 12, 12)
             love.graphics.setColor(1, 1, 1)
 
             if c and c.img then
                 local imgW, imgH = c.img:getWidth(), c.img:getHeight()
                 local scale = math.min(largura / imgW, (altura - 80) / imgH)
-                love.graphics.draw(c.img, x + (largura - imgW * scale) / 2, y + 10, 0, scale, scale)
+                love.graphics.draw(c.img, x + (largura - imgW * scale) / 2, y -90, 0, scale, scale)
             end
 
             love.graphics.setFont(fonte.media)
-            love.graphics.printf(c and c.id or "", x, y + altura - 65, largura, "center")
+            love.graphics.printf(c and c.id or "", x, y + altura - 150, largura, "center")
 
             love.graphics.setFont(fonte.normal)
             love.graphics.printf(c and c.descricao or "", x + 5, y + altura - 50, largura - 10, "center")

@@ -730,6 +730,10 @@ function love.mousepressed(x, y, button, isTouch, presses)
     x, y = gx, gy
 
     if button ~= 1 then return end
+
+    if game.state then
+        -- statements
+    end
         
     if game.state["menu"] then
         handle_button_click(gx, gy, player.radius)
