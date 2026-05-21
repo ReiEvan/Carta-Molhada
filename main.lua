@@ -844,7 +844,7 @@ function love.load()
 
 -------------------------------------------------------------------
     love.mouse.setVisible(false)
-    love.window.setTitle("Última Gota") 
+    love.window.setTitle("Última Gota")
     fonte.grande = love.graphics.newFont(40)
     fonte.media = love.graphics.newFont(30)
     fonte.normal = love.graphics.newFont(13)
@@ -876,6 +876,23 @@ function love.load()
     buttons.config_state.back = button("Voltar", voltarMenu, nil, 150, 50)
     buttons.config_state.back.x = cx - 75
     buttons.config_state.back.y = cy + 150
+
+    --Botões no jogo pausado
+    buttons.paused_state.resume = button("Continuar", voltarJogo, nil, 200, 80)
+    buttons.paused_state.resume.x = cx - 100
+    buttons.paused_state.resume.y = cy - 50
+    buttons.paused_state.exit_to_menu = button("Menu", voltarMenu, nil, 200, 80)
+    buttons.paused_state.exit_to_menu.x = cx - 100
+    buttons.paused_state.exit_to_menu.y = cy + 50
+    buttons.paused_state.settings = button("Configurações", configuracoes, nil, 200, 80)
+    buttons.paused_state.settings.x = cx - 100
+    buttons.paused_state.settings.y = cy + 100
+    buttons.paused_state.restart = button("Reiniciar", startNewGame, nil, 200, 80)
+    buttons.paused_state.restart.x = cx - 100
+    buttons.paused_state.restart.y = cy + 100
+    buttons.paused_state.exit_game = button("Sair", love.event.quit, nil, 200, 80)
+    buttons.paused_state.exit_game.x = cx - 100
+    buttons.paused_state.exit_game.y = cy + 150
 
     --Botões no jogo rodando
     buttons.running_state.pass_rodada = button(prxmDiaNormal, proxRodada, nil, 150, 60, prxmDiaClicado)
@@ -1172,10 +1189,22 @@ function love.draw()
     if game.state["paused"] then
         love.graphics.draw(pause_bg, 0, 0, 0, 1.5, 1.5, 1, 1)
         
-        love.graphics.draw(regras, virtual_Width/2 - 300, 100, 0, 0.5, 0.5)
+        --love.graphics.draw(regras, virtual_Width/2 - 300, 100, 0, 0.5, 0.5)
         
         love.graphics.setFont(fonte.grande)
-        love.graphics.print("Pausado\nPressione ESC para continuar!", virtual_Width/2 - 300, 10)
+        love.graphics.print("Jogo Pausado", virtual_Width/2, 10)
+
+        --botões do menu de pausa
+        buttons.paused_state.resume:draw(virtual_Width/2 - 100, virtual_Height/2 - 200, 10, 10)
+        buttons.paused_state.restart:draw(virtual_Width/2 - 100, virtual_Height/2 - 100, 10, 10)
+        buttons.paused_state.settings:draw(virtual_Width/2 - 100, virtual_Height/2, 10, 10)
+        buttons.paused_state.exit_to_menu:draw(virtual_Width/2 - 100, virtual_Height/2 + 100, 10, 10)
+        buttons.paused_state.exit_game:draw(virtual_Width/2 - 100, virtual_Height/2 + 200, 10, 10)
+
+        --Mouse/click na tela de pausa
+        love.graphics.setColor(0,1,0)
+        love.graphics.circle("fill", player.x, player.y, player.radius)
+        love.graphics.setColor(1,1,1)
     end
 
     if game.state["config"] then
