@@ -940,7 +940,6 @@ function love.update(dt)
     cartas.atualizarInteracaoCartas(vx, vy)
     cartas.reposicionarBaralho()
     cartas.notificarErro(dt)
-    
     --Atualiza o timer da tela de Era
     if telaEra.ativa then
         telaEra.timer = telaEra.timer - dt
@@ -1202,7 +1201,6 @@ function love.keypressed(key)
     if key == "escape" then
         game.state["paused"] = not game.state["paused"]
     end
-     cartas.keypressed(key)
 
     if key == "f11" then
         local isFullscreen = love.window.getFullscreen()
