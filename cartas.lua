@@ -554,7 +554,7 @@ local function desenharCartasRodada()
                 love.graphics.draw(c.img, x + (largura - imgW * scale) / 2, y - 130, 0, scale, scale)
             end
 
-            --love.graphics.setFont(fonte.media)
+            love.graphics.setFont(fonte.media)
             love.graphics.setColor(1,0,0)
             love.graphics.printf(c and c.id or "", x, y + altura - 280, largura, "center")
             love.graphics.setColor(1, 1, 1)
