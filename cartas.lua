@@ -554,7 +554,7 @@ local function desenharCartasRodada()
                 love.graphics.draw(c.img, x + (largura - imgW * scale) / 2, y - 130, 0, scale, scale)
             end
 
-            love.graphics.setFont(fonte.media)
+            love.graphics.setFont(fonte.normal)
             love.graphics.setColor(1,0,0)
             love.graphics.printf(c and c.id or "", x, y + altura - 280, largura, "center")
             love.graphics.setColor(1, 1, 1)
@@ -713,7 +713,7 @@ local conflitos2 = {
     {
         id = "Dia quente de trabalho",
         img = love.graphics.newImage("sprites/conflitos/dia quente de trabalho.png"),
-        descricao = "O guarda gasta 3 águas ao invés de 1\ne o movimento cai em 2",
+        descricao = "O guarda gasta 3 águas\nao invés de 1\ne o movimento cai em 2",
         eraMinima = 2,
         efeito = function()
             if alterarAgua and alterarMovimento then
