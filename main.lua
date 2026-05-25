@@ -1,4 +1,5 @@
 local love = require "love"
+local os = love.system.getOS()
 
 local button = require "Button"
 local hitbox = require "hitbox"
@@ -12,6 +13,8 @@ local virtual_Width = 1280
 local virtual_Height = 720
 ---------------------------------------------------------------------
 
+local ehMobile = (os == "Android" or os == "iOS")
+
 local game = {
     state = {
         menu = true,
@@ -24,13 +27,16 @@ local game = {
     points = 0,
 }
 
+local telaAnterior = "menu"
 
+--Pra explicar bem esse caso aqui, ele faz uma verificação com o "ehMobile"
+--Depois ele faz o booleano, se for true é a primeira opção se for false é a segunda
 local volumeSlider = {
-    x = virtual_Width / 2 - 100, --Posição inicial de X
+    x = virtual_Width / 2 - (ehMobile and 200 or 100), --Posição inicial de X
     y = virtual_Height / 2, --Posição Y
-    largura = 200, --Tamanho da barra
-    altura = 10, --Grossura da barra
-    raioBola = 12, --Tamanho do circulo de arrastar
+    largura = ehMobile and 400 or 200, --Tamanho da barra
+    altura = ehMobile and 25 or 10, --Grossura da barra
+    raioBola = ehMobile and 24 or 12, --Tamanho do circulo de arrastar
     valor = 0.5, --O volume vai de 0.0 a 1.0
     arrastando = false --Controla se o mouse está clicando/arrastando
 }
@@ -60,7 +66,32 @@ end
 
 function voltarMenu()
     game.state["config"] = false
+    game.state["paused"] = false
     game.state["menu"] = true
+end
+
+function voltarDasConfiguracoes()
+    game.state["config"] = false
+
+    if telaAnterior == "paused" then
+        game.state["paused"] = true --Se veio da pausa, volta pra pausa
+    else 
+        game.state["menu"] = true --Se veio do menu, volta pro menu
+    end
+end
+
+function pausarJogo()
+    if game.state["running"] then
+        game.state["running"] = false
+        game.state["paused"] = true
+    end
+end
+
+function voltarJogo()
+    game.state["menu"] = false
+    game.state["config"] = false
+    game.state["paused"] = false
+    game.state["running"] = true
 end
 
 function love.resize(width, height)
@@ -199,12 +230,17 @@ local movGuarda = {
 
 function updateSlider(dt)
     local mx, my = love.mouse.getPosition()
+
+    local vx, vy = push:toGame(mx, my)
+
+    if not vx or not vy then return end
+
     local mousePressionado = love.mouse.isDown(1)
 
     --Se o jogador clicar perto da bolinha, começa a arrastar
     if mousePressionado and not volumeSlider.arrastando then
         local bolinhaX = volumeSlider.x + (volumeSlider.largura * volumeSlider.valor)
-        local dist = math.sqrt((mx - bolinhaX)^2 + (my - volumeSlider.y)^2)
+        local dist = math.sqrt((vx - bolinhaX)^2 + (vy - volumeSlider.y)^2)
         if dist < volumeSlider.raioBola + 10 then
             volumeSlider.arrastando = true
         end
@@ -217,7 +253,7 @@ function updateSlider(dt)
 
     -- Enquanto arrasta, calcula o novo valor baseado na posição X do mouse
     if volumeSlider.arrastando then
-        local novoValor = (mx - volumeSlider.x) / volumeSlider.largura
+        local novoValor = (vx - volumeSlider.x) / volumeSlider.largura
         --Trava o valor entre 0 e 1
         volumeSlider.valor = math.max(0, math.min(1, novoValor))
         --Aplica o volume no jogo
@@ -240,8 +276,13 @@ function desenharSlider()
     love.graphics.circle("fill", bolinhaX, volumeSlider.y, volumeSlider.raioBola)
 
     --Texto da porcentagem
-    love.graphics.setFont(fonte.normal)
-    love.graphics.print(math.floor(volumeSlider.valor * 100) .. "%", volumeSlider.x + volumeSlider.largura + 20, volumeSlider.y - 10)
+    if ehMobile then
+        love.graphics.setFont(fonte.media)
+        love.graphics.print(math.floor(volumeSlider.valor * 100) .. "%", volumeSlider.x + volumeSlider.largura + 35, volumeSlider.y - 15)
+    else
+        love.graphics.setFont(fonte.normal)
+        love.graphics.print(math.floor(volumeSlider.valor * 100) .. "%", volumeSlider.x + volumeSlider.largura + 20, volumeSlider.y - 10)
+    end
 
     love.graphics.setColor(1, 1, 1) --Resetar cor
 end
@@ -590,6 +631,12 @@ if contagemBandeiras >= 2 and eraAtual == 1 then
 end
 
 local function configuracoes()
+    if game.state["menu"] then
+        telaAnterior = "menu"
+    elseif game.state["paused"] or game.state["running"] then
+        telaAnterior = "paused"
+    end
+
     game.state["menu"] = false
     game.state["config"] = true
     game.state["paused"] = false
@@ -658,13 +705,15 @@ local button_states = {
 }
 
 function handle_button_click(x, y, radius)
-    if game.state.paused then return end
 
-    local current_state = game.state.menu and "menu" or game.state.running and "running" or game.state.config and "config" or game.state.paused and "paused"
+    local current_state = game.state.menu and "menu_state" 
+                        or game.state.running and "running_state" 
+                        or game.state.config and "config_state" 
+                        or game.state.paused and "paused_state"
 
-    if current_state and button_states[current_state] then
-        for _, button in pairs(button_states[current_state]) do
-            button:checkPressed(x, y, radius)
+    if current_state and buttons[current_state] then
+        for _, btn in pairs(buttons[current_state]) do
+            btn:checkPressed(x, y, radius)
             
         end
     end
@@ -731,8 +780,9 @@ function love.mousepressed(x, y, button, isTouch, presses)
 
     if button ~= 1 then return end
 
-    if game.state then
-        -- statements
+    if game.state["paused"] then
+        handle_button_click(gx, gy, player.radius)
+        return
     end
         
     if game.state["menu"] then
@@ -847,6 +897,10 @@ function love.load()
     local prxmDiaClicado = love.graphics.newImage("sprites/botão_prxm_Dia_Clicado.png")
 
 -------------------------------------------------------------------
+if not ehMobile then
+    love.mouse.setVisible(false)
+end
+
     love.mouse.setVisible(false)
     love.window.setTitle("Última Gota")
     fonte.grande = love.graphics.newFont(40)
@@ -877,7 +931,7 @@ function love.load()
     local cy = virtual_Height / 2
 
     -- Botão Voltar (Nas configurações)
-    buttons.config_state.back = button("Voltar", voltarMenu, nil, 150, 50)
+    buttons.config_state.back = button("Voltar", voltarDasConfiguracoes, nil, 150, 50)
     buttons.config_state.back.x = cx - 75
     buttons.config_state.back.y = cy + 150
 
@@ -900,7 +954,7 @@ function love.load()
 
     --Botões no jogo rodando
     buttons.running_state.pass_rodada = button(prxmDiaNormal, proxRodada, nil, 150, 60, prxmDiaClicado)
-    buttons.running_state.exit_in_game = button(sairNormal, love.event.quit, nil, nil, 60, sairClicado)
+    buttons.running_state.pause_in_game = button("Pausar", pausarJogo, nil, 100, 50)
     
     
     --Botões de confirmação de movimento
@@ -1147,8 +1201,8 @@ function love.draw()
             love.graphics.setColor(unpack(fimDeJogo.cor))
             love.graphics.printf(fimDeJogo.mensagem, 0, virtual_Height/2 - 50, virtual_Width, "center")
         end
-        --Botão de sair por cima de tudo
-        buttons.running_state.exit_in_game:draw(virtual_Width - 100, 10, 10, 10)
+        --Botão de pause por cima de tudo
+        buttons.running_state.pause_in_game:draw(virtual_Width - 100, 10, 10, 10)
 
         --DESENHAR TELA DE TRANSIÇÃO DE ERA
         if telaEra.ativa then
@@ -1173,9 +1227,11 @@ function love.draw()
             love.graphics.setColor(1, 1, 1, 1)
 
         end
-        love.graphics.setColor(0, 0, 1)
-        love.graphics.circle("fill", player.x, player.y, player.radius)
-        love.graphics.setColor(1, 1, 1)
+        if not ehMobile then
+            love.graphics.setColor(0, 0, 1)
+            love.graphics.circle("fill", player.x, player.y, player.radius)
+            love.graphics.setColor(1, 1, 1)
+        end
         
     elseif game.state["menu"] then
         --love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
@@ -1185,9 +1241,11 @@ function love.draw()
         buttons.menu_state.settings:draw(virtual_Width/2 - 20, virtual_Height/2 + 60, 10, 10)
         buttons.menu_state.exit_game:draw(virtual_Width/2 + 100, virtual_Height/2 + 150, 25, 8, 10)
 
-        love.graphics.setColor(0,1,0)
-        love.graphics.circle("fill", player.x, player.y, player.radius)
-        love.graphics.setColor(1,1,1)
+        if not ehMobile then
+            love.graphics.setColor(0,1,0)
+            love.graphics.circle("fill", player.x, player.y, player.radius)
+            love.graphics.setColor(1,1,1)
+        end
     end
 
     if game.state["paused"] then
@@ -1206,9 +1264,11 @@ function love.draw()
         buttons.paused_state.exit_game:draw(virtual_Width/2 - 100, virtual_Height/2 + 200, 10, 10)
 
         --Mouse/click na tela de pausa
-        love.graphics.setColor(0,1,0)
-        love.graphics.circle("fill", player.x, player.y, player.radius)
-        love.graphics.setColor(1,1,1)
+        if not ehMobile then
+            love.graphics.setColor(0,1,0)
+            love.graphics.circle("fill", player.x, player.y, player.radius)
+            love.graphics.setColor(1,1,1)
+        end
     end
 
     if game.state["config"] then
@@ -1222,9 +1282,11 @@ function love.draw()
         local b = buttons.config_state.back
         b:draw(b.x, b.y)
 
-        love.graphics.setColor(0,1,0)
-        love.graphics.circle("fill", player.x, player.y, player.radius)
-        love.graphics.setColor(1,1,1)
+        if not ehMobile then
+            love.graphics.setColor(0,1,0)
+            love.graphics.circle("fill", player.x, player.y, player.radius)
+            love.graphics.setColor(1,1,1)
+        end
     end
 
     push:finish()--Finaliza e estica para a tela real do dispositivo
@@ -1232,7 +1294,13 @@ end
 
 function love.keypressed(key)
     if key == "escape" then
-        game.state["paused"] = not game.state["paused"]
+        if game.state["running"] then
+            game.state["running"] = false
+            game.state["paused"] = true
+        elseif game.state["paused"] then
+            game.state["paused"] = false
+            game.state["running"] = true
+        end
     end
 
     if key == "f11" then
