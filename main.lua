@@ -887,6 +887,11 @@ function love.load()
 
     ------------IMAGENS DO JOGO--------------------
     movGuarda.imagem = love.graphics.newImage("sprites/Guardinha.png")
+    local configText = love.graphics.newImage("sprites/CONFIG.png")
+    local voltarNormal = love.graphics.newImage("sprites/VOLTAR.png")
+    local menuNormal = love.graphics.newImage("sprites/MENU.png")
+    local pauseBtn = love.graphics.newImage("sprites/pause.png")
+    local reiniciarBtn = love.graphics.newImage("sprites/reiniciar.png")
     local startNormal = love.graphics.newImage("sprites/botão_iniciar.png")
     local startClicado = love.graphics.newImage("sprites/botão_iniciar_clicado.png")
     local opcoesNormal = love.graphics.newImage("sprites/botão_opções.png")
@@ -942,21 +947,21 @@ end
     buttons.paused_state.exit_to_menu = button("Menu", voltarMenu, nil, 200, 80)
     buttons.paused_state.exit_to_menu.x = cx - 100
     buttons.paused_state.exit_to_menu.y = cy + 50
-    buttons.paused_state.settings = button("Configurações", configuracoes, nil, 200, 80)
+    buttons.paused_state.settings = button(opcoesNormal, configuracoes, nil, 200, 80, opcoesClicado)
     buttons.paused_state.settings.x = cx - 100
     buttons.paused_state.settings.y = cy + 100
     buttons.paused_state.restart = button("Reiniciar", startNewGame, nil, 200, 80)
     buttons.paused_state.restart.x = cx - 100
     buttons.paused_state.restart.y = cy + 100
-    buttons.paused_state.exit_game = button("Sair", love.event.quit, nil, 200, 80)
-    buttons.paused_state.exit_game.x = cx - 100
+    buttons.paused_state.exit_game = button(sairNormal, love.event.quit, nil, ehMobile and 200 or 100, ehMobile and 90 or 60, sairClicado)
+    buttons.paused_state.exit_game.x = cx
     buttons.paused_state.exit_game.y = cy + 150
 
     --Botões no jogo rodando
     buttons.running_state.pass_rodada = button(prxmDiaNormal, proxRodada, nil, 150, 60, prxmDiaClicado)
-    buttons.running_state.pause_in_game = button("Pausar", pausarJogo, nil, 100, 50)
-    
-    
+    buttons.running_state.pause_in_game = button(pauseBtn, pausarJogo, nil, 200, 90)
+
+
     --Botões de confirmação de movimento
     confirmacao.botoes.sim = button("Sim", confirmarMovimento, nil, 50, 25)
     confirmacao.botoes.nao = button("Não", cancelarMovimento, nil, 50, 25)
@@ -1202,7 +1207,7 @@ function love.draw()
             love.graphics.printf(fimDeJogo.mensagem, 0, virtual_Height/2 - 50, virtual_Width, "center")
         end
         --Botão de pause por cima de tudo
-        buttons.running_state.pause_in_game:draw(virtual_Width - 100, 10, 10, 10)
+        buttons.running_state.pause_in_game:draw(virtual_Width - 300, 10, 0, 0)
 
         --DESENHAR TELA DE TRANSIÇÃO DE ERA
         if telaEra.ativa then
@@ -1261,7 +1266,7 @@ function love.draw()
         buttons.paused_state.restart:draw(virtual_Width/2 - 100, virtual_Height/2 - 100, 10, 10)
         buttons.paused_state.settings:draw(virtual_Width/2 - 100, virtual_Height/2, 10, 10)
         buttons.paused_state.exit_to_menu:draw(virtual_Width/2 - 100, virtual_Height/2 + 100, 10, 10)
-        buttons.paused_state.exit_game:draw(virtual_Width/2 - 100, virtual_Height/2 + 200, 10, 10)
+        buttons.paused_state.exit_game:draw(virtual_Width/2 - 75, virtual_Height/2 + 200, 10, 10)
 
         --Mouse/click na tela de pausa
         if not ehMobile then
