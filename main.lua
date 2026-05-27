@@ -888,15 +888,19 @@ function love.load()
     ------------IMAGENS DO JOGO--------------------
     movGuarda.imagem = love.graphics.newImage("sprites/Guardinha.png")
     local configText = love.graphics.newImage("sprites/CONFIG.png")
-    local voltarNormal = love.graphics.newImage("sprites/VOLTAR.png")
-    local menuNormal = love.graphics.newImage("sprites/MENU.png")
+    local continuarNormal = love.graphics.newImage("sprites/Continuar.png")
+    local voltarNormal = love.graphics.newImage("sprites/Voltar.png")
+    local menuNormal = love.graphics.newImage("sprites/Menu2.png")
     local pauseBtn = love.graphics.newImage("sprites/pause.png")
-    local reiniciarBtn = love.graphics.newImage("sprites/reiniciar.png")
+    local reiniciarBtn = love.graphics.newImage("sprites/reiniciar2.png")
+    local reiniciarNormal = love.graphics.newImage("sprites/ReiniciarMaior2.png")
     local startNormal = love.graphics.newImage("sprites/botão_iniciar.png")
     local startClicado = love.graphics.newImage("sprites/botão_iniciar_clicado.png")
     local opcoesNormal = love.graphics.newImage("sprites/botão_opções.png")
+    local opcoesNormal2 = love.graphics.newImage("sprites/botão_opções2.png")
     local opcoesClicado = love.graphics.newImage("sprites/botão_opções_clicado.png")
     local sairNormal = love.graphics.newImage("sprites/botão_sair.png")
+    local sairNormal2 = love.graphics.newImage("sprites/botão_sair2.png")
     local sairClicado = love.graphics.newImage("sprites/botão_sair_clicado.png")
     local prxmDiaNormal = love.graphics.newImage("sprites/botão_prxm_Dia.png")
     local prxmDiaClicado = love.graphics.newImage("sprites/botão_prxm_Dia_Clicado.png")
@@ -936,30 +940,31 @@ end
     local cy = virtual_Height / 2
 
     -- Botão Voltar (Nas configurações)
-    buttons.config_state.back = button("Voltar", voltarDasConfiguracoes, nil, 150, 50)
+    buttons.config_state.back = button(voltarNormal, voltarDasConfiguracoes, nil, 150, 50)
     buttons.config_state.back.x = cx - 75
     buttons.config_state.back.y = cy + 150
 
     --Botões no jogo pausado
-    buttons.paused_state.resume = button("Continuar", voltarJogo, nil, 200, 80)
+    buttons.paused_state.resume = button(continuarNormal, voltarJogo, nil, 220, 60)
     buttons.paused_state.resume.x = cx - 100
     buttons.paused_state.resume.y = cy - 50
-    buttons.paused_state.exit_to_menu = button("Menu", voltarMenu, nil, 200, 80)
-    buttons.paused_state.exit_to_menu.x = cx - 100
-    buttons.paused_state.exit_to_menu.y = cy + 50
-    buttons.paused_state.settings = button(opcoesNormal, configuracoes, nil, 200, 80, opcoesClicado)
+    buttons.paused_state.exit_to_menu = button(menuNormal, voltarMenu, nil, 160, 50)
+    buttons.paused_state.exit_to_menu.x = cx + 100
+    buttons.paused_state.exit_to_menu.y = cy + 100
+    buttons.paused_state.settings = button(opcoesNormal2, configuracoes, nil, 180, 70)
     buttons.paused_state.settings.x = cx - 100
     buttons.paused_state.settings.y = cy + 100
-    buttons.paused_state.restart = button("Reiniciar", startNewGame, nil, 200, 80)
+    buttons.paused_state.restart = button(reiniciarNormal, startNewGame, nil, 200, 50)
     buttons.paused_state.restart.x = cx - 100
     buttons.paused_state.restart.y = cy + 100
-    buttons.paused_state.exit_game = button(sairNormal, love.event.quit, nil, ehMobile and 200 or 100, ehMobile and 90 or 60, sairClicado)
+    buttons.paused_state.exit_game = button(sairNormal2, love.event.quit, nil, ehMobile and 200 or 100, ehMobile and 90 or 60)
     buttons.paused_state.exit_game.x = cx
     buttons.paused_state.exit_game.y = cy + 150
 
     --Botões no jogo rodando
     buttons.running_state.pass_rodada = button(prxmDiaNormal, proxRodada, nil, 150, 60, prxmDiaClicado)
-    buttons.running_state.pause_in_game = button(pauseBtn, pausarJogo, nil, 200, 90)
+    buttons.running_state.pause_in_game = button(pauseBtn, pausarJogo, nil, 50, 50)
+    buttons.running_state.restart_in_game = button(reiniciarBtn, startNewGame, nil, 50, 50)
 
 
     --Botões de confirmação de movimento
@@ -1066,7 +1071,8 @@ end
 local mapa = love.graphics.newImage("sprites/mapagradeado.png")
 local background= love.graphics.newImage("sprites/FUNDO TELA INICIAL (20251130094623).png")
 local game_bg = love.graphics.newImage("sprites/FUNDO_Gameplay.png")
-local pause_bg = love.graphics.newImage("sprites/FUNDO_Pause.png")
+local pause_bg = love.graphics.newImage("sprites/FUNDO_acinzentado.png")
+local config_bg = love.graphics.newImage("sprites/FUNDO_config.png")
 local regras = love.graphics.newImage("sprites/RegrasDoJogo.jpeg")
 local movImg = love.graphics.newImage("sprites/Movimentos_Arte.png")
 local diaImg = love.graphics.newImage("sprites/Dia_Arte.png")
@@ -1206,27 +1212,27 @@ function love.draw()
             love.graphics.setColor(unpack(fimDeJogo.cor))
             love.graphics.printf(fimDeJogo.mensagem, 0, virtual_Height/2 - 50, virtual_Width, "center")
         end
-        --Botão de pause por cima de tudo
-        buttons.running_state.pause_in_game:draw(virtual_Width - 300, 10, 0, 0)
+        --Botões por cima do game rodando
+        buttons.running_state.pause_in_game:draw(virtual_Width - 250, 10, 0, 0)
+        buttons.running_state.restart_in_game:draw(virtual_Width - 150, 10, 0, 0)
+
 
         --DESENHAR TELA DE TRANSIÇÃO DE ERA
         if telaEra.ativa then
-            local w, h = love.graphics.getDimensions()
-
             --Fundo preto semitransparente
             love.graphics.setColor(0, 0, 0, 0.85)
-            love.graphics.rectangle("fill", 0, 0, w, h)
+            love.graphics.rectangle("fill", 0, 0, virtual_Width, virtual_Height)
 
             --Texto
             love.graphics.setColor(1, 1, 1, 1)
 
             --Título grande
             love.graphics.setFont(fonte.grande)
-            love.graphics.printf(telaEra.titulo, 0, h/2 - 60, w, "center")
+            love.graphics.printf(telaEra.titulo, 0, virtual_Height/2 - 60, virtual_Width, "center")
 
             --Subtítulo/lore
             love.graphics.setFont(fonte.media)
-            love.graphics.printf(telaEra.texto, 0, h/2, w, "center")
+            love.graphics.printf(telaEra.texto, 0, virtual_Height/2, virtual_Width, "center")
 
             --Restaura a cor
             love.graphics.setColor(1, 1, 1, 1)
@@ -1259,14 +1265,14 @@ function love.draw()
         --love.graphics.draw(regras, virtual_Width/2 - 300, 100, 0, 0.5, 0.5)
         
         love.graphics.setFont(fonte.grande)
-        love.graphics.print("Jogo Pausado", virtual_Width/2, 10)
+        love.graphics.print("Jogo Pausado", virtual_Width/2 - 150, 10)
 
         --botões do menu de pausa
-        buttons.paused_state.resume:draw(virtual_Width/2 - 100, virtual_Height/2 - 200, 10, 10)
-        buttons.paused_state.restart:draw(virtual_Width/2 - 100, virtual_Height/2 - 100, 10, 10)
-        buttons.paused_state.settings:draw(virtual_Width/2 - 100, virtual_Height/2, 10, 10)
-        buttons.paused_state.exit_to_menu:draw(virtual_Width/2 - 100, virtual_Height/2 + 100, 10, 10)
-        buttons.paused_state.exit_game:draw(virtual_Width/2 - 75, virtual_Height/2 + 200, 10, 10)
+        buttons.paused_state.resume:draw(virtual_Width/2 - 100, virtual_Height/2 - 200, 1, 1)
+        buttons.paused_state.restart:draw(virtual_Width/2 - 90, virtual_Height/2 - 100, 10, 10)
+        buttons.paused_state.settings:draw(virtual_Width/2 - 80, virtual_Height/2 - 20, 10, 10)
+        buttons.paused_state.exit_to_menu:draw(virtual_Width/2 - 70, virtual_Height/2 + 80, 10, 10)
+        buttons.paused_state.exit_game:draw(virtual_Width/2 - 40, virtual_Height/2 + 160, 10, 10)
 
         --Mouse/click na tela de pausa
         if not ehMobile then
@@ -1277,7 +1283,7 @@ function love.draw()
     end
 
     if game.state["config"] then
-        love.graphics.draw(pause_bg, 0, 0, 0, 1.5, 1, 1)
+        love.graphics.draw(config_bg, 0, 0, 0, 1, 1, 1)
 
         love.graphics.setFont(fonte.grande)
         love.graphics.printf("CONFIGURAÇÕES", 0 , 100, virtual_Width, "center")
