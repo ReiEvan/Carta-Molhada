@@ -1082,7 +1082,7 @@ function love.draw()
         --Arte do Fundo da gameplay
         --love.graphics.print(text,x,y,r,sx,sy,ox,oy)
         --love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
-        love.graphics.draw(game_bg, 0, 0, 0, 1, 1, 1, 1)
+        love.graphics.draw(game_bg, 0, 0, 0, 0.7, 0.7)
         --Movimentos Restantes
         love.graphics.setFont(fonte.grande)
         love.graphics.draw(movImg, movimento.mx, movimento.my + 230, 0, 0.25, 0.25)
@@ -1260,12 +1260,13 @@ function love.draw()
     end
 
     if game.state["paused"] then
-        love.graphics.draw(pause_bg, 0, 0, 0, 1.5, 1.5, 1, 1)
+        love.graphics.draw(pause_bg, 0, 0, 0, 1, 1)
         
         --love.graphics.draw(regras, virtual_Width/2 - 300, 100, 0, 0.5, 0.5)
-        
+        love.graphics.setColor(0, 0, 0) -- Preto para o texto
         love.graphics.setFont(fonte.grande)
         love.graphics.print("Jogo Pausado", virtual_Width/2 - 150, 10)
+        love.graphics.setColor(1, 1, 1) -- Restaura a cor para branco
 
         --botões do menu de pausa
         buttons.paused_state.resume:draw(virtual_Width/2 - 100, virtual_Height/2 - 200, 1, 1)
@@ -1283,7 +1284,8 @@ function love.draw()
     end
 
     if game.state["config"] then
-        love.graphics.draw(config_bg, 0, 0, 0, 1, 1, 1)
+        --love.graphics.draw(drawable (Drawable), x (number), y (number), r (number), sx (number), sy (number), ox (number), oy (number), kx (number), ky (number))
+        love.graphics.draw(config_bg, 0, 0, 0, 1, 1)
 
         love.graphics.setFont(fonte.grande)
         love.graphics.printf("CONFIGURAÇÕES", 0 , 100, virtual_Width, "center")
