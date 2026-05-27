@@ -875,8 +875,8 @@ function love.load()
     local windowWidth, windowHeight = love.window.getDesktopDimensions()
 
     push:setupScreen(gameWidth, gameHeight, windowWidth, windowHeight, {
-        fullscreen = true,
-        resizable = true,
+        fullscreen = false,
+        resizable = false,
         pixelperfect = false,
         canvas = true, --Isso permite que o LOVE trate o jogo como uma textura
         stretched = false,
@@ -1104,7 +1104,6 @@ function love.draw()
         love.graphics.print(rodada .. "/20", virtual_Width/2- 10, 22, 0)
         love.graphics.setFont(fonte.normal)
         love.graphics.setColor(1,1,1)
-
         -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo
         --desenhar o mapa
         love.graphics.draw(mapa, virtual_Width/2 - 400, virtual_Height/2 - 370, 0, .35, .35)
