@@ -12,7 +12,7 @@ function love.conf(t)
     t.modules.audio = true
     t.modules.touch = true
     t.window.fullscreen = false
-    t.window.resizable = false
+    t.window.resizable = true
     --Escala da tela, importante para mobile
     t.window.usedpiscale = true
     --Orientação da tela, nesse caso horizontal

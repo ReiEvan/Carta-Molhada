@@ -876,7 +876,7 @@ function love.load()
 
     push:setupScreen(gameWidth, gameHeight, windowWidth, windowHeight, {
         fullscreen = false,
-        resizable = false,
+        resizable = true,
         pixelperfect = false,
         canvas = true, --Isso permite que o LOVE trate o jogo como uma textura
         stretched = false,
