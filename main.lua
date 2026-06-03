@@ -123,8 +123,8 @@ local pontosBloqueados = {}
 
 
 --Variaveis de Vitória/Derrota
-local imgBandeira = love.graphics.newImage("sprites/bandeira vermelha.png")
-local imgBandeiraConquistada = love.graphics.newImage("sprites/Bandeira_Branca.png")
+local imgBandeira = love.graphics.newImage("sprites/Bandeira_vermelha.png")
+local imgBandeiraConquistada = love.graphics.newImage("sprites/Bandeira_branca.png")
 local objetivosExternos =  {}
 local objetivosRecompensados = {}
 local totalAreasVerdes = 0
@@ -1132,16 +1132,16 @@ function love.draw()
             local p = pontosMovimentacao[indice]
             
             local imagemParaDesenhar = imgBandeira --Bandeira Vermelha
-            local escalaAtual = 0.1
+            local escalaAtual = 0.25
             local ajusteX = 15
-            local ajusteY = 30
+            local ajusteY = 70
             
             if hexAtivos[indice] == nil then
                 imagemParaDesenhar = imgBandeiraConquistada --Bandeira branca
 
-                escalaAtual = 0.08
-                ajusteX = 50
-                ajusteY = 80
+                escalaAtual = 0.25
+                ajusteX = 15
+                ajusteY = 70
             end
             
             --Desenha a bandeira um pouco acima do centro do hex
