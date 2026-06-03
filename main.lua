@@ -1072,7 +1072,7 @@ local mapa = love.graphics.newImage("sprites/mapagradeado.png")
 local background= love.graphics.newImage("sprites/FUNDO TELA INICIAL (20251130094623).png")
 local game_bg = love.graphics.newImage("sprites/FUNDO_Gameplay.png")
 local pause_bg = love.graphics.newImage("sprites/FUNDO_acinzentado.png")
-local config_bg = love.graphics.newImage("sprites/FUNDO_config.png")
+local config_bg = love.graphics.newImage("sprites/FUNDO_acinzentado.png")
 local regras = love.graphics.newImage("sprites/RegrasDoJogo.jpeg")
 local movImg = love.graphics.newImage("sprites/Movimentos_Arte.png")
 local diaImg = love.graphics.newImage("sprites/Dia_Arte.png")
@@ -1245,7 +1245,7 @@ function love.draw()
         
     elseif game.state["menu"] then
         --love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
-        love.graphics.draw(background, virtual_Width/2, virtual_Height/2, 0, bg_escalax, bg_escalay, virtual_Width/2, virtual_Height/2)
+        love.graphics.draw(background, virtual_Width/2, virtual_Height/2, 0, 0.7, 0.7, background:getWidth()/2, background:getHeight()/2)
         
         buttons.menu_state.play_game:draw(virtual_Width/2 - 100, virtual_Height/2 - 25, 20, 8, 10)
         buttons.menu_state.settings:draw(virtual_Width/2 - 20, virtual_Height/2 + 60, 10, 10)
@@ -1287,7 +1287,9 @@ function love.draw()
         love.graphics.draw(config_bg, 0, 0, 0, 1, 1)
 
         love.graphics.setFont(fonte.grande)
+        love.graphics.setColor(0, 0, 0) -- Preto para o texto
         love.graphics.printf("CONFIGURAÇÕES", 0 , 100, virtual_Width, "center")
+        love.graphics.setColor(1, 1, 1) -- Restaura a cor para branco
 
         desenharSlider()
 
