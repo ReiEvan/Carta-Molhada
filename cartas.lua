@@ -54,11 +54,7 @@ local primeirasAliadas = {
         descricao = "ganhe 1 água."
     },
 
-    {
-        id = "Clarividência",
-        img = love.graphics.newImage("sprites/carta 8 clarividencia.png"),
-        descricao = "troque o conflito atual por um outro"
-    },
+-- ver sobre a permandencia da carta de clarividencia nesse contexto
 
     {
         id = "Movimento Livre",
@@ -100,7 +96,7 @@ local segundasAliadas = {
         id = "Brigada de incendio",
         img = love.graphics.newImage("sprites/carta Dissolvendo problemas.png"),
         descricao =
-            "Gaste 2 águas e anule\n" ..
+            "Gaste 2 fichas de águas e anule\n" ..
             "o conflitos da rodada"
     },
 }
