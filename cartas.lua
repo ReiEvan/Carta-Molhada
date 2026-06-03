@@ -91,9 +91,7 @@ local segundasAliadas = {
         id = "Esforço recompensado",
         img = love.graphics.newImage("sprites/carta Esforco recompensado.png"),
         descricao =
-            "Se tiver no mínimo 5 áreas verdes\n" ..
-            "(sem contar o centro)\n" ..
-            "ganhe 3 fichas de água."
+            "Se tiver 5 áreas não\npoluídas ganhe 3 fichas de água, sem contar o centro"
     },
 
     {
