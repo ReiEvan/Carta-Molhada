@@ -148,22 +148,10 @@ local imagemAgua={
     }
 
 
-local confirmacao = {
-    ativa = false,
-    indiceDestino = nil,
-    posicaoX = 0,
-    posicaoY = 0,
-    botoes= {}
-}
+--Nova lógica de movimento para o double click
+local hexFocado = nil
+
 local rodadaAtiva = false
-
-
---Desativa a confirmação após escolher
-    confirmacao.ativa = false
-    confirmacao.indiceDestino = nil
-
-
-
 local deck = {}
 --lista de pontos de movimentação
 local pontosMovimentacao = {
@@ -227,6 +215,28 @@ local movGuarda = {
     frameAtual = 1,
     quadros = {}
 }
+
+function confirmarMovimentoDireto(destIndex)
+    if guardasBloqueados then return end
+
+    local pontoDestino = pontosMovimentacao[destIndex]
+
+    movGuarda.destino = {x = pontoDestino.x, y = pontoDestino.y}
+    movimentosRestantes = movimentosRestantes - 1
+
+    if destIndex ~= 3 and not pontosBloqueados[destIndex] then
+        if not hexAtivos[destIndex] then
+            hexAtivos[destIndex] = 1
+            estadoTransformacao[destIndex] = false
+            rodadasPorPonto[destIndex] = 0
+
+        elseif hexAtivos[destIndex] == 1 then
+            hexAtivos[destIndex] = 2
+            estadoTransformacao[destIndex] = true
+            rodadasPorPonto[destIndex] = 0
+        end
+    end
+end
 
 function updateSlider(dt)
     local mx, my = love.mouse.getPosition()
@@ -338,42 +348,6 @@ local function bloquearGuardaPorRodada()
     guardaBloqueado = true
     -- se já estiver indo para algum destino, cancela o movimento imediatamente
     movGuarda.destino = nil
-end
-
-local function cancelarMovimento()
-    confirmacao.ativa = false
-    confirmacao.indiceDestino = nil
-end
-local function confirmarMovimento()
-    local destIndex = confirmacao.indiceDestino
-
-    -- Se o guarda está bloqueado por conflito, não permita confirmar movimento
-    if guardaBloqueado then
-        -- cancela a confirmação e sai (mantém a UI de confirmação fechada)
-        cancelarMovimento()
-        -- opcional: avisar o jogador (se quiser, use cartas.limparMensagens() / ou outra UI)
-        return
-    end
-
-    --Recupera a posição do destino baseada no índice salvo
-    local pontoDestino = pontosMovimentacao[destIndex]
-    --Executa a movimentação
-    movGuarda.destino = {x = pontoDestino.x, y = pontoDestino.y}
-    movimentosRestantes = movimentosRestantes - 1
-
-    if destIndex ~= 3 and not pontosBloqueados[destIndex] then
-        if not hexAtivos[destIndex] then
-            hexAtivos[destIndex] = 1
-            estadoTransformacao[destIndex] = false
-            rodadasPorPonto[destIndex] = 0
-
-        elseif hexAtivos[destIndex] == 1 then
-            hexAtivos[destIndex] = 2
-                estadoTransformacao[destIndex] = true
-                rodadasPorPonto[destIndex] = 0
-            end
-        end
-    cancelarMovimento()
 end
 
 -- Funcao auxiliar para encontrar um valor em uma lista (substitui table.find)
@@ -795,67 +769,66 @@ function love.mousepressed(x, y, button, isTouch, presses)
         return
     end
 
-    if game.state["running"] then
+if game.state["running"] then
+    handle_button_click(gx, gy, player.radius)
 
-        --Verificar se existe algum botão fixo da UI tipo: Sair, Opções...
-        handle_button_click(gx, gy, player.radius)
-
-        if  confirmacao.ativa then
-            confirmacao.botoes.sim:checkPressed(gx, gy, player.radius)
-            confirmacao.botoes.nao:checkPressed(gx, gy, player.radius)
-            return
-        end
-
-        --Se estiver esperando a escolha de carta, bloqueia o resto
-        if esperandoEscolhaCarta then
-            local cartaFoiEscolhida = cartas.mousepressed(gx, gy, button, movimentosRestantes)
-
-            if cartaFoiEscolhida then
-                esperandoEscolhaCarta = false
-
-            end
-            return
-        end
-        --bloqueio pela troca
-        if cartas.getEscolhendoTroca() then
-            cartas.mousepressed(gx, gy, button, movimentosRestantes)
-            return
-        end
-
-
-        cartas.mousepressed(gx, gy, button, movimentosRestantes)
-
-        --Garante que o guarda não está em movimento
-        if movGuarda.destino == nil then
-        local origem = movGuarda.indiceAtual
-        --verfica colisão com cada ponto de movimentação
-        for i, ponto in ipairs(pontosMovimentacao) do
-        local distancia = math.sqrt((ponto.x - gx)^2 + (ponto.y - gy)^2)
-            if distancia <= ponto.raio then
-                local indiceDestino = i
-                if movimentosRestantes > 0 and movimentoPermitido(origem, indiceDestino) then
-        --Ativa o menu de confirmação
-                    confirmacao.ativa = true
-                    confirmacao.indiceDestino = indiceDestino
-        --Define a posição da caixa de confirmação
-                    confirmacao.posicaoX = ponto.x
-                    confirmacao.posicaoY = ponto.y
-        --Posiciona os botões "Sim" e "Não"
-                    local yBase = ponto.y + 10
-                    local offset = 35
-
-                    confirmacao.botoes.sim.x = ponto.x - offset
-                    confirmacao.botoes.sim.y = yBase
-
-                    confirmacao.botoes.nao.x = ponto.x + offset
-                    confirmacao.botoes.nao.y = yBase
-
-                    end
-                    break
-                end
-            end
-        end
+    if esperandoEscolhaCarta then
+        local cartaFoiEscolhida = cartas.mousepressed(gx, gy, button, movimentosRestantes)
+        if cartaFoiEscolhida then esperandoEscolhaCarta = false end
+        return
     end
+    
+    if cartas.getEscolhendoTroca() then
+        cartas.mousepressed(gx, gy, button, movimentosRestantes)
+        return
+    end
+
+    cartas.mousepressed(gx, gy, button, movimentosRestantes)
+
+    -- Teste 1: O jogo está registrando o clique dentro do estado running?
+    print("Clique detectado na gameplay! x:", gx, "y:", gy)
+
+    if movGuarda.destino == nil then
+        local origem = movGuarda.indiceAtual
+        local clicouEmAlgumHex = false
+
+        for i, ponto in ipairs(pontosMovimentacao) do
+            local distancia = math.sqrt((ponto.x - gx)^2 + (ponto.y - gy)^2)
+            if distancia <= ponto.raio then
+                clicouEmAlgumHex = true
+                local indiceDestino = i
+                
+                -- Teste 2: O clique colidiu com a hitbox de um hexágono?
+                print("Colidiu com o Hexágono número: " .. indiceDestino)
+
+                if movimentosRestantes > 0 and movimentoPermitido(origem, indiceDestino) then
+                    -- Teste 3: As regras de movimento permitiram o foco?
+                    print("Movimento permitido! Hex Focado atual era:", hexFocado)
+
+                    if hexFocado == indiceDestino then
+                        print("-> SEGUNDO CLIQUE CONSTITUÍDO! Movendo guarda...")
+                        confirmarMovimentoDireto(indiceDestino)
+                        hexFocado = nil
+                    else
+                        print("-> PRIMEIRO CLIQUE! Focando no hex:", indiceDestino)
+                        hexFocado = indiceDestino 
+                    end
+                else
+                    print("Movimento NÃO permitido pelas regras ou sem movimentos restantes.")
+                end
+                break
+            end
+        end
+        
+        -- Movemos essa checagem para fora do bloco do guarda para garantir o clique fora
+        if not clicouEmAlgumHex then
+            print("Clicou fora de qualquer hexágono. Resetando foco.")
+            hexFocado = nil
+        end
+    else
+        print("Guarda já está se movendo, clique ignorado.")
+    end
+end
 end
 
 function love.touchpressed(id, x, y, dx, dy, pressure)
@@ -964,11 +937,6 @@ end
     buttons.running_state.pass_rodada = button(prxmDiaNormal, proxRodada, nil, 150, 60, prxmDiaClicado)
     buttons.running_state.pause_in_game = button(pauseBtn, pausarJogo, nil, 50, 50)
     buttons.running_state.restart_in_game = button(reiniciarBtn, startNewGame, nil, 50, 50)
-
-
-    --Botões de confirmação de movimento
-    confirmacao.botoes.sim = button("Sim", confirmarMovimento, nil, 50, 25)
-    confirmacao.botoes.nao = button("Não", cancelarMovimento, nil, 50, 25)
 
     --Botões do Menu de Água (Carta)
     local cx, cy = virtual_Width/2 - 70, virtual_Height/2 - 50
@@ -1118,10 +1086,18 @@ function love.draw()
                         0, escalaHex, escalaHex)
 
                     end
-
                 end
-
+-------------------------------CÓDIGO PRÉ PRONTO PRO SPRITE DA BORDA DO HEX SELECIONADO--------------------
+            if hexFocado == i then
+                --Quando o sprite tiver pronto é só descomentar as duas linhas de baixo
+                --local spriteBorda = love.graphics.newImage("sprites/Borda.png")
+                --love.graphics.draw(spriteborda, ponto.x - spriteborda:getWidth() * escalaHex / 2, ponto.y - spriteborda:getHeight() * escalaHex / 2, 0, escalaHex, escalaHex)
+                 love.graphics.setColor(1, 1, 0, 0.5) -- Amarelo para destacar
+                 love.graphics.circle("line", ponto.x, ponto.y, ponto.raio + 5) -- Círculo ao redor do hex selecionado
+                 love.graphics.setColor(1, 1, 1) -- Resetar cor para branco
             end
+------------------------------------------------------------------------------------------------------------
+        end
         --Desenhar Bandeira nos Objetivos Externos
         love.graphics.setColor(1, 1, 1)
         for _, indice in ipairs(objetivosExternos) do
@@ -1183,20 +1159,6 @@ function love.draw()
 
         --Desenhar os botões enquato o jogo ta rodando
         buttons.running_state.pass_rodada:draw(virtual_Width - 155, virtual_Height - 250, 10, 10)
-
-        if confirmacao.ativa then
-
-            --love.graphics.print("O menu de confirmacao DEVERIA estar aparecendo em:" .. confirmacao.posicaoX .. "," .. confirmacao.posicaoY)
-            --Fundinho preto transparente
-            love.graphics.setColor(0, 0, 0, 0.7)
-            love.graphics.rectangle("fill", confirmacao.posicaoX - 40, confirmacao.posicaoY - 30, 80, 80, 10, 10)
-            love.graphics.setColor(1, 1, 1, 1)
-            --Desenho dos botoes
-            confirmacao.botoes.sim:draw(confirmacao.botoes.sim.x + 10, confirmacao.botoes.sim.y - 30, 10, 5)
-            confirmacao.botoes.nao:draw(confirmacao.botoes.nao.x - 60, confirmacao.botoes.nao.y + 5, 10, 5)
-
-            love.graphics.print("Mover ?", confirmacao.posicaoX - 25, confirmacao.posicaoY - 45)
-        end
 
         if fimDeJogo.ativo then
             --Fundo preto
