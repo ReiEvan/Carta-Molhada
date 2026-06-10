@@ -1044,6 +1044,7 @@ local regras = love.graphics.newImage("sprites/RegrasDoJogo.jpeg")
 local movImg = love.graphics.newImage("sprites/Movimentos_Arte.png")
 local diaImg = love.graphics.newImage("sprites/Dia_Arte.png")
 local configText = love.graphics.newImage("sprites/CONFIG.png")
+local diaLimiteImg = love.graphics.newImage("sprites/diaLimite.png")
 function love.draw()
     push:start()--Inicia a renderização na resolução virtual
      if game.state["running"] then
@@ -1054,22 +1055,22 @@ function love.draw()
         --Movimentos Restantes
         love.graphics.setFont(fonte.grande)
         love.graphics.draw(movImg, movimento.mx, movimento.my + 230, 0, 0.25, 0.25)
-        love.graphics.setColor(0,0,0)
-        FonteNumeros.desenhar(movimentosRestantes, movimento.mx + 250, movimento.my + 245, 0.3)
+        love.graphics.setColor(0,0,1)
+        FonteNumeros.desenhar(movimentosRestantes, movimento.mx + 270, movimento.my + 245, 0.23)
         love.graphics.setFont(fonte.normal)
         --love.graphics.setColor(0, 100, 0)  -- verde
         love.graphics.setColor(1,1,1)
         --Feddback visual da quantidade de agua
         love.graphics.draw(imagemAgua.ficha, imagemAgua.fx, imagemAgua.fy + 300, 0, escala + 0.5, escala + 0.5)
-        love.graphics.setColor(0, 0, 0)
-        love.graphics.setFont(fonte.grande)
+        love.graphics.setColor(0, 0, 1)
         FonteNumeros.desenhar(agua, imagemAgua.fx+80, imagemAgua.fy+328, 0.3)
         love.graphics.setColor(1, 1, 1)
 
-        --Numeração da rodada atual
-        love.graphics.draw(diaImg, virtual_Width/2 - 100, 10, 0, 0.2, 0.2)
-        love.graphics.setColor(0,0,0)
-        FonteNumeros.desenhar(rodada .. "/20", virtual_Width/2- 10, virtual_Height/2 - 350, 0.3)
+        --Numeração da rodada atuals
+        love.graphics.draw(diaImg, virtual_Width/2 - 100, 0.5, 0, 0.2, 0.2)
+        love.graphics.draw(diaLimiteImg, virtual_Width/2 + 20, 15, 0, 0.2, 0.2)
+        love.graphics.setColor(0,0,1)
+        FonteNumeros.desenhar(rodada, virtual_Width/2- 10, virtual_Height/2 - 350, 0.24)
         love.graphics.setFont(fonte.normal)
         love.graphics.setColor(1,1,1)
         -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo
@@ -1079,12 +1080,12 @@ function love.draw()
         for i, ponto in ipairs(pontosMovimentacao) do
             if i ~= 3 then
                 if hexAtivos[i] == 1 then
-                    love.graphics.draw(hexVermelho, 
+                    love.graphics.draw(hexVermelho,
                         ponto.x - hexVermelho:getWidth() * escalaHex / 2,
                         ponto.y - hexVermelho:getHeight() * escalaHex / 2,
                         0, escalaHex, escalaHex)
                     elseif hexAtivos[i] == 2 then
-                        love.graphics.draw(hexMarrom, 
+                        love.graphics.draw(hexMarrom,
                         ponto.x - hexMarrom:getWidth() * escalaHex / 2,
                         ponto.y - hexMarrom:getHeight() * escalaHex / 2,
                         0, escalaHex, escalaHex)

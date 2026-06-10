@@ -16,6 +16,14 @@ function FonteNumeros.load(caminhoPasta)
             print("[Fonte] AVISO: Arquivo nao encontrado em: " .. path)
         end
     end
+
+    local pathBarra = pasta .. "/barra.png"
+    if love.filesystem.getInfo(pathBarra) then
+        imagens["/"] = love.graphics.newImage(pathBarra) --Associa a imagem ao caractere "/"
+        print("[Fonte] carregado com sucesso: " .. pathBarra)
+    else
+        print("[Fonte] AVISO: Sprite 'barra.png' nao encontrado para o caractere '/'")
+    end
 end
 
 function FonteNumeros.desenhar(texto, x, y, escala)
