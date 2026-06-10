@@ -6,6 +6,7 @@ local hitbox = require "hitbox"
 local ost = require "OST"
 local cartas = require ("cartas")
 local push = require "push"
+local FonteNumeros = require "FonteNumeros"
 local volumeMaster = 0.5 -- 50% do volume
 
 --------------ALTURA E LARGURA QUE IREMOS USAR AGORA-----------------
@@ -858,6 +859,9 @@ function love.load()
 
     love.resize(love.graphics.getWidth(), love.graphics.getHeight())
 
+
+    FonteNumeros.load("sprites/numeros")
+
     ------------IMAGENS DO JOGO--------------------
     movGuarda.imagem = love.graphics.newImage("sprites/Guardinha.png")
     local continuarNormal = love.graphics.newImage("sprites/Continuar.png")
@@ -1051,7 +1055,7 @@ function love.draw()
         love.graphics.setFont(fonte.grande)
         love.graphics.draw(movImg, movimento.mx, movimento.my + 230, 0, 0.25, 0.25)
         love.graphics.setColor(0,0,0)
-        love.graphics.print(" : " .. movimentosRestantes, movimento.mx + 250, movimento.my + 245, 0, escala + 0.7, escala + 0.7)
+        FonteNumeros.desenhar(movimentosRestantes, movimento.mx + 250, movimento.my + 245, 0.3)
         love.graphics.setFont(fonte.normal)
         --love.graphics.setColor(0, 100, 0)  -- verde
         love.graphics.setColor(1,1,1)
@@ -1059,13 +1063,13 @@ function love.draw()
         love.graphics.draw(imagemAgua.ficha, imagemAgua.fx, imagemAgua.fy + 300, 0, escala + 0.5, escala + 0.5)
         love.graphics.setColor(0, 0, 0)
         love.graphics.setFont(fonte.grande)
-        love.graphics.print(tostring(agua), imagemAgua.fx+80, imagemAgua.fy+328, 0, escala + 1, escala + 1)
+        FonteNumeros.desenhar(agua, imagemAgua.fx+80, imagemAgua.fy+328, 0.3)
         love.graphics.setColor(1, 1, 1)
 
         --Numeração da rodada atual
         love.graphics.draw(diaImg, virtual_Width/2 - 100, 10, 0, 0.2, 0.2)
         love.graphics.setColor(0,0,0)
-        love.graphics.print(rodada .. "/20", virtual_Width/2- 10, 22, 0)
+        FonteNumeros.desenhar(rodada .. "/20", virtual_Width/2- 10, virtual_Height/2 - 350, 0.3)
         love.graphics.setFont(fonte.normal)
         love.graphics.setColor(1,1,1)
         -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo
