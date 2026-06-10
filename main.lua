@@ -860,7 +860,6 @@ function love.load()
 
     ------------IMAGENS DO JOGO--------------------
     movGuarda.imagem = love.graphics.newImage("sprites/Guardinha.png")
-    local configText = love.graphics.newImage("sprites/CONFIG.png")
     local continuarNormal = love.graphics.newImage("sprites/Continuar.png")
     local voltarNormal = love.graphics.newImage("sprites/Voltar.png")
     local menuNormal = love.graphics.newImage("sprites/Menu2.png")
@@ -1040,6 +1039,7 @@ local config_bg = love.graphics.newImage("sprites/FUNDO_acinzentado.png")
 local regras = love.graphics.newImage("sprites/RegrasDoJogo.jpeg")
 local movImg = love.graphics.newImage("sprites/Movimentos_Arte.png")
 local diaImg = love.graphics.newImage("sprites/Dia_Arte.png")
+local configText = love.graphics.newImage("sprites/CONFIG.png")
 function love.draw()
     push:start()--Inicia a renderização na resolução virtual
      if game.state["running"] then
@@ -1244,10 +1244,7 @@ function love.draw()
         --love.graphics.draw(drawable (Drawable), x (number), y (number), r (number), sx (number), sy (number), ox (number), oy (number), kx (number), ky (number))
         love.graphics.draw(config_bg, 0, 0, 0, 1, 1)
 
-        love.graphics.setFont(fonte.grande)
-        love.graphics.setColor(0, 0, 0) -- Preto para o texto
-        love.graphics.printf("CONFIGURAÇÕES", 0 , 100, virtual_Width, "center")
-        love.graphics.setColor(1, 1, 1) -- Restaura a cor para branco
+        love.graphics.draw(configText, virtual_Width/2 - 325,  virtual_Height/2 - 450, 0, 0.5, 0.5)
 
         desenharSlider()
 
