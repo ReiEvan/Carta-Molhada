@@ -287,12 +287,11 @@ function desenharSlider()
     love.graphics.circle("fill", bolinhaX, volumeSlider.y, volumeSlider.raioBola)
 
     --Texto da porcentagem
+    love.graphics.setColor(0, 0, 1) -- Azul
     if ehMobile then
-        love.graphics.setFont(fonte.media)
-        love.graphics.print(math.floor(volumeSlider.valor * 100) .. "%", volumeSlider.x + volumeSlider.largura + 35, volumeSlider.y - 15)
+        love.graphics.print(math.floor(volumeSlider.valor * 100) .. "%", volumeSlider.x + volumeSlider.largura + 35, volumeSlider.y - 18, 0.13)
     else
-        love.graphics.setFont(fonte.normal)
-        love.graphics.print(math.floor(volumeSlider.valor * 100) .. "%", volumeSlider.x + volumeSlider.largura + 20, volumeSlider.y - 10)
+        FonteNumeros.desenhar(math.floor(volumeSlider.valor * 100) .. "%", volumeSlider.x + volumeSlider.largura + 20, volumeSlider.y - 18, 0.13)
     end
 
     love.graphics.setColor(1, 1, 1) --Resetar cor
