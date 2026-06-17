@@ -1096,9 +1096,14 @@ function love.draw()
 
         --Numeração da rodada atuals
         love.graphics.draw(diaImg, virtual_Width/2 - 100, 0.5, 0, 0.2, 0.2)
-        love.graphics.draw(diaLimiteImg, virtual_Width/2 + 20, 15, 0, 0.2, 0.2)
         love.graphics.setColor(0,0,1)
-        FonteNumeros.desenhar(rodada, virtual_Width/2- 10, virtual_Height/2 - 350, 0.24)
+        if rodada > 9 then
+            love.graphics.draw(diaLimiteImg, virtual_Width/2 + 40, 15, 0, 0.2, 0.2)
+            FonteNumeros.desenhar(rodada, virtual_Width/2 - 15, virtual_Height/2 - 350, 0.24)
+        else
+            love.graphics.draw(diaLimiteImg, virtual_Width/2 + 10, 15, 0, 0.2, 0.2)
+            FonteNumeros.desenhar(rodada, virtual_Width/2 - 10, virtual_Height/2 - 350, 0.24)
+        end
         love.graphics.setFont(fonte.normal)
         love.graphics.setColor(1,1,1)
         -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo

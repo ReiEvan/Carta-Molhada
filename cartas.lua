@@ -110,6 +110,7 @@ local tempoErro = 0
 -----------------------------------------------------------------------------------------
 
 function aplicarEfeito(carta, valorMove)
+
     if carta.id == "Carta da Nascente" and alterarAgua and alterarMovimento then
         alterarAgua(2)
         alterarMovimento(1)
@@ -274,6 +275,10 @@ local function selecionarCartasRodada(rodadaAtual)
     escolhaBloqueada = false
     efeitoDaCarta = nil
     cartaPreview = nil
+
+    if bloquearMovimentoDoGuarda then
+        bloquearMovimentoDoGuarda()   
+    end
 
     if #primeirasAliadas < 2 then
         for i = 1, #descarte do
@@ -458,7 +463,6 @@ local function mouseDentroPreview(mx, my)
     if not cartaPreview then
         return false
     end
-
     local x, y, w, h = getPreviewRect()
 
     return mx >= x and mx <= x + w and
