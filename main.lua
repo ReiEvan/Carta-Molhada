@@ -22,7 +22,8 @@ local game = {
         config = false,
         paused = false,
         running = false,
-        ended = false
+        ended = false,
+        creditos = false
 
     },
     points = 0,
@@ -68,6 +69,7 @@ end
 function voltarMenu()
     game.state["config"] = false
     game.state["paused"] = false
+    game.state["creditos"] = false
     game.state["menu"] = true
 end
 
@@ -79,6 +81,11 @@ function voltarDasConfiguracoes()
     else
         game.state["menu"] = true --Se veio do menu, volta pro menu
     end
+end
+
+function creditosParaMenu()
+    game.state["creditos"] = false
+    game.state["menu"] = true
 end
 
 function pausarJogo()
@@ -604,6 +611,14 @@ if contagemBandeiras >= 2 and eraAtual == 1 then
     cartas.setEra(eraAtual)
 end
 
+local function creditos()
+    game.state["menu"] = false
+    game.state["config"] = false
+    game.state["paused"] = false
+    game.state["running"] = false
+    game.state["creditos"] = true
+end
+
 local function configuracoes()
     if game.state["menu"] then
         telaAnterior = "menu"
@@ -769,6 +784,11 @@ function love.mousepressed(x, y, button, isTouch, presses)
         return
     end
 
+    if game.state["creditos"] then
+        handle_button_click(gx, gy, player.radius)
+        return
+    end
+
 if game.state["running"] then
     handle_button_click(gx, gy, player.radius)
 
@@ -777,7 +797,7 @@ if game.state["running"] then
         if cartaFoiEscolhida then esperandoEscolhaCarta = false end
         return
     end
-    
+
     if cartas.getEscolhendoTroca() then
         cartas.mousepressed(gx, gy, button, movimentosRestantes)
         return
@@ -797,7 +817,7 @@ if game.state["running"] then
             if distancia <= ponto.raio then
                 clicouEmAlgumHex = true
                 local indiceDestino = i
-                
+
                 -- Teste 2: O clique colidiu com a hitbox de um hexágono?
                 print("Colidiu com o Hexágono número: " .. indiceDestino)
 
@@ -811,7 +831,7 @@ if game.state["running"] then
                         hexFocado = nil
                     else
                         print("-> PRIMEIRO CLIQUE! Focando no hex:", indiceDestino)
-                        hexFocado = indiceDestino 
+                        hexFocado = indiceDestino
                     end
                 else
                     print("Movimento NÃO permitido pelas regras ou sem movimentos restantes.")
@@ -819,7 +839,7 @@ if game.state["running"] then
                 break
             end
         end
-        
+
         -- Movemos essa checagem para fora do bloco do guarda para garantir o clique fora
         if not clicouEmAlgumHex then
             print("Clicou fora de qualquer hexágono. Resetando foco.")
@@ -917,6 +937,15 @@ end
     buttons.config_state.back = button(voltarNormal, voltarDasConfiguracoes, nil, 150, 50)
     buttons.config_state.back.x = cx - 75
     buttons.config_state.back.y = cy + 150
+
+    buttons.config_state.credits = button("creditos", creditos, nil, 150, 50)
+    buttons.config_state.credits.x = cx - 75
+    buttons.config_state.credits.y = cy + 150
+
+    -- Botão Voltar (Nos creditos)
+   -- buttons.creditos_state.back = button(voltarNormal, voltarMenu, nil, 150, 50)
+   -- buttons.creditos_state.back.x = cx - 75
+   -- buttons.creditos_state.back.y = cy + 150
 
     --Botões no jogo pausado
     buttons.paused_state.resume = button(continuarNormal, voltarJogo, nil, 220, 60)
@@ -1255,12 +1284,23 @@ function love.draw()
         local b = buttons.config_state.back
         b:draw(b.x, b.y)
 
+--        buttons.config_state.credits:draw(buttons.config_state.credits.x + 100, buttons.config_state.credits.y +100)
+
         if not ehMobile then
             love.graphics.setColor(0,1,0)
             love.graphics.circle("fill", player.x, player.y, player.radius)
             love.graphics.setColor(1,1,1)
         end
     end
+
+--    if game.state["creditos"] then
+--
+--        if not ehMobile then
+--            love.graphics.setColor(0,1,0)
+--            love.graphics.circle("fill", player.x, player.y, player.radius)
+--            love.graphics.setColor(1,1,1)
+--        end
+--    end
 
     push:finish()--Finaliza e estica para a tela real do dispositivo
 end

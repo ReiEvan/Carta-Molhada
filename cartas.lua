@@ -48,10 +48,11 @@ local eraAtual = 1
 -- CARTAS ALIADAS
 
 local primeirasAliadas = {
+
     {
         id = "Garrafa termica",
         img = love.graphics.newImage("sprites/carta garrafa termica.png"),
-        descricao = "ganhe 1 água."
+        descricao = "Ganhe 1 água."
     },
 
 -- ver sobre a permandencia da carta de clarividencia nesse contexto
@@ -66,8 +67,8 @@ local primeirasAliadas = {
         id = "Procurando água",
         img = love.graphics.newImage("sprites/carta Procurando agua.png"),
         descricao =
-            "Troque 1 ação\npor 1 ficha de água.\n(3 é o limite)"
-    },
+            "Troque 1 movimento\npor 1 ficha de água.\n(3 é o limite)"
+    }
 }
 
 local segundasAliadas = {
@@ -76,18 +77,17 @@ local segundasAliadas = {
         img = love.graphics.newImage("sprites/carta nascente.png"),
         descricao = "Ganhe 2 águas e um movimento."
     },
-
     {
         id = "Clarividência",
         img = love.graphics.newImage("sprites/carta 8 clarividencia.png"),
-        descricao = "troque o conflito atual por um outro"
+        descricao = "Troque o conflito atual por um outro"
     },
 
     {
         id = "Esforço recompensado",
         img = love.graphics.newImage("sprites/carta Esforco recompensado.png"),
         descricao =
-            "Se tiver 5 áreas não\npoluídas ganhe 3 fichas de água, sem contar o centro"
+            "Se tiver 5 áreas não poluídas\nganhe 3 fichas de água, sem contar o centro"
     },
 
     {
@@ -96,7 +96,7 @@ local segundasAliadas = {
         descricao =
             "Gaste 2 fichas de águas e anule\n" ..
             "o conflitos da rodada"
-    },
+    }
 }
 
 local escolhendoTroca = false
@@ -503,10 +503,11 @@ local function desenharCartaPreview()
     end
 
     local textX = imageX + imageW + 18
-    local textW = w - imageW - padding * 3 - 18
+    local textW = w - imageW - padding * 2 - 9
 
+    fonte.titulo = love.graphics.newFont(28.9)
     love.graphics.setColor(1, 0.85, 0.2)
-    love.graphics.setFont(fonte.media)
+    love.graphics.setFont(fonte.titulo)
     love.graphics.printf(carta.id or "", textX, y + padding, textW, "left")
 
     love.graphics.setColor(1, 1, 1)
@@ -574,10 +575,10 @@ local function desenharCartasRodada()
 
         if hoverIndex == i then
             local textoX = (i == 1) and (x - 220) or (x + CARD_WIDTH + 20)
-            local larguraCaixa, alturaCaixa = 200, 150
+            local larguraCaixa, alturaCaixa = 220, 150
 
             love.graphics.setColor(0.2, 0.2, 0.2, 0.75)
-            love.graphics.rectangle("fill", textoX - 10, y + offset + 10, larguraCaixa + 20, alturaCaixa)
+            love.graphics.rectangle("fill", textoX + 10, y + offset + 10, larguraCaixa + 20, alturaCaixa)
 
             love.graphics.setColor(0.2, 0.4, 1)
             love.graphics.printf(card.id, textoX, y + offset + 20, larguraCaixa)
