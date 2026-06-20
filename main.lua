@@ -647,10 +647,10 @@ local function startNewGame()
     movimentosRestantes = 3
     fimDeJogo.ativo = false
 
-    --Resetar recompensas e eras
+    --Resetar recompensas, eras e baralhos
     objetivosRecompensados = {}
     eraAtual = 1
-    cartas.setEra(1)
+    cartas.resetarJogo()
     telaEra.ativa = false
 
     --Resetar o Guarda para a Base
@@ -1297,16 +1297,16 @@ function love.draw()
             love.graphics.setColor(1,1,1)
         end
     end
+--[[
+    if game.state["creditos"] then
 
---    if game.state["creditos"] then
---
---        if not ehMobile then
---            love.graphics.setColor(0,1,0)
---            love.graphics.circle("fill", player.x, player.y, player.radius)
---            love.graphics.setColor(1,1,1)
---        end
---    end
-
+       if not ehMobile then
+            love.graphics.setColor(0,1,0)
+            love.graphics.circle("fill", player.x, player.y, player.radius)
+            love.graphics.setColor(1,1,1)
+        end
+   end
+]]
     push:finish()--Finaliza e estica para a tela real do dispositivo
 end
 

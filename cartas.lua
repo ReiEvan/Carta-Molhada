@@ -25,6 +25,17 @@ local efeitosAtivos = {
     terrenoDificil = false,
 }
 
+local function copiarLista(lista)
+    local copia = {}
+
+    for i, item in ipairs(lista) do
+        copia[i] = item
+    end
+
+    return copia
+end
+
+
 function resetarEfeitosRodada()
     efeitosAtivos.garrafaTermica = false
     efeitosAtivos.protecaoVerde = false
@@ -99,11 +110,16 @@ local segundasAliadas = {
     }
 }
 
+local primeirasAliadasBase = copiarLista(primeirasAliadas)
+local segundasAliadasBase = copiarLista(segundasAliadas)
+
 local escolhendoTroca = false
 local movimentosDisponiveis = 0
 
 local mensagemErro = ""
 local tempoErro = 0
+
+local baralhoConflitos = {}
 
 -----------------------------------------------------------------------------------------
 -- EFEITOS ALIADOS
@@ -206,7 +222,8 @@ local function desenharBaralho()
     if #baralho > 0 then
         local cx = baralho[#baralho].transform.x - 65
         local cy = baralho[#baralho].transform.y + 173
-        love.graphics.print("Cartas: " .. contadorBaralho, cx, cy)
+        --para dizer quantas cartas tem no baralho no atual momento
+        --love.graphics.print("Cartas: " .. contadorBaralho, cx, cy)
     end
 end
 
@@ -275,6 +292,7 @@ local function selecionarCartasRodada(rodadaAtual)
     escolhaBloqueada = false
     efeitoDaCarta = nil
     cartaPreview = nil
+
 
     if #primeirasAliadas < 2 then
         for i = 1, #descarte do
@@ -719,6 +737,9 @@ local conflitos2 = {
     },
 }
 
+local conflitos1Base = copiarLista(conflitos1)
+local conflitos2Base = copiarLista(conflitos2)
+
 -----------------------------------------------------------------------------------------
 -- BARALHO DE CONFLITOS
 -----------------------------------------------------------------------------------------
@@ -749,6 +770,41 @@ local function inicializarConflitos()
 end
 
 inicializarConflitos()
+
+local function resetarJogo()
+    eraAtual = 1
+
+    primeirasAliadas = copiarLista(primeirasAliadasBase)
+    segundasAliadas = copiarLista(segundasAliadasBase)
+
+    conflitos1 = copiarLista(conflitos1Base)
+    conflitos2 = copiarLista(conflitos2Base)
+
+    descarte = {}
+    baralho = {}
+    cartasRodada = {}
+
+    cartaSelecionada = nil
+    efeitoDaCarta = nil
+    escolhaBloqueada = false
+    cartaPreview = nil
+
+    escolhendoTroca = false
+    movimentosDisponiveis = 0
+
+    escolhaConflito = false
+    cartasEscolhaConflito = nil
+    conflitoAtual = nil
+
+    mensagemErro = ""
+    tempoErro = 0
+    sabotagemProximaRodada = false
+
+    resetarEfeitosRodada()
+    construirBaralho()
+    inicializarConflitos()
+end
+
 
 local function puxarConflito()
     if #baralhoConflitos == 0 then
@@ -1074,6 +1130,7 @@ return {
     selecionarCartasRodada = selecionarCartasRodada,
     atualizarInteracaoCartas = atualizarInteracaoCartas,
     desenharCartasRodada = desenharCartasRodada,
+    resetarJogo = resetarJogo,
     desenharResultadoEscolha = desenharResultadoEscolha,
     desenharInventarioCartas = desenharInventarioCartas,
 
