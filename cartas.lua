@@ -276,10 +276,6 @@ local function selecionarCartasRodada(rodadaAtual)
     efeitoDaCarta = nil
     cartaPreview = nil
 
-    if bloquearMovimentoDoGuarda then
-        bloquearMovimentoDoGuarda()   
-    end
-
     if #primeirasAliadas < 2 then
         for i = 1, #descarte do
             table.insert(primeirasAliadas, descarte[i])
@@ -1008,7 +1004,7 @@ end
         return confirmarCartaPreview(cartaPreview, moveAtual)
     end
 
-    -- Clique na carta pequena apenas abre o preview.
+    -- Clique na carta pequena abre o preview.
     for i, carta in ipairs(cartasRodada) do
         local x, y = getPosicaoCarta(i)
         local offset = (hoverIndex == i) and -HOVER_OFFSET or 0
@@ -1025,7 +1021,7 @@ end
 
             cartaPreview = carta
             mensagemErro = ""
-            return true
+            return false
         end
     end
 

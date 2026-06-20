@@ -58,6 +58,7 @@ function alterarMovimento(qtd)
 end
 
 local guardasBloqueados = false
+local guardaBloqueado = false
 function setBloqueioGuardas(ativo)
     guardasBloqueados = ativo or false
 end
@@ -225,7 +226,7 @@ local movGuarda = {
 }
 
 function confirmarMovimentoDireto(destIndex)
-    if guardasBloqueados then return end
+    if guardasBloqueados or guardaBloqueado then return end
 
     local pontoDestino = pontosMovimentacao[destIndex]
 
@@ -347,8 +348,7 @@ local function corromperAreas(qtd)
     end
 end
 
--- Flag que indica que o guarda está bloqueado por uma rodada
-local guardaBloqueado = false
+
 
 -- Função que bloqueia o guarda por esta rodada (será passada como callback para cartas.lua)
 local function bloquearGuardaPorRodada()
