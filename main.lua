@@ -7,7 +7,11 @@ local ost = require "OST"
 local cartas = require ("cartas")
 local push = require "push"
 local FonteNumeros = require "FonteNumeros"
+local ManualTutorial = require "ManualTutorial"
+
 local volumeMaster = 0.5 -- 50% do volume
+local manualAberto = false --Controla se o manual está aberto ou não
+local primeiraVezAberto = true --Controla se é a primeira vez que o manual é aberto, para mostrar a primeira página
 
 --------------ALTURA E LARGURA QUE IREMOS USAR AGORA-----------------
 local virtual_Width = 1280
@@ -640,6 +644,11 @@ local function startNewGame()
     game.state["running"] = true
     definirObjetivos()
 
+    if primeiraVezAberto then
+        manualAberto = true
+        primeiraVezAberto = false --Garante q o tutorial só apareça na primeira vez que o jogo é iniciado
+    end
+
     --Resetar variaveis de jogo se necessário
     rodada = 1
     agua = 5
@@ -790,6 +799,23 @@ function love.mousepressed(x, y, button, isTouch, presses)
     end
 
 if game.state["running"] then
+
+    --Bloqueio do tutorial: Se o tutorial estiver aberto, não permite clicar em nada fora dele
+    if manualAberto then
+        local acao = ManualTutorial.mousepressed(gx, gy, button)
+        if acao == "fechar" then
+            manualAberto = false
+        end
+        return -- Bloqueia os cliques de passar para o tabuleiro ou para as cartas
+    end
+
+    --Verficar se clicou no botão "Tutorial" na hud
+    if gx >= 1150 and gx <= 1250 and gy >= 20 and gy <= 60 then
+        manualAberto = true
+        return
+    end
+
+
     handle_button_click(gx, gy, player.radius)
 
     if esperandoEscolhaCarta then
@@ -1233,6 +1259,18 @@ function love.draw()
             love.graphics.setColor(1, 1, 1, 1)
 
         end
+
+        --Tutorial
+        love.graphics.setColor(0.2, 0.2, 0.2, 1)
+        love.graphics.rectangle("fill", 1150, 20, 100, 40, 5, 5)
+        love.graphics.setColor(1, 1, 1, 1)
+        love.graphics.print("Tutorial", 1170, 30)
+
+        if manualAberto then
+            ManualTutorial.draw()
+        end
+
+
         if not ehMobile then
             love.graphics.setColor(0, 0, 1)
             love.graphics.circle("fill", player.x, player.y, player.radius)
@@ -1307,7 +1345,7 @@ function love.draw()
         end
    end
 ]]
-    push:finish()--Finaliza e estica para a tela real do dispositivo
+     push:finish()--Finaliza e estica para a tela real do dispositivo
 end
 
 function love.keypressed(key)
