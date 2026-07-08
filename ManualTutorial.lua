@@ -77,19 +77,26 @@ function ManualTutorial.mousepressed(mx, my, button)
     if button ~= 1 then return false end -- Apenas botão esquerdo do mouse
 
     --Clique Seta Esquerda
-    if paginaAtual > 1 and mx >= setaEsq.x and mx <= setaEsq.x + setaEsq.w and my >= setaEsq.y and my <= setaEsq.y + setaEsq.h then
+    if paginaAtual > 1 then
+        if (mx >= setaEsq.x and mx <= setaEsq.x + setaEsq.w) and
+           (my >= setaEsq.y and my <= setaEsq.y + setaEsq.h) then
         paginaAtual = paginaAtual - 1
-        return true
+            return true
+        end
     end
 
     --Clique Seta Direita
-    if paginaAtual > 1 and mx >= setaEsq.x and mx <= setaEsq.x + setaEsq.w and my >= setaEsq.y and my <= setaEsq.y + setaEsq.h then
-        paginaAtual = paginaAtual + 1
-        return true
+    if paginaAtual < totalPaginas then
+        if (mx >= setaDir.x and mx <= setaDir.x + setaDir.w) and
+           (my >= setaDir.y and my <= setaDir.y + setaDir.h) then
+            paginaAtual = paginaAtual + 1
+            return true
+        end
     end
 
     --Clique no botão fechar (Retorna false para fechar o manual no main)
-    if mx >= btnFechar.x and mx <= btnFechar.x + btnFechar.w and my <= btnFechar.y + btnFechar.h then
+    if (mx >= btnFechar.x and mx <= btnFechar.x + btnFechar.w) and
+       (my >= btnFechar.y and my <= btnFechar.y + btnFechar.h) then
         paginaAtual = 1 --Reseta a página atual para 1 ao fechar o tutorial
         return "fechar"
     end
