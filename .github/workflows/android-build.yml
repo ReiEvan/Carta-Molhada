@@ -32,7 +32,7 @@ jobs:
           icon-xxxhdpi: "./assets/icons/icon-192.png"
           
           # Splash Screen
-          splash-screen: "./assets/icons/splash.png"
+        #  splash-screen: "./assets/icons/splash.png"
 
       - name: Guardar o APK gerado
         uses: actions/upload-artifact@v4
