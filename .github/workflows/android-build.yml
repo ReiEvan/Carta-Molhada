@@ -1,0 +1,29 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ] # Roda sempre que você der 'git push' na main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Código
+        uses: actions/checkout@v4
+
+      - name: Compactar jogo para .love
+        run: zip -9 -r game.love . -x ".git*" ".github*"
+
+      - name: Gerar APK do Android
+        uses: love-actions/love-actions-android@v2
+        with:
+          app-name: "Ultima Gota"
+          bundle-id: "com.seuusuario.ultimagota"
+          love-package: "./game.love"
+          love-ref: "11.5" # Versão do LÖVE que você usa
+
+      - name: Guardar o APK gerado
+        uses: actions/upload-artifact@v4
+        with:
+          name: UltimaGota-Android
+          path: build/*.apk

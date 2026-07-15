@@ -1262,9 +1262,9 @@ function love.draw()
 
         --Tutorial
         love.graphics.setColor(0.2, 0.2, 0.2, 1)
-        love.graphics.rectangle("fill", 1150, 20, 100, 40, 5, 5)
+        love.graphics.rectangle("fill", 1200, 20, 30, 40, 5, 5)
         love.graphics.setColor(1, 1, 1, 1)
-        love.graphics.print("Tutorial", 1170, 30)
+        love.graphics.print("?", 1210, 30)
 
         if manualAberto then
             ManualTutorial.draw()
