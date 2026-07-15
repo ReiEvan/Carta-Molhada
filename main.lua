@@ -1199,6 +1199,7 @@ function love.draw()
         cartas.desenharResultadoEscolha()
 
 
+--Nada n, é só pra build msm
 
         --Desenhar a hitbox enquanto o jogo ta rodando
         hitbox.desenhar(virtual_Width/2 + 15, virtual_Height/2 - 245, 45)
