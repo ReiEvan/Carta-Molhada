@@ -24,12 +24,9 @@ jobs:
           love-package: "./game.love" # Indicamos o caminho relativo exato com "./"
           love-ref: "11.5"
           
-          # Ícones (Sem o de 36px)
-          icon-mdpi: "./assets/icons/icon-48.png"
-          icon-hdpi: "./assets/icons/icon-72.png"
-          icon-xhdpi: "./assets/icons/icon-96.png"
-          icon-xxhdpi: "./assets/icons/icon-144.png"
-          icon-xxxhdpi: "./assets/icons/icon-192.png"
+          # Ícones 
+          resource-path: "./assets/android/res"
+          icon-specifier: "@mipmap/app"
           
           # Splash Screen
         #  splash-screen: "./assets/icons/splash.png"
