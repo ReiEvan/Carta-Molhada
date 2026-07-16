@@ -73,7 +73,7 @@ function ManualTutorial.draw()
     love.graphics.printf("FECHAR", btnFechar.x, btnFechar.y + 15, btnFechar.w, "center")
 end
 
-function ManualTutorial.mousepressed(mx, my, button)
+function ManualTutorial.mousereleased(mx, my, button, isTouch)
     if button ~= 1 then return false end -- Apenas botão esquerdo do mouse
 
     --Clique Seta Esquerda

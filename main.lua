@@ -802,7 +802,7 @@ if game.state["running"] then
 
     --Bloqueio do tutorial: Se o tutorial estiver aberto, não permite clicar em nada fora dele
     if manualAberto then
-        local acao = ManualTutorial.mousepressed(gx, gy, button)
+        local acao = ManualTutorial.mousereleased(gx, gy, button, isTouch)
         if acao == "fechar" then
             manualAberto = false
         end
@@ -986,7 +986,7 @@ end
     buttons.paused_state.restart = button(reiniciarNormal, startNewGame, nil, 200, 50)
     buttons.paused_state.restart.x = cx - 100
     buttons.paused_state.restart.y = cy + 100
-    buttons.paused_state.exit_game = button(sairNormal2, love.event.quit, nil, ehMobile and 200 or 100, ehMobile and 90 or 60)
+    buttons.paused_state.exit_game = button(sairNormal2, love.event.quit, nil, 100, 60)
     buttons.paused_state.exit_game.x = cx
     buttons.paused_state.exit_game.y = cy + 150
 
@@ -1198,8 +1198,6 @@ function love.draw()
         cartas.desenharCartasRodada()
         cartas.desenharResultadoEscolha()
 
-
---Nada n, é só pra build msm
 
         --Desenhar a hitbox enquanto o jogo ta rodando
         hitbox.desenhar(virtual_Width/2 + 15, virtual_Height/2 - 245, 45)
