@@ -2,7 +2,7 @@ local ManualTutorial = {}
 
 --Controle de página
 local paginaAtual = 1
-local totalPaginas = 4 --Dá pra aumentar ou diminuir se quiser
+local totalPaginas = 7 --Dá pra aumentar ou diminuir se quiser
 
 --Dados do tutorial para melhor explicação // Coloquei qualquer coisa só pra ter uma ideia de como vai ficar
 local paginas = {
@@ -20,6 +20,18 @@ local paginas = {
     },
     [4] = {
         titulo = "Dicas e Truques",
+        texto = "Lorem ipsum"
+    },
+    [5] = {
+        titulo = "Personalização",
+        texto = "Lorem ipsum"
+    },
+    [6] = {
+        titulo = "Modos de Jogo",
+        texto = "Lorem ipsum"
+    },
+    [7] = {
+        titulo = "Conclusão",
         texto = "Lorem ipsum"
     }
 }
@@ -50,7 +62,7 @@ function ManualTutorial.draw()
 
 
 
-    --Indicador de páginas ex: de 1/4
+    --Indicador de páginas ex: de 1/7
     love.graphics.printf(paginaAtual .. " / " .. totalPaginas, 300, 480, 680, "center")
 
     --Desenhar a seta esquerda

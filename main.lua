@@ -4,11 +4,12 @@ local os = love.system.getOS()
 local button = require "Button"
 local hitbox = require "hitbox"
 local ost = require "OST"
-local cartas = require ("cartas")
+cartas = require ("cartas")
 local push = require "push"
 local FonteNumeros = require "FonteNumeros"
 local ManualTutorial = require "ManualTutorial"
 
+mostrarAvisoCarta = true --Controla se o aviso de escolha de carta deve aparecer ou não
 local volumeMaster = 0.5 -- 50% do volume
 local manualAberto = false --Controla se o manual está aberto ou não
 local primeiraVezAberto = true --Controla se é a primeira vez que o manual é aberto, para mostrar a primeira página
@@ -578,6 +579,7 @@ function proxRodada()
     cartas.prepararConflitoDaRodada(rodada)
 
     esperandoEscolhaCarta = true
+    mostrarAvisoCarta = true
 
     -- Lógica de mudança de era
     local contagemBandeiras = 0
@@ -693,6 +695,7 @@ local function startNewGame()
     cartas.resetarEfeitosRodada()
     cartas.selecionarCartasRodada(rodada)
     esperandoEscolhaCarta = true --Força a escolha no turno 1
+    mostrarAvisoCarta = true
 end
 
 local button_states = {
@@ -800,8 +803,11 @@ function love.mousepressed(x, y, button, isTouch, presses)
 
 if game.state["running"] then
 
-    --Bloqueio do tutorial: Se o tutorial estiver aberto, não permite clicar em nada fora dele
+    -- Bloqueio do tutorial: Se o tutorial estiver aberto, não permite clicar em nada fora dele
     if manualAberto then
+        -- Mudamos aqui para manualTutorial.mousepressed para manter o seu padrão!
+        -- Para evitar que ele pule páginas, dentro do manualTutorial.lua você pode usar uma trava simples de clique se necessário,
+        -- mas mantendo mousepressed aqui, seu fluxo de entrada fica 100% unificado.
         local acao = ManualTutorial.mousereleased(gx, gy, button, isTouch)
         if acao == "fechar" then
             manualAberto = false
@@ -809,18 +815,21 @@ if game.state["running"] then
         return -- Bloqueia os cliques de passar para o tabuleiro ou para as cartas
     end
 
-    --Verficar se clicou no botão "Tutorial" na hud
+    -- Verificar se clicou no botão "Tutorial" na hud
     if gx >= 1150 and gx <= 1250 and gy >= 20 and gy <= 60 then
         manualAberto = true
         return
     end
 
-
     handle_button_click(gx, gy, player.radius)
 
+    -- >>> AQUI ENTRA A LÓGICA DO AVISO! <<<
     if esperandoEscolhaCarta then
-        local cartaFoiEscolhida = cartas.mousepressed(gx, gy, button, movimentosRestantes)
-        if cartaFoiEscolhida then esperandoEscolhaCarta = false end
+        local cartaFoiEscolhida = mousepressed(gx, gy, button, movimentosRestantes)
+        if cartaFoiEscolhida then 
+            esperandoEscolhaCarta = false 
+            mostrarAvisoCarta = false -- O jogador escolheu a carta, então sumimos com o aviso!
+        end
         return
     end
 
@@ -1235,6 +1244,36 @@ function love.draw()
         --Botões por cima do game rodando
         buttons.running_state.pause_in_game:draw(virtual_Width - 250, 10, 0, 0)
         buttons.running_state.restart_in_game:draw(virtual_Width - 150, 10, 0, 0)
+
+        if mostrarAvisoCarta then
+            local larguraJanela = push:getWidth()
+            local alturaJanela = push:getHeight()
+
+            local larguraCaixa = 450
+            local alturaCaixa = 80
+
+            local x = (virtual_Width - larguraCaixa) / 2
+            local y = 80
+
+            love.graphics.setColor(0, 0, 0, 0.7)
+            love.graphics.rectangle("fill", x, y, larguraCaixa, alturaCaixa, 10, 10)
+
+            love.graphics.setColor(1, 1, 1, 0.9)
+            love.graphics.setLineWidth(2)
+            love.graphics.rectangle("line", x, y, larguraCaixa, alturaCaixa, 10, 10)
+
+            love.graphics.setColor(1, 1, 1, 1)
+            local texto = "Escolha uma carta para inicar a rodada!"
+
+            local alturaFonte = love.graphics.getFont():getHeight()
+            love.graphics.printf(
+                texto,
+                x,
+                y + (alturaCaixa - alturaFonte) / 2,
+                larguraCaixa,
+                "center"
+            )
+        end
 
 
         --DESENHAR TELA DE TRANSIÇÃO DE ERA

@@ -292,6 +292,7 @@ local function selecionarCartasRodada(rodadaAtual)
     escolhaBloqueada = false
     efeitoDaCarta = nil
     cartaPreview = nil
+    mostrarAvisoCarta = true
 
 
     if #primeirasAliadas < 2 then
@@ -1016,12 +1017,13 @@ function mousepressed(mx, my, btn, moveAtual)
     if btn ~= 1 then return false end
 
     if escolhaBloqueada and not escolhaConflito and not escolhendoTroca then
-    return false
-end
+        return false
+    end
 
     if mouseDentroBotoesTroca(mx, my) then
         return true
     end
+    
     if escolhaConflito and cartasEscolhaConflito then
         for i, c in ipairs(cartasEscolhaConflito) do
             local sw, sh = virtual_Width, virtual_Height
@@ -1045,6 +1047,10 @@ end
                     conflitoAtual.efeito()
                 end
 
+                -- >>> AQUI: Desativa o aviso do início da rodada! <<<
+                -- Como o jogador clicou com sucesso na carta, o texto some da tela
+                mostrarAvisoCarta = false
+
                 escolhaConflito = false
                 cartasEscolhaConflito = nil
 
@@ -1054,6 +1060,7 @@ end
 
         return false
     end
+
 
     -- Primeiro clique no preview grande confirma a carta e ativa o efeito.
     if mouseDentroPreview(mx, my) then
@@ -1133,6 +1140,7 @@ return {
     resetarJogo = resetarJogo,
     desenharResultadoEscolha = desenharResultadoEscolha,
     desenharInventarioCartas = desenharInventarioCartas,
+    mousepressed = mousepressed,
 
     getEscolhendoTroca = function()
         return escolhendoTroca
