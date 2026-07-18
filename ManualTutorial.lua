@@ -1,3 +1,4 @@
+local love = require("love")
 local ManualTutorial = {}
 
 --Controle de página
@@ -7,38 +8,31 @@ local totalPaginas = 7 --Dá pra aumentar ou diminuir se quiser
 --Dados do tutorial para melhor explicação // Coloquei qualquer coisa só pra ter uma ideia de como vai ficar
 local paginas = {
     [1] = {
-        titulo = "Bem-vindo ao Tutorial",
-        texto = "Este é o início do tutorial. Aqui você aprenderá os conceitos básicos do jogo."
+        img = love.graphics.newImage("sprites/tutorial/1.png")
     },
     [2] = {
-        titulo = "Controles do Jogo",
-        texto = "Lorem ipsum"
+        img = love.graphics.newImage("sprites/tutorial/2.png")
     },
     [3] = {
-        titulo = "Objetivos do Jogo",
-        texto = "Lorem ipsum"
+        img = love.graphics.newImage("sprites/tutorial/3.png")
     },
     [4] = {
-        titulo = "Dicas e Truques",
-        texto = "Lorem ipsum"
+        img = love.graphics.newImage("sprites/tutorial/4.png")
     },
     [5] = {
-        titulo = "Personalização",
-        texto = "Lorem ipsum"
+        img = love.graphics.newImage("sprites/tutorial/5.png")
     },
     [6] = {
-        titulo = "Modos de Jogo",
-        texto = "Lorem ipsum"
+        img = love.graphics.newImage("sprites/tutorial/6.png")
     },
     [7] = {
-        titulo = "Conclusão",
-        texto = "Lorem ipsum"
+        img = love.graphics.newImage("sprites/tutorial/7.png")
     }
 }
 
 --Config dos botões (coordenadas baseadas no tamanho vitual do canva)
-local setaEsq = {x = 250, y = 350, w = 50, h = 50}
-local setaDir = {x = 980, y = 350, w = 50, h = 50}
+local setaEsq = {x = 210, y = 350, w = 50, h = 50}
+local setaDir = {x = 1020, y = 350, w = 50, h = 50}
 local btnFechar = {x = 540, y = 550, w = 200, h = 50} -- botão centralizado embaixo, até o momento
 
 function ManualTutorial.draw()
@@ -54,18 +48,19 @@ function ManualTutorial.draw()
     love.graphics.setColor(1, 1, 1, 0.5) -- Cor branca semi-transparente
     love.graphics.rectangle("line", 200, 100, 880, 520, 15, 15)
 
-    --Texto da página atual
-    love.graphics.setColor(0, 0, 0, 1) -- Cor preta
+    --Imagem da página atual
+    love.graphics.setColor(1, 1, 1)
     local conteudo = paginas[paginaAtual]
-    love.graphics.printf(conteudo.titulo, 300, 160, 680, "center", 0, 1.5, 1.5) -- Título maior
-    love.graphics.printf(conteudo.texto, 320, 260, 640, "center")
+    love.graphics.draw(conteudo.img, 200, 100, 0)
 
 
 
     --Indicador de páginas ex: de 1/7
-    love.graphics.printf(paginaAtual .. " / " .. totalPaginas, 300, 480, 680, "center")
+    love.graphics.setColor(0, 0, 0)
+    love.graphics.printf(paginaAtual .. " / " .. totalPaginas, 300, 520, 680, "center")
 
     --Desenhar a seta esquerda
+
     if paginaAtual > 1 then
         love.graphics.rectangle("line", setaEsq.x, setaEsq.y, setaEsq.w, setaEsq.h, 5, 5)
         love.graphics.print("<", setaEsq.x + 18, setaEsq.y + 15, 0, 2, 2)
