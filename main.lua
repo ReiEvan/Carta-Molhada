@@ -90,8 +90,13 @@ function voltarDasConfiguracoes()
 end
 
 function creditosParaMenu()
-    game.state["creditos"] = false
-    game.state["menu"] = true
+    if game.state["creditos"] then
+        game.state["creditos"] = false
+        game.state["menu"] = true
+        game.state["config"] = false
+        game.state["paused"] = false
+        game.state["running"] = false
+    end
 end
 
 function pausarJogo()
@@ -518,7 +523,8 @@ local buttons = {
     menu_state = {},
     config_state = {},
     running_state = {},
-    paused_state = {}
+    paused_state = {},
+    creditos_state = {}
 
 }
 
@@ -977,10 +983,13 @@ end
     buttons.config_state.credits.x = cx - 75
     buttons.config_state.credits.y = cy + 150
 
+
+    --x aumenta pra direita e y pra baixo
+
     -- Botão Voltar (Nos creditos)
-   -- buttons.creditos_state.back = button(voltarNormal, voltarMenu, nil, 150, 50)
-   -- buttons.creditos_state.back.x = cx - 75
-   -- buttons.creditos_state.back.y = cy + 150
+    buttons.creditos_state.back = button(voltarNormal, creditosParaMenu, nil, 150, 50)
+    buttons.creditos_state.back.x = cx + 490
+    buttons.creditos_state.back.y = cy - 350
 
     --Botões no jogo pausado
     buttons.paused_state.resume = button(continuarNormal, voltarJogo, nil, 220, 60)
@@ -1108,6 +1117,7 @@ local movImg = love.graphics.newImage("sprites/Movimentos_Arte.png")
 local diaImg = love.graphics.newImage("sprites/Dia_Arte.png")
 local configText = love.graphics.newImage("sprites/CONFIG.png")
 local diaLimiteImg = love.graphics.newImage("sprites/diaLimite.png")
+local creditosimg = love.graphics.newImage("sprites/creditos.png")
 function love.draw()
     push:start()--Inicia a renderização na resolução virtual
      if game.state["running"] then
@@ -1128,7 +1138,6 @@ function love.draw()
         love.graphics.setColor(0, 0, 1)
         FonteNumeros.desenhar(agua, imagemAgua.fx+80, imagemAgua.fy+328, 0.3)
         love.graphics.setColor(1, 1, 1)
-
         --Numeração da rodada atuals
         love.graphics.draw(diaImg, virtual_Width/2 - 100, 0.5, 0, 0.2, 0.2)
         love.graphics.setColor(0,0,1)
@@ -1330,6 +1339,13 @@ function love.draw()
         end
     end
 
+    if game.state["creditos"] then
+        love.graphics.draw(creditosimg, 0, 0)
+
+        local b = buttons.creditos_state.back
+        b:draw(b.x, b.y)
+    end
+
     if game.state["paused"] then
         love.graphics.draw(pause_bg, 0, 0, 0, 1, 1)
 
@@ -1365,7 +1381,7 @@ function love.draw()
         local b = buttons.config_state.back
         b:draw(b.x, b.y)
 
---        buttons.config_state.credits:draw(buttons.config_state.credits.x + 100, buttons.config_state.credits.y +100)
+    buttons.config_state.credits:draw(buttons.config_state.credits.x + 100, buttons.config_state.credits.y +100)
 
         if not ehMobile then
             love.graphics.setColor(0,1,0)
@@ -1373,7 +1389,7 @@ function love.draw()
             love.graphics.setColor(1,1,1)
         end
     end
---[[
+
     if game.state["creditos"] then
 
        if not ehMobile then
@@ -1382,7 +1398,7 @@ function love.draw()
             love.graphics.setColor(1,1,1)
         end
    end
-]]
+
      push:finish()--Finaliza e estica para a tela real do dispositivo
 end
 
