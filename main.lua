@@ -90,7 +90,8 @@ function voltarDasConfiguracoes()
 end
 
 function creditosParaMenu()
-    if game.state["creditos"] then
+
+   if game.state["creditos"] then
         game.state["creditos"] = false
         game.state["menu"] = true
         game.state["config"] = false
@@ -979,9 +980,9 @@ end
     buttons.config_state.back.x = cx - 75
     buttons.config_state.back.y = cy + 150
 
-    buttons.config_state.credits = button("creditos", creditos, nil, 150, 50)
-    buttons.config_state.credits.x = cx - 75
-    buttons.config_state.credits.y = cy + 150
+    buttons.config_state.creditos = button("creditos", creditos, nil, 150, 50)
+    buttons.config_state.creditos.x = cx - 75
+    buttons.config_state.creditos.y = cy + 150
 
 
     --x aumenta pra direita e y pra baixo
@@ -1381,7 +1382,7 @@ function love.draw()
         local b = buttons.config_state.back
         b:draw(b.x, b.y)
 
-    buttons.config_state.credits:draw(buttons.config_state.credits.x + 100, buttons.config_state.credits.y +100)
+        buttons.config_state.creditos:draw(buttons.config_state.creditos.x + 100, buttons.config_state.creditos.y + 100)
 
         if not ehMobile then
             love.graphics.setColor(0,1,0)
