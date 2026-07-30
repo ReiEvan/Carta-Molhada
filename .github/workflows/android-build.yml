@@ -23,6 +23,9 @@ jobs:
           bundle-id: "com.seuusuario.ultimagota"
           love-package: "./game.love" # Indicamos o caminho relativo exato com "./"
           love-ref: "11.5"
+
+          # Forçar o modo paisagem
+          orientation: "sensorLandscape"
           
           # Ícones 
           resource-path: "./assets/android/res"
