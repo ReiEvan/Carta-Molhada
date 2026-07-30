@@ -709,7 +709,8 @@ local button_states = {
     menu = buttons.menu_state,
     running = buttons.running_state,
     config = buttons.config_state,
-    paused = buttons.paused_state
+    paused = buttons.paused_state,
+    creditos = buttons.creditos_state
 }
 
 function handle_button_click(x, y, radius)
@@ -718,6 +719,7 @@ function handle_button_click(x, y, radius)
                         or game.state.running and "running_state"
                         or game.state.config and "config_state"
                         or game.state.paused and "paused_state"
+                        or game.state.creditos and "creditos_state"
 
     if current_state and buttons[current_state] then
         for _, btn in pairs(buttons[current_state]) do
@@ -815,7 +817,7 @@ if game.state["running"] then
         -- Mudamos aqui para manualTutorial.mousepressed para manter o seu padrão!
         -- Para evitar que ele pule páginas, dentro do manualTutorial.lua você pode usar uma trava simples de clique se necessário,
         -- mas mantendo mousepressed aqui, seu fluxo de entrada fica 100% unificado.
-        local acao = ManualTutorial.mousereleased(gx, gy, button, isTouch)
+        local acao = ManualTutorial.mousepressed(gx, gy, button)
         if acao == "fechar" then
             manualAberto = false
         end
@@ -891,11 +893,6 @@ if game.state["running"] then
         print("Guarda já está se movendo, clique ignorado.")
     end
 end
-end
-
-function love.touchpressed(id, x, y, dx, dy, pressure)
-    --O 1 simula o lado esquerdo do mouse
-    love.mousepressed(x, y, 1, false, 1)
 end
 
 function love.touchreleased(id, x, y, dx, dy, pressure)

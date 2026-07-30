@@ -18,4 +18,5 @@ function love.conf(t)
     t.window.usedpiscale = true
     --Orientação da tela, nesse caso horizontal
     t.window.displayorientation = "landscape"
+    t.window.orientation = "landscape"
 end
