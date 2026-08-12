@@ -532,11 +532,7 @@ local buttons = {
 function proxRodada()
     --Mensagem de escolha a carta
     if esperandoEscolhaCarta then
-        love.graphics.setColor(1,0,0)
-        love.graphics.setFont(fonte.grande)
-        love.graphics.print("Escolha uma das carta primeiro.", virtual_Width/2, virtual_Height/2)
-        love.graphics.setFont(fonte.normal)
-        love.graphics.setColor(0,0,0)
+        mostrarAvisoCarta = true
         return
     end
 
@@ -834,7 +830,7 @@ if game.state["running"] then
 
     -- >>> AQUI ENTRA A LÓGICA DO AVISO! <<<
     if esperandoEscolhaCarta then
-        local cartaFoiEscolhida = mousepressed(gx, gy, button, movimentosRestantes)
+        local cartaFoiEscolhida = cartas.mousepressed(gx, gy, button, movimentosRestantes)
         if cartaFoiEscolhida then 
             esperandoEscolhaCarta = false 
             mostrarAvisoCarta = false -- O jogador escolheu a carta, então sumimos com o aviso!
@@ -1010,6 +1006,9 @@ end
     buttons.running_state.pass_rodada = button(prxmDiaNormal, proxRodada, nil, 150, 60, prxmDiaClicado)
     buttons.running_state.pause_in_game = button(pauseBtn, pausarJogo, nil, 50, 50)
     buttons.running_state.restart_in_game = button(reiniciarBtn, startNewGame, nil, 50, 50)
+    
+    buttons.running_state.baralho_pass_rodada = button("Baralho", proxRodada, nil, 150, 290)
+    buttons.running_state.baralho_pass_rodada.invisivel = true
 
     --Botões do Menu de Água (Carta)
     local cx, cy = virtual_Width/2 - 70, virtual_Height/2 - 50
@@ -1238,6 +1237,8 @@ function love.draw()
 
         --Desenhar os botões enquato o jogo ta rodando
         buttons.running_state.pass_rodada:draw(virtual_Width - 155, virtual_Height - 250, 10, 10)
+        --Botão invisivel do baralho
+        buttons.running_state.baralho_pass_rodada:draw(virtual_Width - 155, virtual_Height - 180)
 
         if fimDeJogo.ativo then
             --Fundo preto

@@ -22,11 +22,13 @@ function Button(textOrImg, func, func_param, width, height, imagePressed)
         func = func or function() print("Esse botão ainda não tem nenhuma função") end,
         func_param = func_param,
         image = isImage and textOrImg or nil,
+        imagePressed = imagePressed,
         text = not isImage and textOrImg or "Sem Texto",
         button_x = 0,
         button_y = 0,
         text_x = 0,
         text_y = 0,
+        invisivel = false, -- PROPRIEDADE NOVA: Se for true, não desenha nada na tela!
 
         checkPressed = function (self, mouse_x, mouse_y, cursor_radius)
             if (mouse_x + cursor_radius >= self.button_x) and (mouse_x - cursor_radius <= self.button_x + self.width) then
@@ -41,8 +43,15 @@ function Button(textOrImg, func, func_param, width, height, imagePressed)
         end,
     
         draw = function (self, button_x, button_y, text_x, text_y)
+            -- Atualiza a posição da hitbox
             self.button_x = button_x or self.button_x
             self.button_y = button_y or self.button_y
+
+            -- SE O BOTÃO FOR INVISÍVEL: Para aqui!
+            -- Ele atualizou a posição (button_x e button_y) acima, mas não desenha nada na tela.
+            if self.invisivel then
+                return
+            end
 
             --Detecção de clique visual
             local imgParaDesenhar = self.image
