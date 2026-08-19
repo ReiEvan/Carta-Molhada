@@ -1262,7 +1262,7 @@ function love.draw()
         buttons.running_state.pause_in_game:draw(virtual_Width - 250, 10, 0, 0)
         buttons.running_state.restart_in_game:draw(virtual_Width - 150, 10, 0, 0)
 
-        if mostrarAvisoCarta then
+        if mostrarAvisoCarta and not telaEra.ativa and not fimDeJogo.ativo then
             local larguraJanela = push:getWidth()
             local alturaJanela = push:getHeight()
 
