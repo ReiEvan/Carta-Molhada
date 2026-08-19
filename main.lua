@@ -452,25 +452,33 @@ end
 
 local function definirObjetivos()
     objetivosExternos = {}
+
+    --Bandeira mais próxima, vou pôr num lugar fixo
+    local bandeiraTutorial = 2
+    table.insert(objetivosExternos, bandeiraTutorial)
+
     local possiveis = {}
     --Lista todos os pontos que não são a base (3) nem adjascentes a ela
     local vizinhosBase = pontosAdjascentes[3]
+    local vizinhosTutorial = pontosAdjascentes[bandeiraTutorial]
 
     for i = 1, #pontosMovimentacao do
-        local ehVizinhoDaBase = false
+        local ehInvalido = (i == 3) or (i == bandeiraTutorial)
 
-        if vizinhosBase then
-            for _, v in ipairs(vizinhosBase) do
-                if i == v then ehVizinhoDaBase = true break end
-            end
+        if vizinhosBase and findInTable(vizinhosBase, i) then
+            ehInvalido = true
         end
 
-        if i ~= 3 and not ehVizinhoDaBase then
+        if vizinhosTutorial and findInTable(vizinhosBase, i) then
+            ehInvalido = true
+        end
+
+        if not ehInvalido then
             table.insert(possiveis, i)
         end
     end
 
-    --Sorteia 4 bandeiras com distanciamento
+    --Sorteia as outras 3 bandeiras com distanciamento
     local qtdDesejada = 4
     --Enquanto não tiver 4 bandeiras e ainda houver lugares possiveis
     while #objetivosExternos < qtdDesejada and #possiveis > 0 do
@@ -491,13 +499,8 @@ local function definirObjetivos()
                 deveManter = false
             else
                 local vizinhoDoEscolhido = pontosAdjascentes[escolhido]
-                if vizinhoDoEscolhido then
-                    for _, vizinho in ipairs(vizinhoDoEscolhido) do
-                        if candidato == vizinho then
-                            deveManter = false
-                            break
-                        end
-                    end
+                if vizinhoDoEscolhido and findInTable(vizinhoDoEscolhido, candidato) then
+                    deveManter = false
                 end
             end
             if deveManter then
@@ -544,14 +547,20 @@ function proxRodada()
 
 
 
-    local diasNecessarios = 2
-    if cartas.efeitosAtivos.terrenoDificil then
-        diasNecessarios = 3
+    local diasPadrao = 2
+    if cartas.efeitoAtivos and cartas.efeitosAtivos.terrenoDificil then
+        diasPadrao = 3
     end
 
     for i = 1, #pontosMovimentacao do
         if rodadasPorPonto[i] then
             rodadasPorPonto[i] = rodadasPorPonto[i] + 1
+
+            --Para a primeira bandeira
+            local diasNecessarios = diasPadrao
+            if objetivosExternos[1] and i == objetivosExternos[i] then
+                diasNecessarios = 1
+            end
 
             if estadoTransformacao[i] and rodadasPorPonto[i] >= diasNecessarios then
                 hexAtivos[i] = nil
@@ -1374,6 +1383,11 @@ function love.draw()
         love.graphics.draw(config_bg, 0, 0, 0, 1, 1)
 
         love.graphics.draw(configText, virtual_Width/2 - 325,  virtual_Height/2 - 450, 0, 0.5, 0.5)
+
+        love.graphics.setFont(fonte.grande)
+        love.graphics.setColor(0,0,1)
+        love.graphics.print("Volume", virtual_Width/2 - 325, virtual_Height/2 - 35)
+        love.graphics.setColor(1,1,1)
 
         desenharSlider()
 
