@@ -8,6 +8,7 @@ cartas = require ("cartas")
 local push = require "push"
 local FonteNumeros = require "FonteNumeros"
 local ManualTutorial = require "ManualTutorial"
+local Conquistas = require "conquistas"
 
 mostrarAvisoCarta = true --Controla se o aviso de escolha de carta deve aparecer ou não
 local volumeMaster = 0.5 -- 50% do volume
@@ -29,8 +30,8 @@ local game = {
         paused = false,
         running = false,
         ended = false,
-        creditos = false
-
+        creditos = false,
+        conquistas = false
     },
     points = 0,
 }
@@ -54,6 +55,9 @@ local agua = 5
 local movimentosRestantes = 3
 function alterarAgua(qtd)
     agua = agua + qtd
+    if agua >= 6 then
+        Conquistas.desbloquear("reserva_cheia")
+    end
     if agua < 0 then agua = -1 end
 end
 local function getAgua()
@@ -113,6 +117,16 @@ function voltarJogo()
     game.state["config"] = false
     game.state["paused"] = false
     game.state["running"] = true
+end
+
+local function abrirConquistas()
+    game.state["menu"] = false
+    game.state["conquistas"] = true
+end
+
+local function fecharConquistas()
+    game.state["conquistas"] = false
+    game.state["menu"] = true
 end
 
 function love.resize(width, height)
@@ -593,8 +607,8 @@ local buttons = {
     config_state = {},
     running_state = {},
     paused_state = {},
-    creditos_state = {}
-
+    creditos_state = {},
+    conquistas_state = {}
 }
 
 function proxRodada()
@@ -635,6 +649,10 @@ function proxRodada()
                         alterarAgua(1)
                         totalBandeirasConquistadas = totalBandeirasConquistadas + 1
 
+                        if totalBandeirasConquistadas == 1 then
+                            Conquistas.desbloquear("primeira_gota")
+                        end
+
                         --Fato educativo correspondente a bandeira
                         enfileirarFato(totalBandeirasConquistadas)
                     end
@@ -671,6 +689,7 @@ function proxRodada()
         telaEra.ativa = true
         telaEra.timer = telaEra.tempoTotal
         cartas.setEra(eraAtual)
+        Conquistas.desbloquear("era_industrial")
     end
 end
 
@@ -803,9 +822,6 @@ function handle_button_click(x, y, radius)
 
 end
 
-
-
-
 local function verificarEstadoJogo()
     if fimDeJogo.ativo then return end
 -----------------------Condições de Derrota: -----------------------
@@ -848,6 +864,7 @@ local function verificarEstadoJogo()
         fimDeJogo.ativo = true
         fimDeJogo.mensagem =string.format("TRIUNFO!\nVocê salvou a ilha\n em %s dias com\n %s águas restantes", rodada, agua)
         fimDeJogo.cor = {0.18, 0.44, 0.25}
+        Conquistas.desbloquear("guardiao_ilha")
     end
 end
 
@@ -879,6 +896,11 @@ function love.mousepressed(x, y, button, isTouch, presses)
     end
 
     if game.state["creditos"] then
+        handle_button_click(gx, gy, player.radius)
+        return
+    end
+
+    if game.state["conquistas"] then
         handle_button_click(gx, gy, player.radius)
         return
     end
@@ -1001,6 +1023,21 @@ function love.load()
 
 
     FonteNumeros.load("sprites/numeros")
+    local centroX = virtual_Width / 2
+    local centroY = virtual_Height / 2
+
+    --------------------------CONQUISTAS-------------------------
+    Conquistas.carregar()
+
+    --Botão para abrir Conquistas no menu
+    buttons.menu_state.conquistas = button(opcoesNormal, abrirConquistas, nil, 250, nil, opcoesClicado)
+    buttons.menu_state.conquistas.x = centroX - 50
+    buttons.menu_state.conquistas.y = centroY + 175
+
+    --Botão voltar da tela de Conquistas
+    buttons.conquistas_state.back = button(voltarNormal, fecharConquistas, nil, 150, 50)
+    buttons.conquistas_state.back.x = centroX - 75
+    buttons.conquistas_state.back.y = centroY + 260
 
     ------------IMAGENS DO JOGO--------------------
     movGuarda.imagem = love.graphics.newImage("sprites/Guardinha.png")
@@ -1034,9 +1071,6 @@ end
     love.graphics.setFont(fonte.normal)
     ost.somteste()
 
-    --Botões da tela do menu
-    local centroX = virtual_Width / 2
-    local centroY = virtual_Height / 2
     --Só pra lembrar button(ImagemNormal, Função, Parametro, Largura, Altura, ImagemPressionada)
     buttons.menu_state.play_game = button(startNormal, startNewGame, nil, 250, 100, startClicado)
     buttons.menu_state.play_game.x = centroX - 30
@@ -1143,6 +1177,8 @@ function love.update(dt)
     if vx and vy then
         player.x, player.y = vx, vy
     end
+
+    Conquistas.update(dt)
 
     cartas.atualizarInteracaoCartas(vx, vy)
     cartas.reposicionarBaralho()
@@ -1448,7 +1484,60 @@ function love.draw()
             --RESETAR A COR
             love.graphics.setColor(1, 1, 1, 1)
         end
-        
+
+        ------------------------------- CONQUISTAS ---------------------------
+        if game.state["conquistas"] then
+            love.graphics.draw(pause_bg, 0, 0, 0, 1, 1)
+
+            love.graphics.setFont(fonte.grande)
+            love.graphics.setColor(1, 0.85, 0.2)
+            love.graphics.printf("CONQUISTAS E FATOS", 0, 40, virtual_Width, "center")
+
+            love.graphics.setFont(fonte.normal)
+            local yPos = 120
+
+            for _, c in pairs(Conquistas.lista) do
+                local larguraCaixa = 820
+                local alturaCaixa = 85
+                local xBox = (virtual_Width - larguraCaixa) / 2
+
+                if c.desbloqueada then
+                    love.graphics.setColor(0.1, 0.18, 0.28, 0.95)
+                else
+                    love.graphics.setColor(0.12, 0.12, 0.12, 0.75)
+                end
+                love.graphics.rectangle("fill", xBox, yPos, larguraCaixa, alturaCaixa, 8, 8)
+
+                love.graphics.setColor(c.desbloqueada and {1, 0.85, 0.2} or {0.35, 0.35, 0.35})
+                love.graphics.setLineWidth(2)
+                love.graphics.rectangle("line", xBox, yPos, larguraCaixa, alturaCaixa, 8, 8)
+
+                if c.desbloqueada then
+                    love.graphics.setColor(1, 0.85, 0.2)
+                    love.graphics.print("★ " .. c.nome, xBox + 20, yPos + 10)
+
+                    love.graphics.setColor(1, 1, 1)
+                    love.graphics.print(c.desc, xBox + 20, yPos + 32)
+
+                    love.graphics.setColor(0.4, 0.85, 1)
+                    love.graphics.print("Fato: " .. c.fato, xBox + 20, yPos + 54)
+                else
+                    love.graphics.setColor(0.6, 0.6, 0.6)
+                    love.graphics.print("? ? ? (Bloqueado)", xBox + 20, yPos + 22)
+                    love.graphics.print("Continue jogando para desbloquear esta conquista.", xBox + 20, yPos + 46)
+                end
+
+                yPos = yPos + 95
+
+            end
+
+            local b = buttons.conquistas_state.back
+            b:draw(b.x, b.y)
+        end
+
+        --Desenha a notificação do pop-up no topo da tela, caso haja uma conquista desbloqueada
+        Conquistas.drawToast(virtual_Width)
+
         if not ehMobile then
             love.graphics.setColor(0, 0, 1)
             love.graphics.circle("fill", player.x, player.y, player.radius)
