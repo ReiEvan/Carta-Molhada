@@ -157,6 +157,66 @@ local fimDeJogo = {
     cor = {1, 1, 1}
 }
 
+local fatosEducativos = {
+    {
+        titulo = "BANDEIRA I: O PULMÃO DO PLANETA",
+        texto = "Mais de 50% do oxigênio da Terra vem dos oceanos, produzido por algas microscópicas (fitoplâncton). Proteger as águas é proteger o próprio ar que respiramos!",
+        fonte = "Fonte: NOAA & UNESCO"
+    },
+    {
+        titulo = "BANDEIRA II: A FORÇA DAS MARÉS",
+        texto = "A atração da Lua e do Sol move trilhões de litros de água diariamente. Esse fluxo distribui nutrientes vitais e equilibra a temperatura do planeta.",
+        fonte = "Fonte: NASA Ocean Motion & IPCC"
+    },
+    {
+        titulo = "BANDEIRA III: CIDADES SUBMARINAS",
+        texto = "Os recifes de coral cobrem menos de 1% do solo oceânico, mas abrigam mais de 25% de toda a vida marinha conhecida na Terra.",
+        fonte = "Fonte: UNEP / PNUMA & ICRI"
+    },
+    {
+        titulo = "BANDEIRA IV: COMBATE AOS PLASTICOS",
+        texto = "Cerca de 8 milhões de toneladas de lixo entram no oceano por ano, virando microplásticos. Sua vitória ajudou a conter esse ciclo na ilha!",
+        fonte = "Fonte: Science (Jambeck et al.)"
+    }
+}
+
+local modalFato = {
+    ativo = false,
+    fila = {},
+    titulo = "",
+    texto = "",
+    fonte = "",
+    largura = 620,
+    altura = 300,
+    --Posição do botão para continuar dentro desse modal
+    btnX = 0,
+    btnY = 0,
+    btnW = 180,
+    btnH = 45
+}
+
+local function exibirProximoFato()
+    if #modalFato.fila > 0 then
+        local fato = table.remove(modalFato.fila, 1)
+        modalFato.titulo = fato.titulo
+        modalFato.texto = fato.texto
+        modalFato.fonte = fato.fonte
+        modalFato.ativo = true
+    else
+        modalFato.ativo = false
+    end
+end
+
+function enfileirarFato(indiceFato)
+    if fatosEducativos[indiceFato] then
+        table.insert(modalFato.fila, fatosEducativos[indiceFato])
+        if not modalFato.ativo then
+            exibirProximoFato()
+        end
+    end
+end
+
+
 local movimento={
     mx=10,
     my=220
@@ -245,15 +305,19 @@ function confirmarMovimentoDireto(destIndex)
     movimentosRestantes = movimentosRestantes - 1
 
     if destIndex ~= 3 and not pontosBloqueados[destIndex] then
-        if not hexAtivos[destIndex] then
-            hexAtivos[destIndex] = 1
-            estadoTransformacao[destIndex] = false
-            rodadasPorPonto[destIndex] = 0
-
-        elseif hexAtivos[destIndex] == 1 then
+        if objetivosExternos[1] and destIndex == objetivosExternos[1] then
             hexAtivos[destIndex] = 2
             estadoTransformacao[destIndex] = true
             rodadasPorPonto[destIndex] = 0
+        elseif not hexAtivos[destIndex] then
+                hexAtivos[destIndex] = 1
+                estadoTransformacao[destIndex] = false
+                rodadasPorPonto[destIndex] = 0
+                
+        elseif hexAtivos[destIndex] == 1 then
+                hexAtivos[destIndex] = 2
+                estadoTransformacao[destIndex] = true
+                rodadasPorPonto[destIndex] = 0
         end
     end
 end
@@ -452,25 +516,33 @@ end
 
 local function definirObjetivos()
     objetivosExternos = {}
+
+    --Bandeira mais próxima, vou pôr num lugar fixo
+    local bandeiraTutorial = 2
+    table.insert(objetivosExternos, bandeiraTutorial)
+
     local possiveis = {}
     --Lista todos os pontos que não são a base (3) nem adjascentes a ela
     local vizinhosBase = pontosAdjascentes[3]
+    local vizinhosTutorial = pontosAdjascentes[bandeiraTutorial]
 
     for i = 1, #pontosMovimentacao do
-        local ehVizinhoDaBase = false
+        local ehInvalido = (i == 3) or (i == bandeiraTutorial)
 
-        if vizinhosBase then
-            for _, v in ipairs(vizinhosBase) do
-                if i == v then ehVizinhoDaBase = true break end
-            end
+        if vizinhosBase and findInTable(vizinhosBase, i) then
+            ehInvalido = true
         end
 
-        if i ~= 3 and not ehVizinhoDaBase then
+        if vizinhosTutorial and findInTable(vizinhosBase, i) then
+            ehInvalido = true
+        end
+
+        if not ehInvalido then
             table.insert(possiveis, i)
         end
     end
 
-    --Sorteia 4 bandeiras com distanciamento
+    --Sorteia as outras 3 bandeiras com distanciamento
     local qtdDesejada = 4
     --Enquanto não tiver 4 bandeiras e ainda houver lugares possiveis
     while #objetivosExternos < qtdDesejada and #possiveis > 0 do
@@ -491,13 +563,8 @@ local function definirObjetivos()
                 deveManter = false
             else
                 local vizinhoDoEscolhido = pontosAdjascentes[escolhido]
-                if vizinhoDoEscolhido then
-                    for _, vizinho in ipairs(vizinhoDoEscolhido) do
-                        if candidato == vizinho then
-                            deveManter = false
-                            break
-                        end
-                    end
+                if vizinhoDoEscolhido and findInTable(vizinhoDoEscolhido, candidato) then
+                    deveManter = false
                 end
             end
             if deveManter then
@@ -539,19 +606,21 @@ function proxRodada()
     alterarAgua(-1)
     cartas.limparMensagens()
 
-    -- === 1. PROCESSAR ÁREAS (Usando os efeitos da rodada que ACABOU) ===
-
-
-
-
-    local diasNecessarios = 2
-    if cartas.efeitosAtivos.terrenoDificil then
-        diasNecessarios = 3
+    -- === 1. PROCESSAR ÁREAS (Usando os efeitos da rodada que ACABOU) ==
+    local diasPadrao = 2
+    if cartas.efeitoAtivos and cartas.efeitosAtivos.terrenoDificil then
+        diasPadrao = 3
     end
 
     for i = 1, #pontosMovimentacao do
         if rodadasPorPonto[i] then
             rodadasPorPonto[i] = rodadasPorPonto[i] + 1
+
+            --Para a primeira bandeira
+            local diasNecessarios = diasPadrao
+            if objetivosExternos[1] and i == objetivosExternos[i] then
+                diasNecessarios = 1
+            end
 
             if estadoTransformacao[i] and rodadasPorPonto[i] >= diasNecessarios then
                 hexAtivos[i] = nil
@@ -559,10 +628,13 @@ function proxRodada()
                 rodadasPorPonto[i] = nil
                 pontosBloqueados[i] = true
                 -- Lógica da recompensa da bandeira
-                for _, objIndex in ipairs(objetivosExternos) do
+                for idxBandeira, objIndex in ipairs(objetivosExternos) do
                     if i == objIndex and not objetivosRecompensados[i] then
                         objetivosRecompensados[i] = true
                         alterarAgua(1)
+
+                        --Fato educativo correspondente a bandeira
+                        enfileirarFato(idxBandeira)
                     end
                 end
             end
@@ -660,6 +732,8 @@ local function startNewGame()
     numGuardas = 1
     movimentosRestantes = 3
     fimDeJogo.ativo = false
+    modalFato.ativo = false
+    modalFato.fila = {}
 
     --Resetar recompensas, eras e baralhos
     objetivosRecompensados = {}
@@ -807,6 +881,15 @@ function love.mousepressed(x, y, button, isTouch, presses)
     end
 
 if game.state["running"] then
+    -- Bloqueio e clique do modal educativo
+    if modalFato.ativo then
+        --Verifica se clicou no botão dentro do modal
+        if gx >= modalFato.btnX and gx <= modalFato.btnX + modalFato.btnW and
+           gy >= modalFato.btnY and gy <= modalFato.btnY + modalFato.btnH then
+            exibirProximoFato()
+        end
+        return -- Bloqueia qualquer clique no tabuleiro ou nas cartas enquanto o fato estiver aberto
+    end
 
     -- Bloqueio do tutorial: Se o tutorial estiver aberto, não permite clicar em nada fora dele
     if manualAberto then
@@ -1253,7 +1336,7 @@ function love.draw()
         buttons.running_state.pause_in_game:draw(virtual_Width - 250, 10, 0, 0)
         buttons.running_state.restart_in_game:draw(virtual_Width - 150, 10, 0, 0)
 
-        if mostrarAvisoCarta then
+        if mostrarAvisoCarta and not telaEra.ativa and not fimDeJogo.ativo then
             local larguraJanela = push:getWidth()
             local alturaJanela = push:getHeight()
 
@@ -1317,20 +1400,65 @@ function love.draw()
         end
 
 
+        
+        --RENDER DO MODAL DOS FATOS EDUCATIVOS
+        if modalFato.ativo then
+            local mx = (virtual_Width - modalFato.largura) / 2
+            local my = (virtual_Height - modalFato.altura) / 2
+            
+            modalFato.btnX = virtual_Width / 2 - modalFato.btnW / 2
+            modalFato.btnY = my + modalFato.altura - 60
+            
+            --1. Fundo escurecido da tela inteira (Backdrop)
+            love.graphics.setColor(0, 0, 0, 0.75)
+            love.graphics.rectangle("fill", 0, 0, virtual_Width, virtual_Height)
+
+            --2. Caixa principal do Pop-up
+            love.graphics.setColor(0.08, 0.15, 0.25, 0.95)
+            love.graphics.rectangle("fill", mx, my, modalFato.largura, modalFato.altura, 12, 12)
+            
+            --3. Titulo da conquista
+            love.graphics.setColor(1, 0.85, 0.2, 1)
+            love.graphics.setFont(fonte.media)
+            love.graphics.printf(modalFato.titulo, mx + 20, my + 20, modalFato.largura - 40, "center")
+            
+            --4. Texto Educativo / Curiosidade
+            love.graphics.setColor(1, 1, 1, 1)
+            love.graphics.setFont(fonte.normal)
+            love.graphics.printf(modalFato.texto, mx + 30, my + 75, modalFato.largura - 60, "center")
+            
+            --5. Referência / Fonte
+            love.graphics.setColor(0.7, 0.7, 0.7, 0.9)
+            love.graphics.printf(modalFato.fonte, mx + 30, my + 175, modalFato.largura - 60, "center")
+            
+            --6. Botão "Continuar"
+            love.graphics.setColor(0.18, 0.6, 0.3, 1)
+            love.graphics.rectangle("fill", modalFato.btnX, modalFato.btnY, modalFato.btnW, modalFato.btnH, 8, 5)
+            
+            love.graphics.setColor(1, 1, 1, 1)
+            love.graphics.setLineWidth(2)
+            love.graphics.rectangle("line", modalFato.btnX, modalFato.btnY, modalFato.btnW, modalFato.btnH, 8, 8)
+            
+            love.graphics.setFont(fonte.normal)
+            love.graphics.printf("CONTINUAR", modalFato.btnX, modalFato.btnY + 16, modalFato.btnW, "center")
+            
+            --RESETAR A COR
+            love.graphics.setColor(1, 1, 1, 1)
+        end
+        
         if not ehMobile then
             love.graphics.setColor(0, 0, 1)
             love.graphics.circle("fill", player.x, player.y, player.radius)
             love.graphics.setColor(1, 1, 1)
         end
-
     elseif game.state["menu"] then
         --love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
         love.graphics.draw(background, virtual_Width/2, virtual_Height/2, 0, 0.7, 0.7, background:getWidth()/2, background:getHeight()/2)
-
+        
         buttons.menu_state.play_game:draw(virtual_Width/2 - 100, virtual_Height/2 - 25, 20, 8, 10)
         buttons.menu_state.settings:draw(virtual_Width/2 - 20, virtual_Height/2 + 60, 10, 10)
         buttons.menu_state.exit_game:draw(virtual_Width/2 + 100, virtual_Height/2 + 150, 25, 8, 10)
-
+        
         if not ehMobile then
             love.graphics.setColor(0,1,0)
             love.graphics.circle("fill", player.x, player.y, player.radius)
@@ -1375,6 +1503,11 @@ function love.draw()
 
         love.graphics.draw(configText, virtual_Width/2 - 325,  virtual_Height/2 - 450, 0, 0.5, 0.5)
 
+        love.graphics.setFont(fonte.grande)
+        love.graphics.setColor(0,0,1)
+        love.graphics.print("Volume", virtual_Width/2 - 325, virtual_Height/2 - 35)
+        love.graphics.setColor(1,1,1)
+
         desenharSlider()
 
         local b = buttons.config_state.back
@@ -1402,6 +1535,11 @@ function love.draw()
 end
 
 function love.keypressed(key)
+    -- Se o modal educativo estiver aberto, avançar com Espaço ou Enter
+    if modalFato.ativo and (key == "space" or key == "return") then
+        exibirProximoFato()
+        return
+    end
     if key == "escape" then
         if game.state["running"] then
             game.state["running"] = false
@@ -1421,5 +1559,9 @@ function love.keypressed(key)
     end
     if key == "r" then
         startNewGame()
+    end
+    if key == "t" then
+        enfileirarFato(1)
+        print("Tentou abrir fato 1. Ativo:", modalFato.ativo)
     end
 end
