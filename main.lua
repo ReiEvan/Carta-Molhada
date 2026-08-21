@@ -13,6 +13,7 @@ mostrarAvisoCarta = true --Controla se o aviso de escolha de carta deve aparecer
 local volumeMaster = 0.5 -- 50% do volume
 local manualAberto = false --Controla se o manual está aberto ou não
 local primeiraVezAberto = true --Controla se é a primeira vez que o manual é aberto, para mostrar a primeira página
+local totalBandeirasConquistadas = 0 --Controla quantas bandeiras foram conquistadas no total, para mostrar o fato educativo correspondente
 
 --------------ALTURA E LARGURA QUE IREMOS USAR AGORA-----------------
 local virtual_Width = 1280
@@ -632,9 +633,10 @@ function proxRodada()
                     if i == objIndex and not objetivosRecompensados[i] then
                         objetivosRecompensados[i] = true
                         alterarAgua(1)
+                        totalBandeirasConquistadas = totalBandeirasConquistadas + 1
 
                         --Fato educativo correspondente a bandeira
-                        enfileirarFato(idxBandeira)
+                        enfileirarFato(totalBandeirasConquistadas)
                     end
                 end
             end
@@ -740,6 +742,7 @@ local function startNewGame()
     eraAtual = 1
     cartas.resetarJogo()
     telaEra.ativa = false
+    totalBandeirasConquistadas = 0
 
     --Resetar o Guarda para a Base
     movGuarda.indiceAtual = 3
