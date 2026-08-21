@@ -811,7 +811,7 @@ if game.state["running"] then
     -- Bloqueio do tutorial: Se o tutorial estiver aberto, não permite clicar em nada fora dele
     if manualAberto then
         -- Mudamos aqui para manualTutorial.mousepressed para manter o seu padrão!
-        -- Para evitar que ele pule páginas, dentro do manualTutorial.lua você pode usar uma trava simples de clique se necessário,
+        -- Para evitar que ele pule páginas, dentro do manualTutorial.lua você pode usar uma trava simples de clique se necessário
         -- mas mantendo mousepressed aqui, seu fluxo de entrada fica 100% unificado.
         local acao = ManualTutorial.mousepressed(gx, gy, button)
         if acao == "fechar" then
@@ -831,8 +831,8 @@ if game.state["running"] then
     -- >>> AQUI ENTRA A LÓGICA DO AVISO! <<<
     if esperandoEscolhaCarta then
         local cartaFoiEscolhida = cartas.mousepressed(gx, gy, button, movimentosRestantes)
-        if cartaFoiEscolhida then 
-            esperandoEscolhaCarta = false 
+        if cartaFoiEscolhida then
+            esperandoEscolhaCarta = false
             mostrarAvisoCarta = false -- O jogador escolheu a carta, então sumimos com o aviso!
         end
         return
