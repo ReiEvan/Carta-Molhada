@@ -8,40 +8,40 @@ local ARQUIVO_SAVE = "conquistas_save.txt"
 Conquistas.lista = {
     primeira_gota = {
         id = "primeira_gota",
-        nome = "Primeiro Passo",
+        nome = "Primeiros Passos",
         desc = "Limpe a primeira bandeira da ilha.",
         fato = "Mais de 50% do oxigênio da Terra vem de microalgas marinhas.",
         desbloqueada = false
     },
     era_industrial = {
         id = "era_industrial",
-        nome = "Alerta Ecológico",
+        nome = "Mais perigos, mais ferramentas.",
         desc = "Avance para a Era II da partida.",
         fato = "A atividade industrial costeira acelera a acidificação dos mares.",
         desbloqueada = false
     },
     guardiao_ilha = {
         id = "guardiao_ilha",
-        nome = "Guardião das Águas",
-        desc = "Vença uma partida limpando as 4 bandeiras.",
+        nome = "Absolute Gameplay!",
+        desc = "Vença uma partida.",
         fato = "Zonas marinhas preservadas conseguem quadruplicar a biodiversidade local.",
         desbloqueada = false
     },
     reserva_cheia = {
         id = "reserva_cheia",
-        nome = "Mestre da Gestão",
-        desc = "Acumule 6 ou mais gotas de água na reserva.",
+        nome = "Cuidado com a dor de facão!",
+        desc = "Acumule 10 ou mais gotas de água na reserva.",
         fato = "Menos de 1% de toda a água da Terra é doce e diretamente aproveitável.",
+        desbloqueada = false
+    },
+    ultima_gota = {
+        id = "ultima_gota",
+        nome = "A Última Gota",
+        desc = "Vença o jogo com apenas uma gota de água restante.",
+        fato = "Centros de dados de Big Techs usam milhões de litros de água doce por dia para resfriar servidores de IA.",
         desbloqueada = false
     }
 --[[    primeira_gota = {
-        id = ,
-        nome = ,
-        desc = ,
-        fato = ,
-        desbloqueada = false
-    },
-    primeira_gota = {
         id = ,
         nome = ,
         desc = ,
@@ -69,7 +69,7 @@ local toast = {
     titulo = "",
     nomeConquista = "",
     timer = 0,
-    duracao = 4.0,
+    duracao = 5.0,
     yAtual = -80,
     yAlvo = 20,
 }
@@ -154,6 +154,13 @@ function Conquistas.drawToast(virtual_Width)
     love.graphics.print(toast.nomeConquista, x + 55, y + 32)
 
     love.graphics.setColor(1, 1, 1, 1)
+end
+
+function Conquistas.resetarTudo()
+    for _, c in pairs(Conquistas.lista) do
+        c.desbloqueada = false
+    end
+    love.filesystem.remove(ARQUIVO_SAVE)
 end
 
 return Conquistas

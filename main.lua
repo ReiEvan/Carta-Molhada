@@ -8,7 +8,7 @@ cartas = require ("cartas")
 local push = require "push"
 local FonteNumeros = require "FonteNumeros"
 local ManualTutorial = require "ManualTutorial"
-local Conquistas = require "conquistas"
+Conquistas = require ("conquistas")
 
 mostrarAvisoCarta = true --Controla se o aviso de escolha de carta deve aparecer ou não
 local volumeMaster = 0.5 -- 50% do volume
@@ -55,7 +55,7 @@ local agua = 5
 local movimentosRestantes = 3
 function alterarAgua(qtd)
     agua = agua + qtd
-    if agua >= 6 then
+    if agua >= 10 then
         Conquistas.desbloquear("reserva_cheia")
     end
     if agua < 0 then agua = -1 end
@@ -82,6 +82,8 @@ function voltarMenu()
     game.state["paused"] = false
     game.state["creditos"] = false
     game.state["menu"] = true
+
+    love.graphics.setFont(fonte.normal)
 end
 
 function voltarDasConfiguracoes()
@@ -92,6 +94,8 @@ function voltarDasConfiguracoes()
     else
         game.state["menu"] = true --Se veio do menu, volta pro menu
     end
+
+    love.graphics.setFont(fonte.normal)
 end
 
 function creditosParaMenu()
@@ -176,22 +180,22 @@ local fatosEducativos = {
     {
         titulo = "BANDEIRA I: O PULMÃO DO PLANETA",
         texto = "Mais de 50% do oxigênio da Terra vem dos oceanos, produzido por algas microscópicas (fitoplâncton). Proteger as águas é proteger o próprio ar que respiramos!",
-        fonte = "Fonte: NOAA & UNESCO"
+        fonte = "Fonte: NOAA & UNESCO (2020)"
     },
     {
         titulo = "BANDEIRA II: A FORÇA DAS MARÉS",
         texto = "A atração da Lua e do Sol move trilhões de litros de água diariamente. Esse fluxo distribui nutrientes vitais e equilibra a temperatura do planeta.",
-        fonte = "Fonte: NASA Ocean Motion & IPCC"
+        fonte = "Fonte: NASA Ocean Motion (2018) & IPCC SROCC (2019)"
     },
     {
         titulo = "BANDEIRA III: CIDADES SUBMARINAS",
         texto = "Os recifes de coral cobrem menos de 1% do solo oceânico, mas abrigam mais de 25% de toda a vida marinha conhecida na Terra.",
-        fonte = "Fonte: UNEP / PNUMA & ICRI"
+        fonte = "Fonte: UNEP / PNUMA & ICRI (Relatório Global GCRMN, 2020)"
     },
     {
         titulo = "BANDEIRA IV: COMBATE AOS PLASTICOS",
         texto = "Cerca de 8 milhões de toneladas de lixo entram no oceano por ano, virando microplásticos. Sua vitória ajudou a conter esse ciclo na ilha!",
-        fonte = "Fonte: Science (Jambeck et al.)"
+        fonte = "Fonte: Science (Jambeck et al., 2015)"
     }
 }
 
@@ -812,6 +816,7 @@ function handle_button_click(x, y, radius)
                         or game.state.config and "config_state"
                         or game.state.paused and "paused_state"
                         or game.state.creditos and "creditos_state"
+                        or game.state.conquistas and "conquistas_state"
 
     if current_state and buttons[current_state] then
         for _, btn in pairs(buttons[current_state]) do
@@ -865,6 +870,10 @@ local function verificarEstadoJogo()
         fimDeJogo.mensagem =string.format("TRIUNFO!\nVocê salvou a ilha\n em %s dias com\n %s águas restantes", rodada, agua)
         fimDeJogo.cor = {0.18, 0.44, 0.25}
         Conquistas.desbloquear("guardiao_ilha")
+
+        if agua == 1 then
+            Conquistas.desbloquear("ultima_gota")
+        end
     end
 end
 
@@ -1026,18 +1035,6 @@ function love.load()
     local centroX = virtual_Width / 2
     local centroY = virtual_Height / 2
 
-    --------------------------CONQUISTAS-------------------------
-    Conquistas.carregar()
-
-    --Botão para abrir Conquistas no menu
-    buttons.menu_state.conquistas = button(opcoesNormal, abrirConquistas, nil, 250, nil, opcoesClicado)
-    buttons.menu_state.conquistas.x = centroX - 50
-    buttons.menu_state.conquistas.y = centroY + 175
-
-    --Botão voltar da tela de Conquistas
-    buttons.conquistas_state.back = button(voltarNormal, fecharConquistas, nil, 150, 50)
-    buttons.conquistas_state.back.x = centroX - 75
-    buttons.conquistas_state.back.y = centroY + 260
 
     ------------IMAGENS DO JOGO--------------------
     movGuarda.imagem = love.graphics.newImage("sprites/Guardinha.png")
@@ -1058,10 +1055,10 @@ function love.load()
     local prxmDiaNormal = love.graphics.newImage("sprites/botão_prxm_Dia.png")
     local prxmDiaClicado = love.graphics.newImage("sprites/botão_prxm_Dia_Clicado.png")
 
--------------------------------------------------------------------
-if not ehMobile then
-    love.mouse.setVisible(false)
-end
+    -------------------------------------------------------------------
+    if not ehMobile then
+        love.mouse.setVisible(false)
+    end
 
     love.mouse.setVisible(false)
     love.window.setTitle("Última Gota")
@@ -1083,6 +1080,19 @@ end
     buttons.menu_state.exit_game = button(sairNormal, love.event.quit, nil, 150, 90, sairClicado)
     buttons.menu_state.exit_game.x = centroX - 30
     buttons.menu_state.exit_game.y = centroY + 250
+
+    --------------------------CONQUISTAS-------------------------
+    Conquistas.carregar()
+
+    --Botão para abrir Conquistas no menu
+    buttons.menu_state.conquistas = button("Conquistas", abrirConquistas, nil, 75, 75)
+    buttons.menu_state.conquistas.x = centroX - 40
+    buttons.menu_state.conquistas.y = centroY + 175
+
+    --Botão voltar da tela de Conquistas
+    buttons.conquistas_state.back = button(voltarNormal, fecharConquistas, nil, 150, 50)
+    buttons.conquistas_state.back.x = centroX - 75
+    buttons.conquistas_state.back.y = centroY + 260
 
     --Botões nas configurações do jogo
     local cx = virtual_Width / 2
@@ -1126,7 +1136,7 @@ end
     buttons.running_state.pass_rodada = button(prxmDiaNormal, proxRodada, nil, 150, 60, prxmDiaClicado)
     buttons.running_state.pause_in_game = button(pauseBtn, pausarJogo, nil, 50, 50)
     buttons.running_state.restart_in_game = button(reiniciarBtn, startNewGame, nil, 50, 50)
-    
+
     buttons.running_state.baralho_pass_rodada = button("Baralho", proxRodada, nil, 150, 290)
     buttons.running_state.baralho_pass_rodada.invisivel = true
 
@@ -1238,41 +1248,43 @@ local configText = love.graphics.newImage("sprites/CONFIG.png")
 local diaLimiteImg = love.graphics.newImage("sprites/diaLimite.png")
 local creditosimg = love.graphics.newImage("sprites/creditos.png")
 function love.draw()
-    push:start()--Inicia a renderização na resolução virtual
-     if game.state["running"] then
-        --Arte do Fundo da gameplay
-        --love.graphics.print(text,x,y,r,sx,sy,ox,oy)
-        --love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
+    push:start() -- Inicia a renderização na resolução virtual
+
+    if game.state["running"] then
+        -- Arte do Fundo da gameplay
         love.graphics.draw(game_bg, 0, 0, 0, 0.7, 0.7)
-        --Movimentos Restantes
+
+        -- Movimentos Restantes
         love.graphics.setFont(fonte.grande)
         love.graphics.draw(movImg, movimento.mx, movimento.my + 230, 0, 0.25, 0.25)
-        love.graphics.setColor(0,0,1)
+        love.graphics.setColor(0, 0, 1)
         FonteNumeros.desenhar(movimentosRestantes, movimento.mx + 270, movimento.my + 245, 0.23)
         love.graphics.setFont(fonte.normal)
-        --love.graphics.setColor(0, 100, 0)  -- verde
-        love.graphics.setColor(1,1,1)
-        --Feddback visual da quantidade de agua
+        love.graphics.setColor(1, 1, 1)
+
+        -- Feedback visual da quantidade de água
         love.graphics.draw(imagemAgua.ficha, imagemAgua.fx, imagemAgua.fy + 300, 0, escala + 0.5, escala + 0.5)
         love.graphics.setColor(0, 0, 1)
-        FonteNumeros.desenhar(agua, imagemAgua.fx+80, imagemAgua.fy+328, 0.3)
+        FonteNumeros.desenhar(agua, imagemAgua.fx + 80, imagemAgua.fy + 328, 0.3)
         love.graphics.setColor(1, 1, 1)
-        --Numeração da rodada atuals
-        love.graphics.draw(diaImg, virtual_Width/2 - 100, 0.5, 0, 0.2, 0.2)
-        love.graphics.setColor(0,0,1)
+
+        -- Numeração da rodada atual
+        love.graphics.draw(diaImg, virtual_Width / 2 - 100, 0.5, 0, 0.2, 0.2)
+        love.graphics.setColor(0, 0, 1)
         if rodada > 9 then
-            love.graphics.draw(diaLimiteImg, virtual_Width/2 + 40, 15, 0, 0.2, 0.2)
-            FonteNumeros.desenhar(rodada, virtual_Width/2 - 15, virtual_Height/2 - 350, 0.24)
+            love.graphics.draw(diaLimiteImg, virtual_Width / 2 + 40, 15, 0, 0.2, 0.2)
+            FonteNumeros.desenhar(rodada, virtual_Width / 2 - 15, virtual_Height / 2 - 350, 0.24)
         else
-            love.graphics.draw(diaLimiteImg, virtual_Width/2 + 10, 15, 0, 0.2, 0.2)
-            FonteNumeros.desenhar(rodada, virtual_Width/2 - 10, virtual_Height/2 - 350, 0.24)
+            love.graphics.draw(diaLimiteImg, virtual_Width / 2 + 10, 15, 0, 0.2, 0.2)
+            FonteNumeros.desenhar(rodada, virtual_Width / 2 - 10, virtual_Height / 2 - 350, 0.24)
         end
         love.graphics.setFont(fonte.normal)
-        love.graphics.setColor(1,1,1)
-        -- Desenhar mapa As coordenadas x crescem para a direita e y para baixo
-        --desenhar o mapa
-        love.graphics.draw(mapa, virtual_Width/2 - 400, virtual_Height/2 - 370, 0, .35, .35)
-        --Desenhar os filtros vermelhos e marrons
+        love.graphics.setColor(1, 1, 1)
+
+        -- Desenhar mapa
+        love.graphics.draw(mapa, virtual_Width / 2 - 400, virtual_Height / 2 - 370, 0, 0.35, 0.35)
+
+        -- Desenhar os filtros vermelhos e marrons
         for i, ponto in ipairs(pontosMovimentacao) do
             if i ~= 3 then
                 if hexAtivos[i] == 1 then
@@ -1280,54 +1292,44 @@ function love.draw()
                         ponto.x - hexVermelho:getWidth() * escalaHex / 2,
                         ponto.y - hexVermelho:getHeight() * escalaHex / 2,
                         0, escalaHex, escalaHex)
-                    elseif hexAtivos[i] == 2 then
-                        love.graphics.draw(hexMarrom,
+                elseif hexAtivos[i] == 2 then
+                    love.graphics.draw(hexMarrom,
                         ponto.x - hexMarrom:getWidth() * escalaHex / 2,
                         ponto.y - hexMarrom:getHeight() * escalaHex / 2,
                         0, escalaHex, escalaHex)
-
-                    end
                 end
--------------------------------CÓDIGO PRÉ PRONTO PRO SPRITE DA BORDA DO HEX SELECIONADO--------------------
-            if hexFocado == i then
-                --Quando o sprite tiver pronto é só descomentar as duas linhas de baixo
-                --local spriteBorda = love.graphics.newImage("sprites/Borda.png")
-                --love.graphics.draw(spriteborda, ponto.x - spriteborda:getWidth() * escalaHex / 2, ponto.y - spriteborda:getHeight() * escalaHex / 2, 0, escalaHex, escalaHex)
-                 love.graphics.setColor(1, 1, 0, 0.5) -- Amarelo para destacar
-                 love.graphics.circle("line", ponto.x, ponto.y, ponto.raio + 5) -- Círculo ao redor do hex selecionado
-                 love.graphics.setColor(1, 1, 1) -- Resetar cor para branco
             end
-------------------------------------------------------------------------------------------------------------
+
+            if hexFocado == i then
+                love.graphics.setColor(1, 1, 0, 0.5)
+                love.graphics.circle("line", ponto.x, ponto.y, ponto.raio + 5)
+                love.graphics.setColor(1, 1, 1)
+            end
         end
-        --Desenhar Bandeira nos Objetivos Externos
+
+        -- Desenhar Bandeira nos Objetivos Externos
         love.graphics.setColor(1, 1, 1)
         for _, indice in ipairs(objetivosExternos) do
             local p = pontosMovimentacao[indice]
-
-            local imagemParaDesenhar = imgBandeira --Bandeira Vermelha
+            local imagemParaDesenhar = imgBandeira
             local escalaAtual = 0.25
             local ajusteX = 15
             local ajusteY = 70
 
             if hexAtivos[indice] == nil then
-                imagemParaDesenhar = imgBandeiraConquistada --Bandeira branca
-
-                escalaAtual = 0.25
-                ajusteX = 15
-                ajusteY = 70
+                imagemParaDesenhar = imgBandeiraConquistada
             end
 
-            --Desenha a bandeira um pouco acima do centro do hex
-            --Ajuste o offset (x, y) e a escala (0.5) conforme o tamanho da imagem
             love.graphics.draw(imagemParaDesenhar, p.x - ajusteX, p.y - ajusteY, 0, escalaAtual, escalaAtual)
         end
 
         -- Guardinha florestal
-        if  movGuarda.quadros[movGuarda.frameAtual] then
-        love.graphics.draw(movGuarda.imagem, movGuarda.quadros[movGuarda.frameAtual], movGuarda.x-90, movGuarda.y-50, 0, 0.09, 0.09)
+        if movGuarda.quadros[movGuarda.frameAtual] then
+            love.graphics.draw(movGuarda.imagem, movGuarda.quadros[movGuarda.frameAtual], movGuarda.x - 90, movGuarda.y - 50, 0, 0.09, 0.09)
         else
-            love.graphics.draw(movGuarda.imagem, movGuarda.x-20, movGuarda.y-20)
+            love.graphics.draw(movGuarda.imagem, movGuarda.x - 20, movGuarda.y - 20)
         end
+
         cartas.desenharTroca()
         cartas.desenharFundoConflito()
         cartas.desenharConflito()
@@ -1335,53 +1337,46 @@ function love.draw()
         cartas.desenharCartasRodada()
         cartas.desenharResultadoEscolha()
 
+        -- Hitbox
+        hitbox.desenhar(virtual_Width / 2 + 15, virtual_Height / 2 - 245, 45)
+        hitbox.desenhar(virtual_Width / 2 + 15, virtual_Height / 2 - 145, 45)
+        hitbox.desenhar(virtual_Width / 2 + 15, virtual_Height / 2 - 45, 45)
+        hitbox.desenhar(virtual_Width / 2 + 15, virtual_Height / 2 + 55, 45)
+        hitbox.desenhar(virtual_Width / 2 + 15, virtual_Height / 2 + 155, 45)
+        hitbox.desenhar(virtual_Width / 2 + 190, virtual_Height / 2 - 145, 45)
+        hitbox.desenhar(virtual_Width / 2 + 190, virtual_Height / 2 + 55, 45)
+        hitbox.desenhar(virtual_Width / 2 + 190, virtual_Height / 2 - 45, 45)
+        hitbox.desenhar(virtual_Width / 2 - 160, virtual_Height / 2 - 145, 45)
+        hitbox.desenhar(virtual_Width / 2 - 160, virtual_Height / 2 - 45, 45)
+        hitbox.desenhar(virtual_Width / 2 - 160, virtual_Height / 2 + 55, 45)
+        hitbox.desenhar(virtual_Width / 2 + 100, virtual_Height / 2 - 195, 45)
+        hitbox.desenhar(virtual_Width / 2 + 100, virtual_Height / 2 - 95, 45)
+        hitbox.desenhar(virtual_Width / 2 + 100, virtual_Height / 2 + 105, 45)
+        hitbox.desenhar(virtual_Width / 2 + 100, virtual_Height / 2 + 5, 45)
+        hitbox.desenhar(virtual_Width / 2 - 75, virtual_Height / 2 - 195, 45)
+        hitbox.desenhar(virtual_Width / 2 - 75, virtual_Height / 2 - 95, 45)
+        hitbox.desenhar(virtual_Width / 2 - 75, virtual_Height / 2 + 5, 45)
+        hitbox.desenhar(virtual_Width / 2 - 75, virtual_Height / 2 + 105, 45)
 
-        --Desenhar a hitbox enquanto o jogo ta rodando
-        hitbox.desenhar(virtual_Width/2 + 15, virtual_Height/2 - 245, 45)
-        hitbox.desenhar(virtual_Width/2 + 15, virtual_Height/2 - 145, 45)
-        hitbox.desenhar(virtual_Width/2 + 15, virtual_Height/2 - 45, 45)
-        hitbox.desenhar(virtual_Width/2 + 15, virtual_Height/2 + 55, 45)
-        hitbox.desenhar(virtual_Width/2 + 15, virtual_Height/2 + 155, 45) --5
-        hitbox.desenhar(virtual_Width/2 + 190, virtual_Height/2 - 145, 45)
-        hitbox.desenhar(virtual_Width/2 + 190, virtual_Height/2 + 55, 45)
-        hitbox.desenhar(virtual_Width/2 + 190, virtual_Height/2 - 45, 45)
-        hitbox.desenhar(virtual_Width/2 - 160, virtual_Height/2 - 145, 45)
-        hitbox.desenhar(virtual_Width/2 - 160, virtual_Height/2 - 45, 45)
-        hitbox.desenhar(virtual_Width/2 - 160, virtual_Height/2 + 55, 45)
-        hitbox.desenhar(virtual_Width/2 + 100, virtual_Height/2 - 195, 45)
-        hitbox.desenhar(virtual_Width/2 + 100, virtual_Height/2 - 95, 45)
-        hitbox.desenhar(virtual_Width/2 + 100, virtual_Height/2 + 105, 45)
-        hitbox.desenhar(virtual_Width/2 + 100, virtual_Height/2 + 5, 45)
-        hitbox.desenhar(virtual_Width/2 - 75, virtual_Height/2 - 195, 45)
-        hitbox.desenhar(virtual_Width/2 - 75, virtual_Height/2 - 95, 45)
-        hitbox.desenhar(virtual_Width/2 - 75, virtual_Height/2 + 5, 45)
-        hitbox.desenhar(virtual_Width/2 - 75, virtual_Height/2 + 105, 45)
-
-        --Desenhar os botões enquato o jogo ta rodando
+        -- Botões na partida
         buttons.running_state.pass_rodada:draw(virtual_Width - 155, virtual_Height - 250, 10, 10)
-        --Botão invisivel do baralho
         buttons.running_state.baralho_pass_rodada:draw(virtual_Width - 155, virtual_Height - 180)
 
         if fimDeJogo.ativo then
-            --Fundo preto
             love.graphics.setColor(0, 0, 0)
             love.graphics.rectangle("fill", 0, 0, virtual_Width, virtual_Height)
-            --Texto
             love.graphics.setFont(fonte.grande)
             love.graphics.setColor(unpack(fimDeJogo.cor))
-            love.graphics.printf(fimDeJogo.mensagem, 0, virtual_Height/2 - 50, virtual_Width, "center")
+            love.graphics.printf(fimDeJogo.mensagem, 0, virtual_Height / 2 - 50, virtual_Width, "center")
+            love.graphics.setColor(1, 1, 1)
         end
-        --Botões por cima do game rodando
+
         buttons.running_state.pause_in_game:draw(virtual_Width - 250, 10, 0, 0)
         buttons.running_state.restart_in_game:draw(virtual_Width - 150, 10, 0, 0)
 
         if mostrarAvisoCarta and not telaEra.ativa and not fimDeJogo.ativo then
-            local larguraJanela = push:getWidth()
-            local alturaJanela = push:getHeight()
-
             local larguraCaixa = 450
             local alturaCaixa = 80
-
             local x = (virtual_Width - larguraCaixa) / 2
             local y = 80
 
@@ -1394,42 +1389,24 @@ function love.draw()
 
             love.graphics.setFont(fonte.normal)
             love.graphics.setColor(1, 1, 1, 1)
-            local texto = "Escolha uma carta para inicar a rodada!"
-
+            local texto = "Escolha uma carta para iniciar a rodada!"
             local alturaFonte = love.graphics.getFont():getHeight()
-            love.graphics.printf(
-                texto,
-                x,
-                y + (alturaCaixa - alturaFonte) / 2,
-                larguraCaixa,
-                "center"
-            )
+            love.graphics.printf(texto, x, y + (alturaCaixa - alturaFonte) / 2, larguraCaixa, "center")
         end
 
-
-        --DESENHAR TELA DE TRANSIÇÃO DE ERA
+        -- Transição de Era
         if telaEra.ativa then
-            --Fundo preto semitransparente
             love.graphics.setColor(0, 0, 0, 0.85)
             love.graphics.rectangle("fill", 0, 0, virtual_Width, virtual_Height)
-
-            --Texto
             love.graphics.setColor(1, 1, 1, 1)
-
-            --Título grande
             love.graphics.setFont(fonte.grande)
-            love.graphics.printf(telaEra.titulo, 0, virtual_Height/2 - 60, virtual_Width, "center")
-
-            --Subtítulo/lore
+            love.graphics.printf(telaEra.titulo, 0, virtual_Height / 2 - 60, virtual_Width, "center")
             love.graphics.setFont(fonte.media)
-            love.graphics.printf(telaEra.texto, 0, virtual_Height/2, virtual_Width, "center")
-
-            --Restaura a cor
+            love.graphics.printf(telaEra.texto, 0, virtual_Height / 2, virtual_Width, "center")
             love.graphics.setColor(1, 1, 1, 1)
-
         end
 
-        --Tutorial
+        -- Botão do Manual
         love.graphics.setColor(0.2, 0.2, 0.2, 1)
         love.graphics.rectangle("fill", 1200, 20, 30, 40, 5, 5)
         love.graphics.setColor(1, 1, 1, 1)
@@ -1439,167 +1416,142 @@ function love.draw()
             ManualTutorial.draw()
         end
 
-
-        
-        --RENDER DO MODAL DOS FATOS EDUCATIVOS
+        -- Modal dos Fatos Educativos
         if modalFato.ativo then
             local mx = (virtual_Width - modalFato.largura) / 2
             local my = (virtual_Height - modalFato.altura) / 2
-            
+
             modalFato.btnX = virtual_Width / 2 - modalFato.btnW / 2
             modalFato.btnY = my + modalFato.altura - 60
-            
-            --1. Fundo escurecido da tela inteira (Backdrop)
+
             love.graphics.setColor(0, 0, 0, 0.75)
             love.graphics.rectangle("fill", 0, 0, virtual_Width, virtual_Height)
 
-            --2. Caixa principal do Pop-up
             love.graphics.setColor(0.08, 0.15, 0.25, 0.95)
             love.graphics.rectangle("fill", mx, my, modalFato.largura, modalFato.altura, 12, 12)
-            
-            --3. Titulo da conquista
+
             love.graphics.setColor(1, 0.85, 0.2, 1)
             love.graphics.setFont(fonte.media)
             love.graphics.printf(modalFato.titulo, mx + 20, my + 20, modalFato.largura - 40, "center")
-            
-            --4. Texto Educativo / Curiosidade
+
             love.graphics.setColor(1, 1, 1, 1)
             love.graphics.setFont(fonte.normal)
             love.graphics.printf(modalFato.texto, mx + 30, my + 75, modalFato.largura - 60, "center")
-            
-            --5. Referência / Fonte
+
             love.graphics.setColor(0.7, 0.7, 0.7, 0.9)
             love.graphics.printf(modalFato.fonte, mx + 30, my + 175, modalFato.largura - 60, "center")
-            
-            --6. Botão "Continuar"
+
             love.graphics.setColor(0.18, 0.6, 0.3, 1)
-            love.graphics.rectangle("fill", modalFato.btnX, modalFato.btnY, modalFato.btnW, modalFato.btnH, 8, 5)
-            
+            love.graphics.rectangle("fill", modalFato.btnX, modalFato.btnY, modalFato.btnW, modalFato.btnH, 8, 8)
+
             love.graphics.setColor(1, 1, 1, 1)
             love.graphics.setLineWidth(2)
             love.graphics.rectangle("line", modalFato.btnX, modalFato.btnY, modalFato.btnW, modalFato.btnH, 8, 8)
-            
+
             love.graphics.setFont(fonte.normal)
             love.graphics.printf("CONTINUAR", modalFato.btnX, modalFato.btnY + 16, modalFato.btnW, "center")
-            
-            --RESETAR A COR
-            love.graphics.setColor(1, 1, 1, 1)
+            love.graphics.setColor(1, 1, 1)
         end
 
-        ------------------------------- CONQUISTAS ---------------------------
-        if game.state["conquistas"] then
+    elseif game.state["conquistas"] then
+        if pause_bg then
             love.graphics.draw(pause_bg, 0, 0, 0, 1, 1)
+        else
+            love.graphics.setColor(0.08, 0.12, 0.2, 1)
+            love.graphics.rectangle("fill", 0, 0, virtual_Width, virtual_Height)
+        end
 
-            love.graphics.setFont(fonte.grande)
-            love.graphics.setColor(1, 0.85, 0.2)
-            love.graphics.printf("CONQUISTAS E FATOS", 0, 40, virtual_Width, "center")
+        love.graphics.setFont(fonte.grande)
+        love.graphics.setColor(1, 0.85, 0.2)
+        love.graphics.printf("CONQUISTAS E FATOS", 0, 40, virtual_Width, "center")
 
-            love.graphics.setFont(fonte.normal)
-            local yPos = 120
+        love.graphics.setFont(fonte.normal)
+        local yPos = 120
+        local chaves = {"primeira_gota", "reserva_cheia", "era_industrial", "guardiao_ilha", "ultima_gota"}
 
-            for _, c in pairs(Conquistas.lista) do
-                local larguraCaixa = 820
-                local alturaCaixa = 85
-                local xBox = (virtual_Width - larguraCaixa) / 2
+        if Conquistas and Conquistas.lista then
+            for _, id in ipairs(chaves) do
+                local c = Conquistas.lista[id]
+                if c then
+                    local larguraCaixa = 820
+                    local alturaCaixa = 85
+                    local xBox = (virtual_Width - larguraCaixa) / 2
 
-                if c.desbloqueada then
-                    love.graphics.setColor(0.1, 0.18, 0.28, 0.95)
-                else
-                    love.graphics.setColor(0.12, 0.12, 0.12, 0.75)
+                    if c.desbloqueada then
+                        love.graphics.setColor(0.1, 0.18, 0.28, 0.95)
+                    else
+                        love.graphics.setColor(0.12, 0.12, 0.12, 0.75)
+                    end
+                    love.graphics.rectangle("fill", xBox, yPos, larguraCaixa, alturaCaixa, 8, 8)
+
+                    if c.desbloqueada then
+                        love.graphics.setColor(1, 0.85, 0.2)
+                    else
+                        love.graphics.setColor(0.35, 0.35, 0.35)
+                    end
+                    love.graphics.setLineWidth(2)
+                    love.graphics.rectangle("line", xBox, yPos, larguraCaixa, alturaCaixa, 8, 8)
+
+                    if c.desbloqueada then
+                        love.graphics.setColor(1, 0.85, 0.2)
+                        love.graphics.print("★ " .. c.nome, xBox + 20, yPos + 10)
+
+                        love.graphics.setColor(1, 1, 1)
+                        love.graphics.print(c.desc, xBox + 20, yPos + 32)
+
+                        love.graphics.setColor(0.4, 0.85, 1)
+                        love.graphics.print("Fato: " .. c.fato, xBox + 20, yPos + 54)
+                    else
+                        love.graphics.setColor(0.6, 0.6, 0.6)
+                        love.graphics.print("? ? ? (Bloqueado)", xBox + 20, yPos + 22)
+                        love.graphics.print("Continue jogando para desbloquear esta conquista.", xBox + 20, yPos + 46)
+                    end
+
+                    yPos = yPos + 95
                 end
-                love.graphics.rectangle("fill", xBox, yPos, larguraCaixa, alturaCaixa, 8, 8)
-
-                love.graphics.setColor(c.desbloqueada and {1, 0.85, 0.2} or {0.35, 0.35, 0.35})
-                love.graphics.setLineWidth(2)
-                love.graphics.rectangle("line", xBox, yPos, larguraCaixa, alturaCaixa, 8, 8)
-
-                if c.desbloqueada then
-                    love.graphics.setColor(1, 0.85, 0.2)
-                    love.graphics.print("★ " .. c.nome, xBox + 20, yPos + 10)
-
-                    love.graphics.setColor(1, 1, 1)
-                    love.graphics.print(c.desc, xBox + 20, yPos + 32)
-
-                    love.graphics.setColor(0.4, 0.85, 1)
-                    love.graphics.print("Fato: " .. c.fato, xBox + 20, yPos + 54)
-                else
-                    love.graphics.setColor(0.6, 0.6, 0.6)
-                    love.graphics.print("? ? ? (Bloqueado)", xBox + 20, yPos + 22)
-                    love.graphics.print("Continue jogando para desbloquear esta conquista.", xBox + 20, yPos + 46)
-                end
-
-                yPos = yPos + 95
-
             end
+        end
 
+        if buttons.conquistas_state and buttons.conquistas_state.back then
             local b = buttons.conquistas_state.back
             b:draw(b.x, b.y)
         end
 
-        --Desenha a notificação do pop-up no topo da tela, caso haja uma conquista desbloqueada
-        Conquistas.drawToast(virtual_Width)
-
-        if not ehMobile then
-            love.graphics.setColor(0, 0, 1)
-            love.graphics.circle("fill", player.x, player.y, player.radius)
-            love.graphics.setColor(1, 1, 1)
-        end
     elseif game.state["menu"] then
-        --love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
-        love.graphics.draw(background, virtual_Width/2, virtual_Height/2, 0, 0.7, 0.7, background:getWidth()/2, background:getHeight()/2)
-        
-        buttons.menu_state.play_game:draw(virtual_Width/2 - 100, virtual_Height/2 - 25, 20, 8, 10)
-        buttons.menu_state.settings:draw(virtual_Width/2 - 20, virtual_Height/2 + 60, 10, 10)
-        buttons.menu_state.exit_game:draw(virtual_Width/2 + 100, virtual_Height/2 + 150, 25, 8, 10)
-        
-        if not ehMobile then
-            love.graphics.setColor(0,1,0)
-            love.graphics.circle("fill", player.x, player.y, player.radius)
-            love.graphics.setColor(1,1,1)
-        end
-    end
+        love.graphics.draw(background, virtual_Width / 2, virtual_Height / 2, 0, 0.7, 0.7, background:getWidth() / 2, background:getHeight() / 2)
 
-    if game.state["creditos"] then
+        buttons.menu_state.play_game:draw(virtual_Width / 2 - 100, virtual_Height / 2 - 25, 20, 8, 10)
+        buttons.menu_state.settings:draw(virtual_Width / 2 - 20, virtual_Height / 2 + 60, 10, 10)
+        buttons.menu_state.conquistas:draw(virtual_Width / 2 + 250, virtual_Height / 2 + 250, 10, 10)
+        buttons.menu_state.exit_game:draw(virtual_Width / 2 + 100, virtual_Height / 2 + 150, 25, 8, 10)
+
+    elseif game.state["creditos"] then
         love.graphics.draw(creditosimg, 0, 0)
-
         local b = buttons.creditos_state.back
         b:draw(b.x, b.y)
-    end
 
-    if game.state["paused"] then
+    elseif game.state["paused"] then
         love.graphics.draw(pause_bg, 0, 0, 0, 1, 1)
 
-        --love.graphics.draw(regras, virtual_Width/2 - 300, 100, 0, 0.5, 0.5)
-        love.graphics.setColor(0, 0, 0) -- Preto para o texto
+        love.graphics.setColor(0, 0, 0)
         love.graphics.setFont(fonte.grande)
-        love.graphics.print("Jogo Pausado", virtual_Width/2 - 150, 10)
-        love.graphics.setColor(1, 1, 1) -- Restaura a cor para branco
+        love.graphics.print("Jogo Pausado", virtual_Width / 2 - 150, 10)
+        love.graphics.setColor(1, 1, 1)
 
-        --botões do menu de pausa
-        buttons.paused_state.resume:draw(virtual_Width/2 - 100, virtual_Height/2 - 200, 1, 1)
-        buttons.paused_state.restart:draw(virtual_Width/2 - 90, virtual_Height/2 - 100, 10, 10)
-        buttons.paused_state.settings:draw(virtual_Width/2 - 80, virtual_Height/2 - 20, 10, 10)
-        buttons.paused_state.exit_to_menu:draw(virtual_Width/2 - 70, virtual_Height/2 + 80, 10, 10)
-        buttons.paused_state.exit_game:draw(virtual_Width/2 - 40, virtual_Height/2 + 160, 10, 10)
+        buttons.paused_state.resume:draw(virtual_Width / 2 - 100, virtual_Height / 2 - 200, 1, 1)
+        buttons.paused_state.restart:draw(virtual_Width / 2 - 90, virtual_Height / 2 - 100, 10, 10)
+        buttons.paused_state.settings:draw(virtual_Width / 2 - 80, virtual_Height / 2 - 20, 10, 10)
+        buttons.paused_state.exit_to_menu:draw(virtual_Width / 2 - 70, virtual_Height / 2 + 80, 10, 10)
+        buttons.paused_state.exit_game:draw(virtual_Width / 2 - 40, virtual_Height / 2 + 160, 10, 10)
 
-        --Mouse/click na tela de pausa
-        if not ehMobile then
-            love.graphics.setColor(0,1,0)
-            love.graphics.circle("fill", player.x, player.y, player.radius)
-            love.graphics.setColor(1,1,1)
-        end
-    end
-
-    if game.state["config"] then
-        --love.graphics.draw(drawable (Drawable), x (number), y (number), r (number), sx (number), sy (number), ox (number), oy (number), kx (number), ky (number))
+    elseif game.state["config"] then
         love.graphics.draw(config_bg, 0, 0, 0, 1, 1)
-
-        love.graphics.draw(configText, virtual_Width/2 - 325,  virtual_Height/2 - 450, 0, 0.5, 0.5)
+        love.graphics.draw(configText, virtual_Width / 2 - 325, virtual_Height / 2 - 450, 0, 0.5, 0.5)
 
         love.graphics.setFont(fonte.grande)
-        love.graphics.setColor(0,0,1)
-        love.graphics.print("Volume", virtual_Width/2 - 325, virtual_Height/2 - 35)
-        love.graphics.setColor(1,1,1)
+        love.graphics.setColor(0, 0, 1)
+        love.graphics.print("Volume", virtual_Width / 2 - 325, virtual_Height / 2 - 35)
+        love.graphics.setColor(1, 1, 1)
 
         desenharSlider()
 
@@ -1607,24 +1559,21 @@ function love.draw()
         b:draw(b.x, b.y)
 
         buttons.config_state.creditos:draw(buttons.config_state.creditos.x + 100, buttons.config_state.creditos.y + 100)
-
-        if not ehMobile then
-            love.graphics.setColor(0,1,0)
-            love.graphics.circle("fill", player.x, player.y, player.radius)
-            love.graphics.setColor(1,1,1)
-        end
     end
 
-    if game.state["creditos"] then
+    -- Toast de Conquistas (renderizado no topo de qualquer estado)
+    if Conquistas and Conquistas.drawToast then
+        Conquistas.drawToast(virtual_Width)
+    end
 
-       if not ehMobile then
-            love.graphics.setColor(0,1,0)
-            love.graphics.circle("fill", player.x, player.y, player.radius)
-            love.graphics.setColor(1,1,1)
-        end
-   end
+    -- Cursor do mouse (sempre desenhado por último)
+    if not ehMobile then
+        love.graphics.setColor(0, 1, 0)
+        love.graphics.circle("fill", player.x, player.y, player.radius)
+        love.graphics.setColor(1, 1, 1)
+    end
 
-     push:finish()--Finaliza e estica para a tela real do dispositivo
+    push:finish()
 end
 
 function love.keypressed(key)
@@ -1640,6 +1589,9 @@ function love.keypressed(key)
         elseif game.state["paused"] then
             game.state["paused"] = false
             game.state["running"] = true
+        elseif game.state["conquistas"] then
+            fecharConquistas()
+            return
         end
     end
 
@@ -1653,8 +1605,7 @@ function love.keypressed(key)
     if key == "r" then
         startNewGame()
     end
-    if key == "t" then
-        enfileirarFato(1)
-        print("Tentou abrir fato 1. Ativo:", modalFato.ativo)
+    if key == "f5" then
+        Conquistas.resetarTudo()
     end
 end
