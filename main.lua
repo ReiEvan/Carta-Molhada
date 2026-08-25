@@ -1392,6 +1392,7 @@ function love.draw()
             love.graphics.setLineWidth(2)
             love.graphics.rectangle("line", x, y, larguraCaixa, alturaCaixa, 10, 10)
 
+            love.graphics.setFont(fonte.normal)
             love.graphics.setColor(1, 1, 1, 1)
             local texto = "Escolha uma carta para inicar a rodada!"
 

@@ -537,6 +537,7 @@ local function desenharCartaPreview()
     --love.graphics.printf("Clique para selecionar", textX, y + h - 42, textW, "center")
 
     love.graphics.setColor(1, 1, 1)
+    love.graphics.setFont(fonte.normal)
 end
 
 local function desenharCartasRodada()
