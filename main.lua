@@ -1051,6 +1051,7 @@ function love.load()
     local prxmDiaNormal = love.graphics.newImage("sprites/botão_prxm_Dia.png")
     local prxmDiaClicado = love.graphics.newImage("sprites/botão_prxm_Dia_Clicado.png")
     local creditosTxt = love.graphics.newImage("sprites/creditos-txt.png")
+    local trofeuImg = love.graphics.newImage("sprites/trofeu-temporario.png")
 
     -------------------------------------------------------------------
     if not ehMobile then
@@ -1082,7 +1083,7 @@ function love.load()
     Conquistas.carregar()
 
     --Botão para abrir Conquistas no menu
-    buttons.menu_state.conquistas = button("Conquistas", abrirConquistas, nil, 75, 75)
+    buttons.menu_state.conquistas = button(trofeuImg, abrirConquistas, nil, 75, 75)
     buttons.menu_state.conquistas.x = centroX - 40
     buttons.menu_state.conquistas.y = centroY + 175
 
@@ -1519,7 +1520,7 @@ function love.draw()
 
         buttons.menu_state.play_game:draw(virtual_Width / 2 - 100, virtual_Height / 2 - 25, 20, 8, 10)
         buttons.menu_state.settings:draw(virtual_Width / 2 - 20, virtual_Height / 2 + 60, 10, 10)
-        buttons.menu_state.conquistas:draw(virtual_Width / 2 + 250, virtual_Height / 2 + 250, 10, 10)
+        buttons.menu_state.conquistas:draw(virtual_Width / 2 + 400, virtual_Height / 2 + 250, 10, 10)
         buttons.menu_state.exit_game:draw(virtual_Width / 2 + 100, virtual_Height / 2 + 150, 25, 8, 10)
 
     elseif game.state["creditos"] then

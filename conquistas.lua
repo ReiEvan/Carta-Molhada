@@ -128,6 +128,7 @@ function Conquistas.update(dt)
     end
 end
 
+local trofeuImg = love.graphics.newImage("sprites/trofeu-temporario.png")
 function Conquistas.drawToast(virtual_Width)
     if not toast.ativo then return end
 
@@ -135,6 +136,8 @@ function Conquistas.drawToast(virtual_Width)
     local altura = 65
     local x = (virtual_Width - largura) / 2
     local y = toast.yAtual
+
+
 
     love.graphics.setColor(0.08, 0.12, 0.2, 0.95)
     love.graphics.rectangle("fill", x, y, largura, altura, 10, 10)
@@ -145,15 +148,18 @@ function Conquistas.drawToast(virtual_Width)
 
     love.graphics.circle("fill", x + 30, y + 32, 14)
     love.graphics.setColor(0.08, 0.12, 0.2, 1)
-    love.graphics.print("★", x + 23, y + 21)
+    love.graphics.draw(trofeuImg, x + 23, y + 21, 0, 0.02, 0.02)
 
+    love.graphics.setFont(love.graphics.newFont(14))
     love.graphics.setColor(1, 0.85, 0.2, 1)
     love.graphics.print(toast.titulo, x + 55, y + 10)
 
+    love.graphics.setFont(love.graphics.newFont(12))
     love.graphics.setColor(1, 1, 1, 1)
     love.graphics.print(toast.nomeConquista, x + 55, y + 32)
 
     love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.setFont(love.graphics.newFont(12))
 end
 
 function Conquistas.resetarTudo()
