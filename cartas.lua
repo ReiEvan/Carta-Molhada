@@ -343,7 +343,7 @@ end
 
 local function getPosicaoCarta(i)
     local v_Width = 1280
-    local v_Height = 720
+    local v_Height = 700
 
     local totalWidth = (#cartasRodada * CARD_WIDTH) + ((#cartasRodada - 1) * 30)
     local startX = (v_Width - totalWidth) / 2
