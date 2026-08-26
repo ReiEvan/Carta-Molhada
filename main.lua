@@ -82,8 +82,6 @@ function voltarMenu()
     game.state["paused"] = false
     game.state["creditos"] = false
     game.state["menu"] = true
-
-    love.graphics.setFont(fonte.normal)
 end
 
 function voltarDasConfiguracoes()
@@ -94,8 +92,6 @@ function voltarDasConfiguracoes()
     else
         game.state["menu"] = true --Se veio do menu, volta pro menu
     end
-
-    love.graphics.setFont(fonte.normal)
 end
 
 function creditosParaMenu()
@@ -332,7 +328,7 @@ function confirmarMovimentoDireto(destIndex)
                 hexAtivos[destIndex] = 1
                 estadoTransformacao[destIndex] = false
                 rodadasPorPonto[destIndex] = 0
-                
+
         elseif hexAtivos[destIndex] == 1 then
                 hexAtivos[destIndex] = 2
                 estadoTransformacao[destIndex] = true
@@ -1054,6 +1050,7 @@ function love.load()
     local sairClicado = love.graphics.newImage("sprites/botão_sair_clicado.png")
     local prxmDiaNormal = love.graphics.newImage("sprites/botão_prxm_Dia.png")
     local prxmDiaClicado = love.graphics.newImage("sprites/botão_prxm_Dia_Clicado.png")
+    local creditosTxt = love.graphics.newImage("sprites/creditos-txt.png")
 
     -------------------------------------------------------------------
     if not ehMobile then
@@ -1103,8 +1100,8 @@ function love.load()
     buttons.config_state.back.x = cx - 75
     buttons.config_state.back.y = cy + 150
 
-    buttons.config_state.creditos = button("creditos", creditos, nil, 150, 50)
-    buttons.config_state.creditos.x = cx - 75
+    buttons.config_state.creditos = button(creditosTxt, creditos, nil, 200, 50)
+    buttons.config_state.creditos.x = cx + 200
     buttons.config_state.creditos.y = cy + 150
 
 
