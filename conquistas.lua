@@ -147,7 +147,6 @@ function Conquistas.drawToast(virtual_Width)
     love.graphics.rectangle("line", x, y, largura, altura, 10, 10)
 
     love.graphics.circle("fill", x + 30, y + 32, 14)
-    love.graphics.setColor(0.08, 0.12, 0.2, 1)
     love.graphics.draw(trofeuImg, x + 23, y + 21, 0, 0.02, 0.02)
 
     love.graphics.setFont(love.graphics.newFont(14))

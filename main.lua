@@ -1245,6 +1245,7 @@ local diaImg = love.graphics.newImage("sprites/Dia_Arte.png")
 local configText = love.graphics.newImage("sprites/CONFIG.png")
 local diaLimiteImg = love.graphics.newImage("sprites/diaLimite.png")
 local creditosimg = love.graphics.newImage("sprites/creditos.png")
+local trofeuImg = love.graphics.newImage("sprites/trofeu-temporario.png")
 function love.draw()
     push:start() -- Inicia a renderização na resolução virtual
 
@@ -1491,8 +1492,9 @@ function love.draw()
                     love.graphics.rectangle("line", xBox, yPos, larguraCaixa, alturaCaixa, 8, 8)
 
                     if c.desbloqueada then
-                        love.graphics.setColor(1, 0.85, 0.2)
-                        love.graphics.print("★ " .. c.nome, xBox + 20, yPos + 10)
+                        love.graphics.draw(trofeuImg, xBox + 23, yPos + 10, 0, 0.02, 0.02)
+                        love.graphics.setColor(1, 1, 1)
+                        love.graphics.print(c.nome, xBox + 55, yPos + 10)
 
                         love.graphics.setColor(1, 1, 1)
                         love.graphics.print(c.desc, xBox + 20, yPos + 32)
