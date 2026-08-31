@@ -301,7 +301,7 @@ local movGuarda = {
     x = pontosMovimentacao[3].x,
     y = pontosMovimentacao[3].y,
     indiceAtual = 3,
-    imagem = love.graphics.newImage("sprites/Guardinha.png"),
+    imagem = love.graphics.newImage("sprites/guarda1.png"),
     destino = nil,
     velocidade = 200,
     raioColisao = 30,
@@ -1033,7 +1033,7 @@ function love.load()
 
 
     ------------IMAGENS DO JOGO--------------------
-    movGuarda.imagem = love.graphics.newImage("sprites/Guardinha.png")
+    movGuarda.imagem = love.graphics.newImage("sprites/guarda1.png")
     local continuarNormal = love.graphics.newImage("sprites/Continuar.png")
     local voltarNormal = love.graphics.newImage("sprites/Voltar.png")
     local menuNormal = love.graphics.newImage("sprites/Menu2.png")
@@ -1051,7 +1051,7 @@ function love.load()
     local prxmDiaNormal = love.graphics.newImage("sprites/botão_prxm_Dia.png")
     local prxmDiaClicado = love.graphics.newImage("sprites/botão_prxm_Dia_Clicado.png")
     local creditosTxt = love.graphics.newImage("sprites/creditos-txt.png")
-    local trofeuImg = love.graphics.newImage("sprites/trofeu-temporario.png")
+    local trofeuImg = love.graphics.newImage("sprites/trofeu1.png")
 
     -------------------------------------------------------------------
     if not ehMobile then
@@ -1245,7 +1245,7 @@ local diaImg = love.graphics.newImage("sprites/Dia_Arte.png")
 local configText = love.graphics.newImage("sprites/CONFIG.png")
 local diaLimiteImg = love.graphics.newImage("sprites/diaLimite.png")
 local creditosimg = love.graphics.newImage("sprites/creditos.png")
-local trofeuImg = love.graphics.newImage("sprites/trofeu-temporario.png")
+local trofeuImg = love.graphics.newImage("sprites/trofeu1.png")
 function love.draw()
     push:start() -- Inicia a renderização na resolução virtual
 
@@ -1492,7 +1492,7 @@ function love.draw()
                     love.graphics.rectangle("line", xBox, yPos, larguraCaixa, alturaCaixa, 8, 8)
 
                     if c.desbloqueada then
-                        love.graphics.draw(trofeuImg, xBox + 23, yPos + 10, 0, 0.02, 0.02)
+                        love.graphics.draw(trofeuImg, xBox + 23, yPos + 10, 0, 0.08, 0.08)
                         love.graphics.setColor(1, 1, 1)
                         love.graphics.print(c.nome, xBox + 55, yPos + 10)
 
