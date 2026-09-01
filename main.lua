@@ -1324,9 +1324,9 @@ function love.draw()
 
         -- Guardinha florestal
         if movGuarda.quadros[movGuarda.frameAtual] then
-            love.graphics.draw(movGuarda.imagem, movGuarda.quadros[movGuarda.frameAtual], movGuarda.x - 90, movGuarda.y - 50, 0, 0.09, 0.09)
+            love.graphics.draw(movGuarda.imagem, movGuarda.quadros[movGuarda.frameAtual], movGuarda.x - 25, movGuarda.y - 28, 0, 0.2, 0.2)
         else
-            love.graphics.draw(movGuarda.imagem, movGuarda.x - 20, movGuarda.y - 20)
+            love.graphics.draw(movGuarda.imagem, movGuarda.x - 20, movGuarda.y - 20, 0, 0.2, 0.2)
         end
 
         cartas.desenharTroca()
