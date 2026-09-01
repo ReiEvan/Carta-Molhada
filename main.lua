@@ -739,6 +739,8 @@ local function startNewGame()
     game.state["menu"] = false
     game.state["config"] = false
     game.state["paused"] = false
+    game.state["creditos"] = false
+    game.state["conquistas"] = false
     game.state["running"] = true
     definirObjetivos()
 
@@ -1602,7 +1604,7 @@ function love.keypressed(key)
     if key == "space" and game.state["running"] then
         proxRodada()
     end
-    if key == "r" then
+    if key == "r" and (game.state["running"] or game.state["paused"]) then
         startNewGame()
     end
     if key == "f5" then
