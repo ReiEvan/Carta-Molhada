@@ -173,6 +173,10 @@ end
 
 local CARD_WIDTH = 140
 local CARD_HEIGHT = 185
+
+local CARTA_RODADA_WIDTH = 110
+local CARTA_RODADA_HEIGHT = 145
+
 local OFFSET_BETWEEN_CARDS = 5
 local contadorBaralho = #primeirasAliadas
 local HOVER_OFFSET = 120
@@ -201,8 +205,8 @@ local function criarFundo(x, y)
 end
 
 local function construirBaralho()
-    local startX = virtual_Width - CARD_WIDTH
-    local startY = virtual_Height - CARD_HEIGHT
+    local startX = virtual_Width - CARD_WIDTH 
+    local startY = virtual_Height - CARD_HEIGHT 
 
     baralho = {}
     contadorBaralho = #primeirasAliadas
@@ -342,14 +346,14 @@ end
 -----------------------------------------------------------------------------------------
 
 local function getPosicaoCarta(i)
-    local v_Width = 1280
-    local v_Height = 700
+    local v_Width = 1315
+    local v_Height = 630
 
-    local totalWidth = (#cartasRodada * CARD_WIDTH) + ((#cartasRodada - 1) * 30)
+    local totalWidth = (#cartasRodada * CARTA_RODADA_WIDTH) + ((#cartasRodada - 1) * 30)
     local startX = (v_Width - totalWidth) / 2
     local posY = v_Height * 0.90
 
-    local x = startX + (i - 1) * (CARD_WIDTH + 30)
+    local x = startX + (i - 1) * (CARTA_RODADA_WIDTH + 30)
     local y = posY
 
     return x, y
@@ -368,8 +372,8 @@ local function atualizarInteracaoCartas()
     for i = 1, #cartasRodada do
         local x, y = getPosicaoCarta(i)
 
-        if mx_virtual >= x and mx_virtual <= x + CARD_WIDTH and
-            my_virtual >= y and my_virtual <= y + CARD_HEIGHT then
+        if mx_virtual >= x and mx_virtual <= x + CARTA_RODADA_WIDTH and
+            my_virtual >= y and my_virtual <= y + CARTA_RODADA_HEIGHT then
             hoverIndex = i
         end
     end
@@ -590,11 +594,14 @@ local function desenharCartasRodada()
         local offset = (hoverIndex == i) and -HOVER_OFFSET or 0
 
         if card.img then
-            love.graphics.draw(card.img, x, y + offset)
+        local escalaX = CARTA_RODADA_WIDTH / card.img:getWidth()
+        local escalaY = CARTA_RODADA_HEIGHT / card.img:getHeight()
+
+        love.graphics.draw(card.img, x, y + offset, 0, escalaX, escalaY)
         end
 
         if hoverIndex == i then
-            local textoX = (i == 1) and (x - 220) or (x + CARD_WIDTH + 20)
+            local textoX = (i == 1) and (x - 220) or (x + CARTA_RODADA_WIDTH + 20)
             local larguraCaixa, alturaCaixa = 220, 150
 
             love.graphics.setColor(0.2, 0.2, 0.2, 0.75)
@@ -1073,8 +1080,8 @@ function mousepressed(mx, my, btn, moveAtual)
         local x, y = getPosicaoCarta(i)
         local offset = (hoverIndex == i) and -HOVER_OFFSET or 0
 
-        if mx > x and mx < x + CARD_WIDTH and
-            my > y + offset and my < y + offset + CARD_HEIGHT then
+        if mx > x and mx < x + CARTA_RODADA_WIDTH and
+            my > y + offset and my < y + offset + CARTA_RODADA_HEIGHT then
 
             if carta.sabotada then
                 mensagemErro= "Carta sabotada — escolha outra carta"
