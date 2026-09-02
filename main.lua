@@ -1565,7 +1565,13 @@ function love.draw()
 
         love.graphics.setFont(fonte.grande)
         love.graphics.setColor(0, 0, 1)
-        love.graphics.print("Volume", virtual_Width / 2 - 325, virtual_Height / 2 - 35)
+        
+        if ehMobile then
+            love.graphics.print("Volume", virtual_Width / 2 - 225, virtual_Height / 2 - 33)
+        else
+            love.graphics.print("Volume", virtual_Width / 2 - 325, virtual_Height / 2 - 35)
+        end
+
         love.graphics.setColor(1, 1, 1)
 
         desenharSlider()
