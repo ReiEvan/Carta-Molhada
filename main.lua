@@ -130,7 +130,9 @@ local function fecharConquistas()
 end
 
 function love.resize(width, height)
-    push:resize(width, height)
+    if push then
+        push:resize(width, height)
+    end
 end
 
 local movimento={
@@ -1014,6 +1016,14 @@ end
 function love.load()
     -------------COISAS DO PUSH LUA------------------
     local gameWidth, gameHeight = 1280, 720 --Resolução que o jogo vai fingir ter
+
+    if love.system.getOS() == "Android" or love.system.getOS() == "iOS" then
+        love.window.setMode(1280, 720, {
+            fullscreen = true,
+            resizable = false,
+            highdpi = true
+        })
+    end
 
     local windowWidth, windowHeight = love.window.getDesktopDimensions()
 

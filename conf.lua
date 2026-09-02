@@ -7,15 +7,14 @@ function love.conf(t)
     t.window.width = 1280
     t.window.height = 720
     --Parte importante pro mobile
-    t.window.x = 100
-    t.window.y = 100
-    t.modules.joystick = true
+    t.accelerometerjoystick = false
     t.modules.audio = true
     t.modules.touch = true
     t.window.fullscreen = false
-    t.window.resizable = true
+    t.window.resizable = false
+    t.window.fullscreentype = "exclusive"
     --Escala da tela, importante para mobile
-    t.window.usedpiscale = true
+    t.window.usedpiscale = false
     --Orientação da tela, nesse caso horizontal
     t.window.displayorientation = "landscape"
     t.window.orientation = "landscape"
