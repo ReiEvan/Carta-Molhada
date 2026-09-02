@@ -130,6 +130,9 @@ local function fecharConquistas()
 end
 
 function love.resize(width, height)
+    if height > width then
+        love.window.setMode(math.max(width, height), math.min(width, height), {resizable = false, fullscreen = true})
+    end
     if push then
         push:resize(width, height)
     end
