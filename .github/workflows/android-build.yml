@@ -25,7 +25,7 @@ jobs:
           love-ref: "11.5"
 
           # Forçar o modo paisagem
-          orientation: "sensorLandscape"
+          orientation: "Landscape"
           
           # Ícones 
           resource-path: "./assets/android/res"
