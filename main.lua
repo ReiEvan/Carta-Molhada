@@ -1567,7 +1567,7 @@ function love.draw()
         love.graphics.setColor(0, 0, 1)
         
         if ehMobile then
-            love.graphics.print("Volume", virtual_Width / 2 - 225, virtual_Height / 2 - 33)
+            love.graphics.print("Volume", virtual_Width / 2 - 325, virtual_Height / 2 - 75)
         else
             love.graphics.print("Volume", virtual_Width / 2 - 325, virtual_Height / 2 - 35)
         end
