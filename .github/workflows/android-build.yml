@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android AAB (Play Store)
 
 on:
   push:
@@ -16,13 +16,15 @@ jobs:
         run: |
           zip -9 -r game.love . -x ".git*" ".github*" "*Thumbs.db" "*.DS_Store" "game.love" "build/*"
 
-      - name: Gerar APK do Android
+      - name: Gerar AAB do Android
         uses: love-actions/love-actions-android@v2
         with:
           app-name: "Ultima Gota"
           bundle-id: "com.seuusuario.ultimagota"
           love-package: "./game.love" # Indicamos o caminho relativo exato com "./"
           love-ref: "11.5"
+
+          target: "aab"
 
           # Forçar o modo paisagem
           orientation: "Landscape"
