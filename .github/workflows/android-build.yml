@@ -21,26 +21,28 @@ jobs:
         run: |
           zip -9 -r game.love . -x ".git*" ".github*" "*Thumbs.db" "*.DS_Store" "game.love" "build/*"
 
-      - name: Clonar LÖVE Android e Injetar Jogo
+      - name: Clonar LÖVE Android (com submódulos)
         run: |
           git clone --recursive https://github.com/love2d/love-android.git love-android-src
+
+      - name: Injetar Jogo no Projeto
+        run: |
           mkdir -p love-android-src/app/src/main/assets
           cp game.love love-android-src/app/src/main/assets/game.love
 
-      - name: Configurar Package ID e Nome
+      - name: Configurar Package ID
         run: |
           cd love-android-src
-          # Altera o ID do pacote no build.gradle principal do app
-          sed -i 's/applicationId "org.love2d.android"/applicationId "com.seuusuario.ultimagota"/g' app/build.gradle
+          sed -i 's/org.love2d.android/com.seuusuario.ultimagota/g' app/build.gradle
 
       - name: Compilar AAB com Gradle
         run: |
           cd love-android-src
           chmod +x gradlew
-          ./gradlew :app:bundleRelease --stacktrace
+          ./gradlew :app:bundleDebug --stacktrace --info
 
       - name: Guardar o AAB gerado
         uses: actions/upload-artifact@v4
         with:
           name: UltimaGota-PlayStore-AAB
-          path: love-android-src/app/build/outputs/bundle/release/*.aab
+          path: love-android-src/app/build/outputs/bundle/debug/*.aab
