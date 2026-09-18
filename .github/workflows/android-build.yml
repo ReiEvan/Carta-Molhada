@@ -1,4 +1,4 @@
-name: Build Android
+name: Build Android AAB (Play Store)
 
 on:
   push:
@@ -23,12 +23,33 @@ jobs:
           love-package: "./game.love"
           love-ref: "11.5"
 
-          # Configurações visuais 
-          resource-path: "./assets/android/res"
-          icon-specifier: "@mipmap/app"
+      - name: Descompactar APK e Converter Arquivos para Protobuf
+        run: |
+          # Descompacta o APK gerado
+          unzip build/*.apk -d apk_unpacked
+          
+          # Cria a estrutura do modulo
+          mkdir -p base/manifest base/assets base/lib base/res
+          
+          # Move os arquivos
+          cp apk_unpacked/AndroidManifest.xml base/manifest/
+          cp -r apk_unpacked/assets/* base/assets/ 2>/dev/null || true
+          cp -r apk_unpacked/lib/* base/lib/ 2>/dev/null || true
+          cp -r apk_unpacked/res/* base/res/ 2>/dev/null || true
 
-      - name: Guardar o APK gerado
+          # Converte o AndroidManifest para o formato Protobuf usando o aapt2 do SDK
+          $ANDROID_HOME/build-tools/34.0.0/aapt2 convert -o base/manifest/AndroidManifest.xml --output-format proto apk_unpacked/AndroidManifest.xml
+          
+          # Compacta a pasta base
+          cd base && zip -r ../base.zip * && cd ..
+
+      - name: Baixar Bundletool e Gerar AAB
+        run: |
+          wget https://github.com/google/bundletool/releases/download/1.16.0/bundletool-all-1.16.0.jar -O bundletool.jar
+          java -jar bundletool.jar build-bundle --modules=base.zip --output=UltimaGota.aab
+
+      - name: Guardar o AAB gerado
         uses: actions/upload-artifact@v4
         with:
-          name: UltimaGota-Android
-          path: build/*.apk
+          name: UltimaGota-PlayStore-AAB
+          path: UltimaGota.aab
