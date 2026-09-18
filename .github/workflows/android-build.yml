@@ -8,36 +8,40 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Código
+      - name: Checkout Código do Jogo
         uses: actions/checkout@v4
 
-      # Ajustamos este passo para criar o zip de forma segura
+      - name: Configurar Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       - name: Compactar jogo para .love
         run: |
           zip -9 -r game.love . -x ".git*" ".github*" "*Thumbs.db" "*.DS_Store" "game.love" "build/*"
 
-      - name: Gerar AAB do Android
-        uses: love-actions/love-actions-android@v2
-        with:
-          app-name: "Ultima Gota"
-          bundle-id: "com.seuusuario.ultimagota"
-          love-package: "./game.love" # Indicamos o caminho relativo exato com "./"
-          love-ref: "11.5"
+      - name: Clonar LÖVE Android e Injetar Jogo
+        run: |
+          git clone --recursive https://github.com/love2d/love-android.git love-android-src
+          mkdir -p love-android-src/app/src/main/assets
+          cp game.love love-android-src/app/src/main/assets/game.love
 
-          target: "aab"
+      - name: Configurar Nome do App e Package ID
+        run: |
+          cd love-android-src
+          # Ajusta o ID do pacote e o nome do jogo nos arquivos do Android
+          sed -i 's/applicationId "org.love2d.android"/applicationId "com.seuusuario.ultimagota"/g' app/build.gradle
+          sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">Ultima Gota<\/string>/g' app/src/main/res/values/strings.xml
 
-          # Forçar o modo paisagem
-          orientation: "Landscape"
-          
-          # Ícones 
-          resource-path: "./assets/android/res"
-          icon-specifier: "@mipmap/app"
-          
-          # Splash Screen
-        #  splash-screen: "./assets/icons/splash.png"
+      - name: Compilar AAB com Gradle
+        run: |
+          cd love-android-src
+          chmod +x gradlew
+          ./gradlew bundleRelease --stacktrace
 
-      - name: Guardar o APK gerado
+      - name: Guardar o AAB gerado
         uses: actions/upload-artifact@v4
         with:
-          name: UltimaGota-Android
-          path: build/*.aab
+          name: UltimaGota-PlayStore-AAB
+          path: love-android-src/app/build/outputs/bundle/release/*.aab
