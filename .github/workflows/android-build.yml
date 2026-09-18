@@ -27,18 +27,17 @@ jobs:
           mkdir -p love-android-src/app/src/main/assets
           cp game.love love-android-src/app/src/main/assets/game.love
 
-      - name: Configurar Nome do App e Package ID
+      - name: Configurar Package ID e Nome
         run: |
           cd love-android-src
-          # Ajusta o ID do pacote e o nome do jogo nos arquivos do Android
+          # Altera o ID do pacote no build.gradle principal do app
           sed -i 's/applicationId "org.love2d.android"/applicationId "com.seuusuario.ultimagota"/g' app/build.gradle
-          sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">Ultima Gota<\/string>/g' app/src/main/res/values/strings.xml
 
       - name: Compilar AAB com Gradle
         run: |
           cd love-android-src
           chmod +x gradlew
-          ./gradlew bundleRelease --stacktrace
+          ./gradlew :app:bundleRelease --stacktrace
 
       - name: Guardar o AAB gerado
         uses: actions/upload-artifact@v4
