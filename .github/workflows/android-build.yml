@@ -1,4 +1,4 @@
-name: Build Android AAB (Play Store)
+name: Build Android
 
 on:
   push:
@@ -8,41 +8,27 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Código do Jogo
+      - name: Checkout Código
         uses: actions/checkout@v4
-
-      - name: Configurar Java JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
 
       - name: Compactar jogo para .love
         run: |
           zip -9 -r game.love . -x ".git*" ".github*" "*Thumbs.db" "*.DS_Store" "game.love" "build/*"
 
-      - name: Clonar LÖVE Android (com submódulos)
-        run: |
-          git clone --recursive https://github.com/love2d/love-android.git love-android-src
+      - name: Gerar APK do Android
+        uses: love-actions/love-actions-android@v2
+        with:
+          app-name: "Ultima Gota"
+          bundle-id: "com.seuusuario.ultimagota"
+          love-package: "./game.love"
+          love-ref: "11.5"
 
-      - name: Injetar Jogo no Projeto
-        run: |
-          mkdir -p love-android-src/app/src/main/assets
-          cp game.love love-android-src/app/src/main/assets/game.love
+          # Configurações visuais 
+          resource-path: "./assets/android/res"
+          icon-specifier: "@mipmap/app"
 
-      - name: Configurar Package ID
-        run: |
-          cd love-android-src
-          sed -i 's/org.love2d.android/com.seuusuario.ultimagota/g' app/build.gradle
-
-      - name: Compilar AAB com Gradle
-        run: |
-          cd love-android-src
-          chmod +x gradlew
-          ./gradlew :app:bundleDebug --stacktrace --info
-
-      - name: Guardar o AAB gerado
+      - name: Guardar o APK gerado
         uses: actions/upload-artifact@v4
         with:
-          name: UltimaGota-PlayStore-AAB
-          path: love-android-src/app/build/outputs/bundle/debug/*.aab
+          name: UltimaGota-Android
+          path: build/*.apk
