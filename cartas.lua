@@ -61,7 +61,7 @@ local eraAtual = 1
 local primeirasAliadas = {
 
     {
-        id = "Garrafa termica",
+        id = "Garrafa térmica",
         img = love.graphics.newImage("sprites/carta garrafa termica.png"),
         descricao = "Ganhe 1 água."
     },
@@ -661,7 +661,7 @@ local fundoConflitoSprite = love.graphics.newImage("sprites/FUNDO CARTA VERMELHA
 
 local conflitos1 = {
     {
-        id = "Bomba d'agua quebrou",
+        id = "Bomba d'água quebrou",
         img = love.graphics.newImage("sprites/conflitos/bomba dagua quebrou.png"),
         descricao = "Perca 2 fichas de água",
         eraMinima = 1,
@@ -671,7 +671,7 @@ local conflitos1 = {
     },
 
     {
-        id = "Incendio criminoso",
+        id = "Incêndio criminoso",
         img = love.graphics.newImage("sprites/conflitos/incendio criminoso.png"),
         descricao = "Perca uma área segura,\nou em tratamento,\naleatória exceto a que \no guarda estiver.",
         eraMinima = 1,
@@ -697,7 +697,7 @@ local conflitos1 = {
     {
         id = "Sabotagem",
         img = love.graphics.newImage("sprites/conflitos/sabotagem.png"),
-        descricao = "na proxima rodada \nsó tera uma carta",
+        descricao = "Na proxima rodada \nsó terá uma carta",
         eraMinima = 1,
         efeito = function()
             sabotagemProximaRodada = true
