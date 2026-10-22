@@ -1,55 +1,41 @@
-name: Build Android AAB (Play Store)
+name: Build Android APK
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
+    tags:
+      - 'v*' # Opcional: dispara também quando você cria uma tag de versão (ex: v1.0.0)
+  pull_request:
+    branches: [ main, master ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Código
+      - name: Checkout do Código
         uses: actions/checkout@v4
 
-      - name: Compactar jogo para .love
-        run: |
-          zip -9 -r game.love . -x ".git*" ".github*" "*Thumbs.db" "*.DS_Store" "game.love" "build/*"
+      # 1. Primeiro geramos o arquivo .love compactado do seu jogo automaticamente
+      - name: Criar pacote .love
+        uses: love-actions/love-actions-core@v1
+        with:
+          source-path: "."
+          target-path: "./game.love"
 
-      - name: Gerar APK do Android
+      # 2. Usamos a Action oficial da comunidade para compilar o APK para Android
+      - name: Compilar APK com Love2D
+        id: build-android
         uses: love-actions/love-actions-android@v2
         with:
-          app-name: "Ultima Gota"
-          bundle-id: "com.seuusuario.ultimagota"
-          love-package: "./game.love"
-          love-ref: "11.5"
+          app-name: "Ultima Gota"          # Nome que aparece no celular
+          bundle-id: "com.seuusuario.ultimagota"    # Identificador único do app
+          love-ref: "11.5"                       # Versão do Love2D que você usou (ex: 11.5 ou 11.4)
+          love-package: "./game.love"          # Caminho do pacote gerado no passo anterior
 
-      - name: Descompactar APK e Converter Arquivos para Protobuf
-        run: |
-          # Descompacta o APK gerado
-          unzip build/*.apk -d apk_unpacked
-          
-          # Cria a estrutura do modulo
-          mkdir -p base/manifest base/assets base/lib base/res
-          
-          # Move os arquivos
-          cp apk_unpacked/AndroidManifest.xml base/manifest/
-          cp -r apk_unpacked/assets/* base/assets/ 2>/dev/null || true
-          cp -r apk_unpacked/lib/* base/lib/ 2>/dev/null || true
-          cp -r apk_unpacked/res/* base/res/ 2>/dev/null || true
-
-          # Converte o AndroidManifest para o formato Protobuf usando o aapt2 do SDK
-          $ANDROID_HOME/build-tools/34.0.0/aapt2 convert -o base/manifest/AndroidManifest.xml --output-format proto apk_unpacked/AndroidManifest.xml
-          
-          # Compacta a pasta base
-          cd base && zip -r ../base.zip * && cd ..
-
-      - name: Baixar Bundletool e Gerar AAB
-        run: |
-          wget https://github.com/google/bundletool/releases/download/1.16.0/bundletool-all-1.16.0.jar -O bundletool.jar
-          java -jar bundletool.jar build-bundle --modules=base.zip --output=UltimaGota.aab
-
-      - name: Guardar o AAB gerado
+      # 3. Salvamos o APK gerado para você poder baixar nos artefatos do GitHub
+      - name: Enviar APK como Artefato
         uses: actions/upload-artifact@v4
         with:
-          name: UltimaGota-PlayStore-AAB
-          path: UltimaGota.aab
+          name: meu-jogo-apk
+          path: ${{ steps.build-android.outputs.package-paths }}
