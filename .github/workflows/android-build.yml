@@ -11,26 +11,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout do Código
-        uses: actions/checkout@v4
 
-      # 🧹 Limpeza segura de espaço em disco (sem quebrar o runner)
-      - name: Liberar espaço em disco de forma segura
+      - name: Limpeza extrema de disco
         run: |
-          echo "=== Espaço em disco ANTES da limpeza ==="
-          df -h
-          
-          # Remove ferramentas pesadas que não usamos para compilar LÖVE
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /opt/ghc
           sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/az
           sudo rm -rf /usr/local/share/boost
-          sudo rm -rf "$HOME/.dotnet"
-          sudo rm -rf "$HOME/.rustup"
-          
-          echo "=== Espaço em disco DEPOIS da limpeza ==="
+          sudo rm -rf /opt/hostedtoolcache
+          sudo docker system prune -a --volumes -f
           df -h
+          
+      - name: Checkout do Código
+        uses: actions/checkout@v4
 
       - name: Criar pacote .love
         uses: love-actions/love-actions-core@v1
