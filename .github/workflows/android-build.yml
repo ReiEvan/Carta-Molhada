@@ -3,8 +3,6 @@ name: Build Android APK
 on:
   push:
     branches: [ main, master ]
-    tags:
-      - 'v*' # Opcional: dispara também quando você cria uma tag de versão (ex: v1.0.0)
   pull_request:
     branches: [ main, master ]
 
@@ -16,35 +14,39 @@ jobs:
       - name: Checkout do Código
         uses: actions/checkout@v4
 
-      - name: Liberar espaço em disco
+      # 🧹 Limpeza segura de espaço em disco (sem quebrar o runner)
+      - name: Liberar espaço em disco de forma segura
         run: |
-          echo "Espaço em disco antes da limpeza:"
+          echo "=== Espaço em disco ANTES da limpeza ==="
           df -h
+          
+          # Remove ferramentas pesadas que não usamos para compilar LÖVE
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-          echo "Espaço em disco após a limpeza:"
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/az
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$HOME/.dotnet"
+          sudo rm -rf "$HOME/.rustup"
+          
+          echo "=== Espaço em disco DEPOIS da limpeza ==="
           df -h
 
-      # 1. Primeiro geramos o arquivo .love compactado do seu jogo automaticamente
       - name: Criar pacote .love
         uses: love-actions/love-actions-core@v1
         with:
           source-path: "."
           target-path: "./game.love"
 
-      # 2. Usamos a Action oficial da comunidade para compilar o APK para Android
       - name: Compilar APK com Love2D
         id: build-android
         uses: love-actions/love-actions-android@v2
         with:
-          app-name: "Ultima Gota"          # Nome que aparece no celular
-          bundle-id: "com.seuusuario.ultimagota"    # Identificador único do app
-          love-ref: "11.5"                       # Versão do Love2D que você usou (ex: 11.5 ou 11.4)
-          love-package: "./game.love"          # Caminho do pacote gerado no passo anterior
+          app-name: "Ultima Gota"
+          bundle-id: "com.seuusuario.ultimagota"
+          love-ref: "11.5"
+          love-package: "./game.love"
 
-      # 3. Salvamos o APK gerado para você poder baixar nos artefatos do GitHub
       - name: Enviar APK como Artefato
         uses: actions/upload-artifact@v4
         with:
