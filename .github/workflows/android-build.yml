@@ -16,6 +16,17 @@ jobs:
       - name: Checkout do Código
         uses: actions/checkout@v4
 
+      - name: Liberar espaço em disco
+        run: |
+          echo "Espaço em disco antes da limpeza:"
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          echo "Espaço em disco após a limpeza:"
+          df -h
+
       # 1. Primeiro geramos o arquivo .love compactado do seu jogo automaticamente
       - name: Criar pacote .love
         uses: love-actions/love-actions-core@v1
